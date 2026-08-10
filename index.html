@@ -187,6 +187,14 @@
       margin-top: 10px;
     }
 
+    .btn-secondary {
+      background-color: #64748b;
+      color: white;
+      margin-top: 6px;
+      padding: 6px;
+      font-size: 0.8rem;
+    }
+
     .ai-box {
       background: #f3e8ff;
       border: 1px solid #d8b4fe;
@@ -316,7 +324,6 @@
             <input type="date" id="date" required>
           </div>
 
-          <!-- 1階層下まで細分化した詳細種目選択 -->
           <div class="form-group">
             <label for="menuSelect">種目を選択</label>
             <select id="menuSelect" onchange="toggleCustomMenu()">
@@ -440,7 +447,6 @@
             <input type="text" id="customMenuInput" placeholder="種目名を入力" style="display:none; margin-top:8px;">
           </div>
 
-          <!-- 選択チップ ＆ 直接入力ができる回数 -->
           <div class="form-group">
             <label for="count">回数・時間 (本 / 分)</label>
             <input type="number" id="count" placeholder="例: 10" required>
@@ -487,6 +493,7 @@
           これまでの稽古ログ全体をAIが振り返り、全体の傾向や成長の兆し、今後の課題を分析します。
         </p>
         <button type="button" id="analyzeAllBtn" class="btn btn-ai">全稽古ログをAI分析する</button>
+        <button type="button" class="btn btn-secondary" onclick="resetApiKey()">🔑 APIキーを再設定する</button>
 
         <div id="analysisResultBox" class="ai-box">
           <div class="ai-title">📊 稽古傾向とアドバイス</div>
@@ -561,7 +568,6 @@
       }
     }
 
-    // 種目の自由入力切り替え
     function toggleCustomMenu() {
       const select = document.getElementById('menuSelect');
       const customInput = document.getElementById('customMenuInput');
@@ -574,7 +580,6 @@
       }
     }
 
-    // 回数チップ設定
     function setCount(val) {
       document.getElementById('count').value = val;
     }
@@ -662,12 +667,18 @@
     function getApiKey() {
       let key = localStorage.getItem('gemini_api_key');
       if (!key) {
-        key = prompt('Gemini APIキーを入力してください:');
+        key = prompt('Gemini APIキーを入力してください（AIzaSy...）:');
         if (key) {
-          localStorage.setItem('gemini_api_key', key.trim());
+          key = key.trim();
+          localStorage.setItem('gemini_api_key', key);
         }
       }
       return key;
+    }
+
+    function resetApiKey() {
+      localStorage.removeItem('gemini_api_key');
+      alert('APIキーを削除しました。次にAIボタンを押した際に再入力画面が出ます。');
     }
 
     document.getElementById('aiBtn').addEventListener('click', async () => {
@@ -680,6 +691,7 @@
 
       aiBtn.disabled = true;
       box.style.display = 'block';
+      content.style.color = '#1e293b';
       content.textContent = '分析中...';
 
       const log = await saveLogData();
@@ -698,13 +710,18 @@
           body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
         const data = await res.json();
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
+        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
           content.textContent = data.candidates[0].content.parts[0].text;
+        } else if (data.error) {
+          content.style.color = 'red';
+          content.textContent = `❌ エラーが発生しました:\n${data.error.message} (Code: ${data.error.code})`;
         } else {
-          content.textContent = 'アドバイスの生成に失敗しました。';
+          content.style.color = 'red';
+          content.textContent = 'アドバイスの生成に失敗しました（レスポンス形式異常）。';
         }
       } catch (err) {
-        content.textContent = '通信エラーが発生しました。';
+        content.style.color = 'red';
+        content.textContent = '通信エラーが発生しました: ' + err.message;
       }
 
       aiBtn.disabled = false;
@@ -712,7 +729,10 @@
 
     document.getElementById('analyzeAllBtn').addEventListener('click', async () => {
       const apiKey = getApiKey();
-      if (!apiKey) return;
+      if (!apiKey) {
+        alert('APIキーが指定されていません。');
+        return;
+      }
 
       const btn = document.getElementById('analyzeAllBtn');
       const box = document.getElementById('analysisResultBox');
@@ -720,6 +740,7 @@
 
       btn.disabled = true;
       box.style.display = 'block';
+      content.style.color = '#1e293b';
       content.textContent = 'これまでの稽古データを分析中...';
 
       if (cachedLogs.length === 0) {
@@ -727,7 +748,7 @@
       }
 
       if (cachedLogs.length === 0) {
-        content.textContent = '分析対象の稽古データがありません。';
+        content.textContent = '分析対象の稽古データがありません。まず「記録する」タブでデータを保存してください。';
         btn.disabled = false;
         return;
       }
@@ -748,13 +769,19 @@ ${logsSummary}`;
           body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
         const data = await res.json();
-        if (data.candidates && data.candidates[0].content.parts[0].text) {
+        
+        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
           content.textContent = data.candidates[0].content.parts[0].text;
+        } else if (data.error) {
+          content.style.color = 'red';
+          content.textContent = `❌ エラーが発生しました:\n${data.error.message} (Code: ${data.error.code})`;
         } else {
-          content.textContent = '分析に失敗しました。';
+          content.style.color = 'red';
+          content.textContent = '分析に失敗しました。レスポンス異常。';
         }
       } catch (err) {
-        content.textContent = '通信エラーが発生しました。';
+        content.style.color = 'red';
+        content.textContent = '通信エラーが発生しました: ' + err.message;
       }
 
       btn.disabled = false;
