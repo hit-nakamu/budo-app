@@ -10,14 +10,14 @@
 
   <style>
     :root {
-      --primary-color: #1a252f;
-      --accent-color: #2980b9;
-      --ai-color: #8e44ad;
-      --gorin-color: #d35400;
-      --bg-color: #f4f6f7;
+      --primary-color: #1b2a4a; /* 深みのある紺色 */
+      --accent-color: #2b5c8f;
+      --ai-color: #6b3ba7;
+      --gorin-color: #c05621;
+      --bg-color: #f1f5f9;
       --card-bg: #ffffff;
-      --border-color: #e2e8f0;
-      --text-color: #2c3e50;
+      --border-color: #cbd5e1;
+      --text-color: #1e293b;
     }
 
     * {
@@ -37,22 +37,23 @@
     /* ヘッダー */
     header {
       background: var(--primary-color);
-      color: white;
+      color: #ffffff;
       text-align: center;
-      padding: 16px 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      padding: 18px 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
     header h1 {
-      font-size: 1.3rem;
-      font-weight: bold;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
     }
 
     /* ナビゲーションタブ */
     .nav-tabs {
       display: flex;
-      background: white;
-      border-bottom: 1px solid var(--border-color);
+      background: #ffffff;
+      border-bottom: 2px solid #e2e8f0;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -60,12 +61,12 @@
 
     .tab-btn {
       flex: 1;
-      padding: 12px 4px;
+      padding: 12px 2px;
       background: none;
       border: none;
       font-size: 0.85rem;
       font-weight: bold;
-      color: #7f8c8d;
+      color: #64748b;
       cursor: pointer;
       border-bottom: 3px solid transparent;
       transition: all 0.2s;
@@ -75,9 +76,10 @@
     .tab-btn.active {
       color: var(--accent-color);
       border-bottom-color: var(--accent-color);
+      background-color: #f8fafc;
     }
 
-    /* メインコンテンツ容器 */
+    /* コンテナ */
     .container {
       max-width: 600px;
       margin: 16px auto;
@@ -95,9 +97,9 @@
     /* カード */
     .card {
       background: var(--card-bg);
-      border-radius: 10px;
-      padding: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
       margin-bottom: 16px;
       border: 1px solid var(--border-color);
     }
@@ -106,13 +108,12 @@
       font-size: 1.1rem;
       font-weight: bold;
       color: var(--primary-color);
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 8px;
     }
 
-    /* フォーム要素 */
+    /* フォーム */
     .form-group {
       margin-bottom: 14px;
     }
@@ -122,7 +123,7 @@
       font-weight: bold;
       font-size: 0.85rem;
       margin-bottom: 6px;
-      color: #34495e;
+      color: #334155;
     }
 
     input[type="date"],
@@ -132,15 +133,15 @@
     select {
       width: 100%;
       padding: 10px 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
       font-size: 0.95rem;
       background-color: #fff;
     }
 
     textarea {
       resize: vertical;
-      height: 80px;
+      height: 90px;
     }
 
     /* ボタン */
@@ -148,7 +149,7 @@
       width: 100%;
       padding: 12px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 0.95rem;
       font-weight: bold;
       cursor: pointer;
@@ -156,7 +157,7 @@
     }
 
     .btn:active {
-      opacity: 0.8;
+      opacity: 0.85;
     }
 
     .btn-primary {
@@ -170,14 +171,14 @@
       margin-top: 10px;
     }
 
-    /* AIアドバイスボックス */
+    /* AIボックス */
     .ai-box {
-      background: #f4ecf7;
-      border: 1px solid #d2b4de;
-      border-left: 4px solid var(--ai-color);
-      border-radius: 6px;
+      background: #f3e8ff;
+      border: 1px solid #d8b4fe;
+      border-left: 5px solid var(--ai-color);
+      border-radius: 8px;
       padding: 14px;
-      margin-top: 14px;
+      margin-top: 16px;
       display: none;
     }
 
@@ -211,28 +212,30 @@
       margin-bottom: 6px;
     }
 
-    .log-date {
-      font-size: 0.85rem;
-      color: #7f8c8d;
-      font-weight: bold;
-    }
-
     .log-menu {
       font-weight: bold;
       color: var(--primary-color);
+      font-size: 1rem;
     }
 
     .log-count {
       font-size: 0.85rem;
-      background: #eef2f7;
-      padding: 2px 8px;
+      background: #e2e8f0;
+      padding: 2px 10px;
       border-radius: 12px;
       color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .log-date {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-bottom: 4px;
     }
 
     .log-memo {
       font-size: 0.9rem;
-      color: #475569;
+      color: #334155;
       white-space: pre-wrap;
       margin-top: 6px;
       padding-top: 6px;
@@ -242,12 +245,12 @@
     /* 五輪書ビューア */
     .gorin-box {
       background: #fffdfa;
-      border: 1px solid #f3e5f5;
-      border-left: 4px solid var(--gorin-color);
-      border-radius: 6px;
-      padding: 14px;
-      margin-top: 10px;
-      max-height: 450px;
+      border: 1px solid #fed7aa;
+      border-left: 5px solid var(--gorin-color);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 12px;
+      max-height: 420px;
       overflow-y: auto;
     }
 
@@ -256,21 +259,31 @@
       color: var(--gorin-color);
       font-size: 1rem;
       margin-bottom: 10px;
-      border-bottom: 1px solid #f0e2d0;
-      padding-bottom: 4px;
+      border-bottom: 1px solid #ffedd5;
+      padding-bottom: 6px;
     }
 
     .gorin-body {
       font-size: 0.9rem;
       line-height: 1.8;
       white-space: pre-wrap;
+      color: #292524;
     }
 
     .empty-state {
       text-align: center;
-      color: #94a3b8;
-      padding: 30px 0;
+      color: #64748b;
+      padding: 24px 0;
       font-size: 0.9rem;
+    }
+
+    .error-msg {
+      color: #dc2626;
+      background: #fef2f2;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -280,17 +293,17 @@
     <h1>🥋 武道稽古記録 & AIアドバイザー</h1>
   </header>
 
-  <!-- タブ切り替えメニュー -->
+  <!-- タブナビゲーション -->
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('recordTab')">📝 記録する</button>
-    <button class="tab-btn" onclick="switchTab('historyTab')">📋 稽古履歴</button>
-    <button class="tab-btn" onclick="switchTab('analysisTab')">📊 過去分析</button>
-    <button class="tab-btn" onclick="switchTab('gorinTab')">📖 五輪書</button>
+    <button class="tab-btn active" onclick="switchTab('recordTab', this)">📝 記録する</button>
+    <button class="tab-btn" onclick="switchTab('historyTab', this)">📋 稽古履歴</button>
+    <button class="tab-btn" onclick="switchTab('analysisTab', this)">📊 過去分析</button>
+    <button class="tab-btn" onclick="switchTab('gorinTab', this)">📖 五輪書</button>
   </div>
 
   <div class="container">
 
-    <!-- 【1. 記録タブ】 -->
+    <!-- 1. 記録タブ -->
     <div id="recordTab" class="tab-content active">
       <div class="card">
         <div class="card-title">本日の稽古を記録</div>
@@ -302,17 +315,17 @@
 
           <div class="form-group">
             <label for="menu">種目名</label>
-            <input type="text" id="menu" placeholder="例: 形、横一、素振り、禅" required>
+            <input type="text" id="menu" placeholder="例: 形、横一、素振り" required>
           </div>
 
           <div class="form-group">
             <label for="count">回数・時間</label>
-            <input type="number" id="count" placeholder="例: 10 (本/分)" required>
+            <input type="number" id="count" placeholder="例: 10" required>
           </div>
 
           <div class="form-group">
             <label for="memo">メモ・気づき</label>
-            <textarea id="memo" placeholder="例: 横一の振りを意識。重心が少しぶれた"></textarea>
+            <textarea id="memo" placeholder="例: 横一の振りを意識。重心を意識した"></textarea>
           </div>
 
           <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
@@ -326,22 +339,22 @@
       </div>
     </div>
 
-    <!-- 【2. 履歴タブ】 -->
+    <!-- 2. 履歴タブ -->
     <div id="historyTab" class="tab-content">
       <div class="card">
         <div class="card-title">稽古の記録一覧</div>
         <div id="logList">
-          <div class="empty-state">読み込み中...</div>
+          <div class="empty-state">データを読み込んでいます...</div>
         </div>
       </div>
     </div>
 
-    <!-- 【3. 過去分析タブ】（復活） -->
+    <!-- 3. 過去分析タブ -->
     <div id="analysisTab" class="tab-content">
       <div class="card">
         <div class="card-title">🔍 蓄積データのAI分析</div>
-        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">
-          これまでの稽古ログ全体をAIが振り返り、全体の傾向や成長の兆し、今後の稽古の指針をアドバイスします。
+        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
+          これまでの稽古ログ全体をAIが振り返り、全体の傾向や成長の兆し、今後の課題を分析します。
         </p>
         <button type="button" id="analyzeAllBtn" class="btn btn-ai">全稽古ログをAI分析する</button>
 
@@ -352,10 +365,10 @@
       </div>
     </div>
 
-    <!-- 【4. 五輪書タブ】（全文） -->
+    <!-- 4. 五輪書タブ -->
     <div id="gorinTab" class="tab-content">
       <div class="card">
-        <div class="card-title">📖 五輪書（宮本武蔵）現代語訳</div>
+        <div class="card-title">📖 五輪書 現代語訳</div>
         <div class="form-group">
           <label for="gorinSelect">読む章を選択</label>
           <select id="gorinSelect" onchange="loadGorinChapter()">
@@ -377,151 +390,86 @@
   </div>
 
   <script>
-    // Supabase 設定
     const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // グローバル変数（ログデータ保持用）
     let cachedLogs = [];
+    let detectedTable = 'keiko_logs'; // デフォルトテーブル名
 
-    // 五輪書 現代語訳データ（全文）
+    // 五輪書データ
     const gorinData = {
       chi: {
-        title: "地の巻（ちのまき）- 兵法の土台と理念",
-        text: `【はじめに】
-兵法とは、武士が身につけるべき道の基本である。武士たる者は、勝負の理を究め、勝ちを制することを目指さねばならない。
-
-【兵法の道を建てるということ】
-兵法を学ぶ者は、まずその「土台（地）」を固めなければならない。ちょうど大工の棟梁が建物の全体の構造を理解し、材木の特性を見極めて適材適所に配するように、兵法家も道具の特性を知り、己の身体と技を巧みに用いることが求められる。
-
-【武士の道の四つの道】
-世の中には「農・工・商・士」の四つの道がある。
-・農の道：四季の移り変わりに応じて作物を育て、生きる糧を得る。
-・商の道：商品を売り買いし、利益を得て生活を立てる。
-・工の道：さまざまな道具や建造物を工夫して作り出す。
-・士の道：兵法の実力を養い、いざという時に勝ちを制し、主君や己の立ち位置を全うする。
-
-【兵法における道具と二刀の理】
-武士は常に二つの刀を帯びる。これには深い理がある。いかなる武器もその特性を知り、状況に応じて最大限に活かさねばならない。二刀を用いる稽古を重ねることで、片手に偏らない自在な身体運用が可能となる。
-
-【鍛錬の心構え】
-千日の稽古を「鍛（たん）」とし、万日の稽古を「錬（れん）」とする。日々の休みなき継続と追求の先においてのみ、真の技と心が錬り上げられるのである。
-
-【地に刻むべき九つの道】
-一、よこしま（邪）な心を起こさないこと。
-二、道の修練を休まないこと。
-三、諸芸・諸術に触れて視野を広げること。
-四、様々な職業・道の理を知ること。
-五、物事の損得や利害を見極めること。
-六、あらゆる事象の真偽・直感を見抜く目（観の目）を養うこと。
-七、目に見えない微細な変化を察知すること。
-八、わずかな油断や怠惰にも気を配ること。
-九、役に立たない無駄なことをしないこと。`
+        title: "地の巻 - 兵法の土台と理念",
+        text: `【兵法の道を建てるということ】\n兵法を学ぶ者は、まずその土台（地）を固めなければならない。大工の棟梁が建物の構造を理解し、材木を見極めるように、兵法家も道具の特性を知り、己の身体と技を巧みに用いることが求められる。\n\n【鍛錬の心構え】\n千日の稽古を「鍛（たん）」とし、万日の稽古を「錬（れん）」とする。日々の休みなき継続と追求の先においてのみ、真の技と心が錬り上げられる。`
       },
       mizu: {
-        title: "水の巻（みずのまき）- 心構え・構え・身体の運用",
-        text: `【心構え：水の心】
-水は四角い器にも丸い器にも柔軟にその形を変え、一滴の水滴ともなれば、広大な大海ともなる。兵法の心もまた、水のように柔軟で透明であり、何物にもとらわれない平常心を保たねばならない。
-
-【精神と体の持ち方】
-心は常に平常を保ち、偏らず、硬くならず、伸び伸びと直くあること。精神を静かに据えつつも、身体の動きは自由自在でなければならない。
-
-【目付け：観の目と見の目】
-兵法における目付けは、「観（かん）の目を強く、見（けん）の目を弱く」することが極意である。
-・見の目：表面的な動きや相手の剣先だけを追う目。
-・観の目：相手の心根、全体の拍子、戦況の本質を見抜く深い目。
-遠い山を見るように全体を大きく捉えよ。
-
-【五つの構え】
-構えには「上段・中段・下段・右脇・左脇」の五つがある。しかし、本質においては「構えて構えなし」である。構えは相手との間合いや状況に応じて自然に変化するものであり、特定の型に固執してはならない。
-
-【太刀の振り方と身体運用】
-太刀は無駄な力で握るものではなく、自然な理に従って振るものである。腕の力で振り回すのではなく、体幹と足さばきの一致によって刀を運ぶ。相手を斬るのではなく、「理をもって刃を通す」感覚を忘れてはならない。`
+        title: "水の巻 - 心構え・構え・身体の運用",
+        text: `【心構え：水の心】\n水は四角い器にも丸い器にも柔軟にその形を変える。兵法の心もまた、水のように柔軟で透明であり、何物にもとらわれない平常心を保たねばならない。\n\n【目付け：観の目と見の目】\n「観（かん）の目を強く、見（けん）の目を弱く」することが極意である。表面的な動き（見）ではなく、相手の心根や全体の拍子（観）を見抜け。`
       },
       hi: {
-        title: "火の巻（ひのまき）- 戦いの実戦・勝敗・駆け引き",
-        text: `【戦いにおける火の勢い】
-火は小さく燃え上がり、瞬時に大きく広がる。状況は一刻一刻変化する。火の巻では、実際の戦いにおける勝負の駆け引き、勢いと拍子の支配について説く。
-
-【三つの先（せん）】
-一、意の先（けんのせん）：相手が攻撃しようと動く前に、こちらから先手を打って制する。
-二、対の先（たいのせん）：相手が攻めてきた瞬間、その攻撃に応じつつ先を取って打つ。
-三、構の先（たいたいのせん）：互いに構え合った状態から、相手の動揺や拍子の乱れを誘い、先を制する。
-
-【陰を動かす・崩し】
-相手が攻めあぐねている時や、静観している時は、こちらの強い攻めや変化を見せることで相手の心を動かし、隙を作らせる。相手の心が崩れた瞬間を逃さず叩くことが大切である。
-
-【拍子を外す・影を打つ】
-相手と同じ拍子（リズム）で動いていては相打ちになる。相手のリズムを外し、意表を突く間合いとタイミングで技を繰り出すこと。
-
-【鼠頭午首（そとうごしゅ）】
-細かい技術に捉われそうな時は頭を大きく（牛のように）切り替え、全体に捉われすぎた時は細部（鼠のように）に気を配る。ミクロとマクロの視点を自由に行き来せよ。`
+        title: "火の巻 - 実戦・勝負・駆け引き",
+        text: `【戦いにおける火の勢い】\n火は瞬時に大きく広がる。状況は一刻一刻変化する。火の巻では、実際の戦いにおける勝負の駆け引き、勢いと拍子の支配について説く。\n\n【三つの先】\n1. 意の先：相手が動く前に制する\n2. 対の先：相手の攻めに応じつつ先を取る\n3. 構の先：相手の動揺を誘い先を制する`
       },
       kaze: {
-        title: "風の巻（かぜのまき）- 他流派の研究・兵法の本質",
-        text: `【風の意味と他流を知る意義】
-「風」とは世風であり、他流派の風気を意味する。自らの兵法を真に極めるためには、他流派の特徴、長所、短所を正しく知らねばならない。
-
-【長い太刀を好む流派への批評】
-長すぎる太刀に頼る者は、離れた場所から手軽に勝とうとする邪心を生みやすい。間合いの本質を理解せず、ただ道具の長さに依存することは、真の武術の理に反する。
-
-【速さを求める流派への批評】
-ただ動作の速さのみを競う流派は、無駄な焦りを生み、拍子を乱す。真の速さとは、無駄な動きが削ぎ落とされた結果生まれる「自然なスムーズさ」であり、バタバタと急ぐことではない。
-
-【強烈な打ちを好む流派への批評】
-力任せに激しく叩きつける打ち込みは、刀を傷め、自身の体勢を崩す原因となる。勝負を決する斬り込みとは、力づくではなく、理に適った的確なひと筋である。
-
-【他流の固執を去り、理に帰す】
-特定の型や道具、異端なテクニックに執着する流派は、本質を見失う。兵法の道とは、極めてシンプルで、理にかなった自然体の追求に他ならない。`
+        title: "風の巻 - 他流派の研究・兵法の本質",
+        text: `【他流を知る意義】\n自らの兵法を真に極めるためには、他流派の特徴、長所、短所を正しく知らねばならない。\n\n【固執を去る】\n特定の型や道具、異端なテクニックに執着する流派は本質を見失う。兵法の道とは、極めてシンプルで、理にかなった自然体の追求である。`
       },
       ku: {
-        title: "空の巻（くうのまき）- 極意・自然の理・あるがまま",
-        text: `【空（くう）の境地】
-二つの事柄の間に横たわる、何も無い状態を「空」というのではない。自意識や執着、迷いや偏りがすべて消え去った、澄み渡った境地を指すのである。
-
-【知から空へ】
-初めは道具の使い方を学び、技を学び、理屈を習得する。しかし、その修練の果てに、技や理屈を意識することなく、身体が自然に動く領域に達する。これこそが「空」である。
-
-【真の道】
-「心を空にして、直き（すなおき）心を道とす」
-実直に稽古を重ね、自らの心を磨き続けた先に、一切の迷いが消えた「真の空」があらわれる。
-
-あらゆる技、あらゆる構え、あらゆる戦略を超越したあるがままの自然体。これこそが兵法・二天一流の究極の到達点である。`
+        title: "空の巻 - 極意・自然の理",
+        text: `【空の境地】\n自意識や執着、迷いや偏りがすべて消え去った澄み渡った境地を指す。\n\n【知から空へ】\n初めは技や理屈を学ぶ。しかし修練の果てに、意識することなく身体が自然に動く領域に達する。これこそが「空」である。`
       }
     };
 
-    // タブ切り替え処理
-    function switchTab(tabId) {
+    function switchTab(tabId, btn) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       
       document.getElementById(tabId).classList.add('active');
-      event.currentTarget.classList.add('active');
+      if (btn) btn.classList.add('active');
 
       if (tabId === 'historyTab') {
         fetchLogs();
       }
     }
 
-    // 今日の日付をセット
     document.getElementById('date').valueAsDate = new Date();
 
-    // ログ取得
+    // ログ取得（テーブル名フォールバック機能付き）
     async function fetchLogs() {
       const logList = document.getElementById('logList');
-      const { data, error } = await supabaseClient
-        .from('keiko_logs')
-        .select('*')
-        .order('date', { ascending: false })
-        .order('id', { ascending: false });
+      logList.innerHTML = '<div class="empty-state">データを読み込んでいます...</div>';
 
-      if (error) {
-        logList.innerHTML = '<div class="empty-state">データの取得に失敗しました</div>';
+      const possibleTables = ['keiko_logs', 'logs', 'keiko', 'records'];
+      let lastError = null;
+      let loadedData = null;
+
+      for (const table of possibleTables) {
+        const { data, error } = await supabaseClient
+          .from(table)
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (!error && data) {
+          loadedData = data;
+          detectedTable = table;
+          break;
+        } else {
+          lastError = error;
+        }
+      }
+
+      if (!loadedData) {
+        logList.innerHTML = `
+          <div class="empty-state">
+            <p>データの取得に失敗しました。</p>
+            <div class="error-msg">エラー詳細: ${lastError ? lastError.message : 'テーブルが見つかりません'}</div>
+            <p style="margin-top:8px; font-size:0.8rem;">※Supabaseのテーブル名をご確認ください。</p>
+          </div>`;
         return;
       }
 
-      cachedLogs = data || [];
+      cachedLogs = loadedData;
 
       if (cachedLogs.length === 0) {
         logList.innerHTML = '<div class="empty-state">まだ記録がありません</div>';
@@ -534,17 +482,17 @@
         div.className = 'log-item';
         div.innerHTML = `
           <div class="log-header">
-            <span class="log-menu">${escapeHtml(log.menu || '稽古')}</span>
-            <span class="log-count">${log.count || 0}</span>
+            <span class="log-menu">${escapeHtml(log.menu || log.title || '稽古')}</span>
+            <span class="log-count">${log.count || log.quantity || 0}</span>
           </div>
-          <div class="log-date">${log.date || ''}</div>
-          ${log.memo ? `<div class="log-memo">${escapeHtml(log.memo)}</div>` : ''}
+          <div class="log-date">${log.date || log.created_at || ''}</div>
+          ${(log.memo || log.note) ? `<div class="log-memo">${escapeHtml(log.memo || log.note)}</div>` : ''}
         `;
         logList.appendChild(div);
       });
     }
 
-    // データ保存
+    // 保存処理
     async function saveLogData() {
       const date = document.getElementById('date').value;
       const menu = document.getElementById('menu').value;
@@ -556,19 +504,20 @@
         return null;
       }
 
+      const payload = { date, menu, count, memo };
       const { error } = await supabaseClient
-        .from('keiko_logs')
-        .insert([{ date, menu, count, memo }]);
+        .from(detectedTable)
+        .insert([payload]);
 
       if (error) {
         alert('保存エラー: ' + error.message);
         return null;
       }
 
-      return { date, menu, count, memo };
+      return payload;
     }
 
-    // 保存ボタン
+    // フォーム送信
     document.getElementById('keikoForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
@@ -586,7 +535,6 @@
       btn.disabled = false;
     });
 
-    // APIキーの確保用関数
     function getApiKey() {
       let key = localStorage.getItem('gemini_api_key');
       if (!key) {
@@ -598,7 +546,7 @@
       return key;
     }
 
-    // 単発AIアドバイス
+    // AIアドバイス（単発）
     document.getElementById('aiBtn').addEventListener('click', async () => {
       const apiKey = getApiKey();
       if (!apiKey) return;
@@ -608,42 +556,38 @@
       const content = document.getElementById('aiAdviceContent');
 
       aiBtn.disabled = true;
-      aiBtn.textContent = '思考中...';
       box.style.display = 'block';
       content.textContent = '分析中...';
 
       const log = await saveLogData();
       if (!log) {
         aiBtn.disabled = false;
-        aiBtn.textContent = '✨ 保存＆AIアドバイスをもらう';
         return;
       }
 
-      const prompt = `あなたは思慮深い武道の師範です。以下の稽古内容とメモを読み、短く的確なワンポイントアドバイス（120〜150字程度）を送信してください。
+      const promptText = `あなたは思慮深い武道の師範です。以下の稽古内容とメモを読み、短く的確なワンポイントアドバイス（120〜150字程度）を送信してください。
 種目: ${log.menu}, 回数: ${log.count}, メモ: ${log.memo || 'なし'}`;
 
       try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
         const data = await res.json();
         if (data.candidates && data.candidates[0].content.parts[0].text) {
           content.textContent = data.candidates[0].content.parts[0].text;
         } else {
-          content.textContent = '生成に失敗しました。APIキーを確認してください。';
-          localStorage.removeItem('gemini_api_key');
+          content.textContent = 'アドバイスの生成に失敗しました。';
         }
       } catch (err) {
         content.textContent = '通信エラーが発生しました。';
       }
 
       aiBtn.disabled = false;
-      aiBtn.textContent = '✨ 保存＆AIアドバイスをもらう';
     });
 
-    // 過去分析（全体AI分析機能）
+    // 過去分析
     document.getElementById('analyzeAllBtn').addEventListener('click', async () => {
       const apiKey = getApiKey();
       if (!apiKey) return;
@@ -653,58 +597,47 @@
       const content = document.getElementById('analysisResultContent');
 
       btn.disabled = true;
-      btn.textContent = '過去ログを分析中...';
       box.style.display = 'block';
-      content.textContent = 'これまでの稽古データを読み込んで傾向を分析しています...';
+      content.textContent = 'これまでの稽古データを分析中...';
 
-      // ログが未取得なら取得
       if (cachedLogs.length === 0) {
         await fetchLogs();
       }
 
       if (cachedLogs.length === 0) {
-        content.textContent = '分析するための稽古データがまだありません。まずは稽古を記録してみましょう！';
+        content.textContent = '分析対象の稽古データがありません。';
         btn.disabled = false;
-        btn.textContent = '全稽古ログをAI分析する';
         return;
       }
 
-      // 過去ログを整形してテキスト化
       const logsSummary = cachedLogs.slice(0, 30).map(l => 
-        `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`
+        `・[${l.date || l.created_at}] ${l.menu || l.title} (${l.count || l.quantity}) / メモ: ${l.memo || l.note || 'なし'}`
       ).join('\n');
 
-      const prompt = `あなたは武道稽古の師範・アドバイザーです。以下に蓄積された過去の稽古記録を読み込み、以下の点について総合的なアドバイスとフィードバック（300字程度）を提供してください。
+      const promptText = `あなたは武道稽古の師範・アドバイザーです。以下に蓄積された過去の稽古記録を読み込み、全体的なアドバイス（300字程度）を提供してください。
 
-1. 最近の稽古の継続傾向や集中的に行っている種目
-2. メモから読み取れる技術的・精神的な成長や課題
-3. 今後の稽古に向けた温かい励ましとアドバイス
-
-【稽古ログデータ】
+【稽古ログ】
 ${logsSummary}`;
 
       try {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
         });
         const data = await res.json();
         if (data.candidates && data.candidates[0].content.parts[0].text) {
           content.textContent = data.candidates[0].content.parts[0].text;
         } else {
-          content.textContent = '分析に失敗しました。APIキーを確認してください。';
-          localStorage.removeItem('gemini_api_key');
+          content.textContent = '分析に失敗しました。';
         }
       } catch (err) {
         content.textContent = '通信エラーが発生しました。';
       }
 
       btn.disabled = false;
-      btn.textContent = '全稽古ログをAI分析する';
     });
 
-    // 五輪書テキスト表示
     function loadGorinChapter() {
       const val = document.getElementById('gorinSelect').value;
       if (gorinData[val]) {
@@ -713,14 +646,13 @@ ${logsSummary}`;
       }
     }
 
-    // エスケープ関数
     function escapeHtml(str) {
+      if (typeof str !== 'string') return str;
       return str.replace(/[&<>'"]/g, 
         tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
       );
     }
 
-    // 初期化
     window.addEventListener('DOMContentLoaded', () => {
       fetchLogs();
       loadGorinChapter();
