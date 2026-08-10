@@ -647,7 +647,7 @@
       const res = await saveLogData();
       if (res) {
         alert('稽古記録を保存しました！');
-        document.getElementById('count'].value = '';
+        document.getElementById('count').value = '';
         document.getElementById('memo').value = '';
         document.getElementById('aiAdviceBox').style.display = 'none';
         fetchLogs();
@@ -698,7 +698,6 @@
       const totalCount = cachedLogs.reduce((sum, l) => sum + (Number(l.count) || 0), 0);
       const totalDays = new Set(cachedLogs.map(l => l.date)).size;
 
-      // コピーされるテキスト（AIへの細かい指示プロンプト＋全ログデータ）
       const textToCopy = cachedLogs.map(l => `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`).join('\n');
       
       const fullPromptText = `以下の私の武道（居合・剣術等）の稽古ログデータを読み込み、厳格かつ温かい武道師範の視点から、以下の3点について詳細に分析とアドバイスを行ってください。
