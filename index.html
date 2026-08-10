@@ -34,6 +34,17 @@
       padding-bottom: 40px;
     }
 
+    /* バージョン確認バー */
+    .version-bar {
+      background-color: #e2e8f0;
+      color: #475569;
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 3px 0;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+
     header {
       background: var(--primary-color);
       color: #ffffff;
@@ -300,6 +311,9 @@
   </style>
 </head>
 <body>
+
+  <!-- バージョン確認用バー -->
+  <div class="version-bar">Ver 1.2.0 (Gemini 2.5 Flash / 五輪書対応)</div>
 
   <header>
     <h1>🥋 武道稽古記録 & AIアドバイザー</h1>
@@ -667,7 +681,7 @@
     function getApiKey() {
       let key = localStorage.getItem('gemini_api_key');
       if (!key) {
-        key = prompt('Gemini APIキーを入力してください（AIzaSy...）:');
+        key = prompt('Gemini APIキーを入力してください:');
         if (key) {
           key = key.trim();
           localStorage.setItem('gemini_api_key', key);
