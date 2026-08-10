@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>武道稽古記録 & AIアドバイザー</title>
+  <title>武道稽古記録 & アドバイザー</title>
 
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -480,14 +480,14 @@
     <!-- 3. 過去分析タブ -->
     <div id="analysisTab" class="tab-content">
       <div class="card">
-        <div class="card-title">📊 稽古データの集計と振り返り</div>
+        <div class="card-title">📊 稽古データの集計とAI用コピー</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          これまでの稽古ログの件数と総量を瞬時に集計します。
+          ボタンを押すと集計と同時に全ログがクリップボードにコピーされます。このチャットにそのまま貼り付ければAI師範が詳細に分析します！
         </p>
-        <button type="button" id="localAnalyzeBtn" class="btn btn-ai">総稽古データを集計する</button>
+        <button type="button" id="localAnalyzeBtn" class="btn btn-ai">📋 データを集計＆コピーする</button>
 
         <div id="analysisResultBox" class="ai-box">
-          <div class="ai-title">📈 稽古サマリー</div>
+          <div class="ai-title">📈 集計結果 & コピー状況</div>
           <div id="analysisResultContent" class="ai-text"></div>
         </div>
       </div>
@@ -655,7 +655,6 @@
       btn.disabled = false;
     });
 
-    // APIを使わない安全なアドバイス生成
     document.getElementById('quickAdviceBtn').addEventListener('click', async () => {
       const box = document.getElementById('aiAdviceBox');
       const content = document.getElementById('aiAdviceContent');
@@ -667,9 +666,9 @@
       if (!log) return;
 
       const advices = [
-        "素晴らしい稽古です。初太刀の横一の気迫、そして体の軸がブレていないかが勝負の分かれ目となります。その調子で心身を研ぎ澄ませてください。",
-        "日々の地道な積み重ねこそが「錬」に至る唯一の道です。型の細部、特に残心に至るまでの意識を大切に。",
-        "よくぞやり切りました。技の速さだけでなく、間合いの支配と呼吸の調和を常に意識して稽古を重ねましょう。"
+        "素晴らしい稽古です。初太刀の気迫、そして体の軸がブレていないかが勝負の分かれ目となります。",
+        "日々の地道な積み重ねこそが「錬」に至る唯一の道です。型の細部まで意識を絶やさずに。",
+        "よくぞやり切りました。技の速さだけでなく、間合いの支配と呼吸の調和を大切に。"
       ];
       const randomAdvice = advices[Math.floor(Math.random() * advices.length)];
 
@@ -679,7 +678,7 @@
       fetchLogs();
     });
 
-    // ローカル集計（API不要）
+    // 集計 ＆ クリップボードコピー
     document.getElementById('localAnalyzeBtn').addEventListener('click', async () => {
       const box = document.getElementById('analysisResultBox');
       const content = document.getElementById('analysisResultContent');
@@ -699,7 +698,16 @@
       const totalCount = cachedLogs.reduce((sum, l) => sum + (Number(l.count) || 0), 0);
       const totalDays = new Set(cachedLogs.map(l => l.date)).size;
 
-      content.textContent = `📋 【稽古実績サマリー】\n・総稽古回数（日数）: ${totalDays} 日\n・総記録件数: ${cachedLogs.length} 件\n・累計本数・時間: ${totalCount} \n\n日々の積み重ねが確実に力となっています。引き続き心身の鍛錬に励んでください。`;
+      // コピー用テキストの作成
+      const textToCopy = cachedLogs.map(l => `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`).join('\n');
+      const fullText = `【武道稽古ログ一覧（総日数:${totalDays}日 / 累計本数:${totalCount}）】\n\n` + textToCopy;
+
+      try {
+        await navigator.clipboard.writeText(fullText);
+        content.textContent = `✅ 【集計完了 ＆ クリップボードコピー成功！】\n・総稽古日数: ${totalDays} 日\n・総記録件数: ${cachedLogs.length} 件\n・累計本数・時間: ${totalCount}\n\n📋 全データのコピーが完了しました！このチャットにそのままペースト（貼り付け）していただければ、私（AI）がすぐに本格的な分析とアドバイスを行います。`;
+      } catch (err) {
+        content.textContent = `📋 【集計結果】\n・総稽古日数: ${totalDays} 日\n・累計本数・時間: ${totalCount}\n\n(※お使いのブラウザの制限により自動コピーができなかったため、履歴タブからデータをご確認ください)`;
+      }
     });
 
     function loadGorinChapter() {
