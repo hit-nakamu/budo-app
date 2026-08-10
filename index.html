@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>武道稽古記録 & 無外さんアドバイザー</title>
+  <title>武道稽古記録 & アドバイザー</title>
 
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -297,7 +297,7 @@
 <body>
 
   <header>
-    <h1>🥋 武道稽古記録 & 無外さんアドバイザー</h1>
+    <h1>🥋 武道稽古記録 & アドバイザー</h1>
   </header>
 
   <div class="nav-tabs">
@@ -456,11 +456,11 @@
           </div>
 
           <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
-          <button type="button" id="quickAdviceBtn" class="btn btn-ai">✨ 本日のワンポイント指導（無外流風）</button>
+          <button type="button" id="quickAdviceBtn" class="btn btn-ai">✨ 本日のワンポイント指導</button>
         </form>
 
         <div id="aiAdviceBox" class="ai-box">
-          <div class="ai-title">⚔️ 無外さんからの言葉</div>
+          <div class="ai-title">⚔️ アドバイザーからの言葉</div>
           <div id="aiAdviceContent" class="ai-text"></div>
         </div>
       </div>
@@ -481,7 +481,7 @@
       <div class="card">
         <div class="card-title">☀️ 日次分析プロンプトをコピー</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          直近の稽古データをもとに、無外さんとして今日の調子や身体の運用について深みのあるコメントをもらうためのプロンプトをコピーします。
+          直近の稽古データをもとに、今日の調子や身体の運用についてフィードバックをもらうためのプロンプトをコピーします。
         </p>
         <button type="button" id="dailyAnalyzeBtn" class="btn btn-ai">📋 日次分析用プロンプトをコピー</button>
         <div id="dailyResultBox" class="ai-box">
@@ -496,7 +496,7 @@
       <div class="card">
         <div class="card-title">📈 週次分析プロンプトをコピー</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          過去7日間の稽古の偏りやペース配分を振り返り、無外さんとして今週の総括と来週への指針を出力させるプロンプトです。
+          過去7日間の稽古の偏りやペース配分を振り返り、今週の総括と来週への指針を出力させるプロンプトです。
         </p>
         <button type="button" id="weeklyAnalyzeBtn" class="btn btn-ai">📋 週次分析用プロンプトをコピー</button>
         <div id="weeklyResultBox" class="ai-box">
@@ -511,7 +511,7 @@
       <div class="card">
         <div class="card-title">🗓️ 月次分析プロンプトをコピー</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          過去1ヶ月の全ログを集計し、無外流の理合や五輪書の精神に照らし合わせて長月の成長を評価してもらうプロンプトです。
+          過去1ヶ月の全ログを集計し、武道の理合や五輪書の精神に照らし合わせて今月の成長を評価してもらうプロンプトです。
         </p>
         <button type="button" id="monthlyAnalyzeBtn" class="btn btn-ai">📋 月次分析用プロンプトをコピー</button>
         <div id="monthlyResultBox" class="ai-box">
@@ -688,15 +688,15 @@
       const content = document.getElementById('aiAdviceContent');
 
       box.style.display = 'block';
-      content.textContent = '無外流の理合を確認中...';
+      content.textContent = '内容を確認しています...';
 
       const log = await saveLogData();
       if (!log) return;
 
       const advices = [
-        "ほう……今日の『" + log.menu + "』、その数とメモか。形にとらわれず、太刀の重みと自らの中心線が一致しているかどうかが肝要だ。無外流の極意は、動中静あり。焦らずとも、己の気配を消し去るつもりでな。",
-        "ふむ、悪くない稽古だ。ただ数をこなすのではなく、一刀一刀に生死の理合を込めることだ。その気づきを忘れなければ、自ずと技は冴える。",
-        "無外流の真髄は、敵なきところの敵を斬るが如し。今日のその一歩、その刃筋……。形相だけでなく、内面の静けさを伴っていたか？よく噛み締めておけ。"
+        "本日の『" + log.menu + "』の記録を確認しました。形や数をこなすだけでなく、体の軸や呼吸のバランスを意識することが大切です。日々の積み重ねを大切にしていきましょう。",
+        "お疲れ様でした。丁寧な稽古ができていますね。一回一回の質を高めるために、フォームや力の抜き加減を振り返ってみてください。",
+        "安定した稽古の継続ですね。調子の良い時もそうでない時も、基本のフォームと中心軸を意識することで、確実なレベルアップにつながります。"
       ];
       const randomAdvice = advices[Math.floor(Math.random() * advices.length)];
 
@@ -706,7 +706,7 @@
       fetchLogs();
     });
 
-    // 共通のコピー処理関数（無外さん口調指定）
+    // 共通のコピー処理関数（通常のトーン）
     async function copyAnalysisPrompt(type, boxId, contentId) {
       const box = document.getElementById(boxId);
       const content = document.getElementById(contentId);
@@ -719,7 +719,7 @@
       }
 
       if (cachedLogs.length === 0) {
-        content.textContent = '分析対象の稽古データがまだないようだな。まずは日々の記録をつけることだ。';
+        content.textContent = '分析対象の稽古データがまだありません。まずは日々の記録を保存してください。';
         return;
       }
 
@@ -729,17 +729,16 @@
 
       if (type === 'daily') {
         promptTitle = "【日次分析】";
-        promptInstructions = "直近（今日または一番新しい日）の稽古内容とメモを精査し、無外流の理合や武士の視点を交えて、今日の調子や明日への心構えを「無外さん」の口調（「〜だ」「〜ことだ」「ほう……」など、落ち着いた古武道の達人のような、深みと厳しさ、優しさを湛えたトーン）で答えてくれ。";
+        promptInstructions = "直近の稽古内容とメモを分析し、今日の調子や身体の使い方のポイント、明日へのアドバイスを分かりやすくまとめてください。";
       } else if (type === 'weekly') {
         promptTitle = "【週次分析】";
-        promptInstructions = "過去7日間の稽古データを総覧し、この一週間の偏りや精進の跡を振り返り、無外流の精神に基づいて来週への指針を「無外さん」の口調で重厚かつ示唆に富む形で総括してくれ。";
+        promptInstructions = "過去7日間の稽古データを集計し、今週の偏りやバランス、一週間の総括と来週への指針を提案してください。";
       } else if (type === 'monthly') {
         promptTitle = "【月次分析】";
-        promptInstructions = "過去1ヶ月の全データを集計し、この一ヶ月の修練の深まりを『五輪書』や無外流の教えに照らし合わせて、長期的な成長の軌跡を「無外さん」の口調で深く評価してくれ。";
+        promptInstructions = "過去1ヶ月の全データを集計し、この一ヶ月間の修練の成果や成長の軌跡を詳しく評価してください。";
       }
 
-      const fullPromptText = `以下の私の武道稽古ログデータを読み込んで、${promptTitle}を行ってくれ。
-口調は「無外さん」のような、無外流や古武道に通じた達人のような、重みと渋みがあって、静かに見守ってくれるようなトーンで頼む。
+      const fullPromptText = `以下の私の武道稽古ログデータを読み込んで、${promptTitle}を行ってください。
 
 ${promptInstructions}
 
@@ -749,9 +748,9 @@ ${textToCopy}`;
 
       try {
         await navigator.clipboard.writeText(fullPromptText);
-        content.textContent = `✅ ${promptTitle}プロンプトのコピーに成功した。\n\n📋 このチャットの入力欄にそのままペースト（貼り付け）して送信してくれ。`;
+        content.textContent = `✅ ${promptTitle}プロンプトのコピーに成功しました。\n\n📋 このチャットの入力欄にペーストして送信してください。`;
       } catch (err) {
-        content.textContent = `📋 クリップボードへのコピーに失敗したようだ。ブラウザの設定を確認してほしい。`;
+        content.textContent = `📋 クリップボードへのコピーに失敗しました。ブラウザの設定をご確認ください。`;
       }
     }
 
