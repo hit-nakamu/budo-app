@@ -3,59 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>武道稽古記録 & 五輪書</title>
-  
-  <!-- Supabase JavaScript SDK -->
+  <title>武道稽古記録 & AIアドバイザー</title>
+
+  <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --primary-color: #2c3e50;
+      --primary-color: #1a252f;
       --accent-color: #2980b9;
       --ai-color: #8e44ad;
       --gorin-color: #d35400;
-      --bg-color: #f8f9fa;
+      --bg-color: #f4f6f7;
       --card-bg: #ffffff;
-      --border-color: #e0e0e0;
+      --border-color: #e2e8f0;
+      --text-color: #2c3e50;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg-color);
-      color: #333;
-      margin: 0;
-      padding: 16px;
-      display: flex;
-      justify-content: center;
+      color: var(--text-color);
+      line-height: 1.6;
+      padding-bottom: 40px;
     }
 
-    .container {
-      width: 100%;
-      max-width: 600px;
-    }
-
-    h1 {
+    /* ヘッダー */
+    header {
+      background: var(--primary-color);
+      color: white;
       text-align: center;
-      color: var(--primary-color);
-      font-size: 1.5rem;
-      margin-bottom: 20px;
+      padding: 16px 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    h2 {
-      font-size: 1.2rem;
-      color: var(--primary-color);
-      margin-top: 24px;
-      margin-bottom: 12px;
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: bold;
     }
 
+    /* ナビゲーションタブ */
+    .nav-tabs {
+      display: flex;
+      background: white;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 4px;
+      background: none;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: #7f8c8d;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .tab-btn.active {
+      color: var(--accent-color);
+      border-bottom-color: var(--accent-color);
+    }
+
+    /* メインコンテンツ容器 */
+    .container {
+      max-width: 600px;
+      margin: 16px auto;
+      padding: 0 12px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* カード */
     .card {
       background: var(--card-bg);
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      margin-bottom: 20px;
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
     }
 
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--primary-color);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* フォーム要素 */
     .form-group {
       margin-bottom: 14px;
     }
@@ -63,9 +120,9 @@
     label {
       display: block;
       font-weight: bold;
+      font-size: 0.85rem;
       margin-bottom: 6px;
-      font-size: 0.9rem;
-      color: var(--primary-color);
+      color: #34495e;
     }
 
     input[type="date"],
@@ -74,11 +131,11 @@
     textarea,
     select {
       width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border-color);
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
       border-radius: 6px;
-      font-size: 1rem;
-      box-sizing: border-box;
+      font-size: 0.95rem;
+      background-color: #fff;
     }
 
     textarea {
@@ -86,36 +143,37 @@
       height: 80px;
     }
 
-    button {
+    /* ボタン */
+    .btn {
       width: 100%;
-      background-color: var(--accent-color);
-      color: white;
-      border: none;
       padding: 12px;
-      font-size: 1rem;
-      font-weight: bold;
+      border: none;
       border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: opacity 0.2s;
     }
 
-    button:hover {
-      background-color: #1f6391;
+    .btn:active {
+      opacity: 0.8;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-color);
+      color: white;
     }
 
     .btn-ai {
       background-color: var(--ai-color);
+      color: white;
       margin-top: 10px;
     }
 
-    .btn-ai:hover {
-      background-color: #732d91;
-    }
-
-    /* AIアドバイス表示エリア */
-    .ai-advice-box {
-      background: #f3ebf7;
-      border: 1px solid #dcd0e5;
+    /* AIアドバイスボックス */
+    .ai-box {
+      background: #f4ecf7;
+      border: 1px solid #d2b4de;
       border-left: 4px solid var(--ai-color);
       border-radius: 6px;
       padding: 14px;
@@ -123,160 +181,211 @@
       display: none;
     }
 
-    .ai-advice-title {
+    .ai-title {
       font-weight: bold;
       color: var(--ai-color);
+      font-size: 0.95rem;
       margin-bottom: 6px;
     }
 
-    .ai-advice-content {
+    .ai-text {
       font-size: 0.9rem;
-      line-height: 1.5;
-      color: #333;
       white-space: pre-wrap;
+      line-height: 1.6;
     }
 
-    /* 五輪書セクション */
-    .gorin-select {
-      margin-bottom: 12px;
-    }
-
-    .gorin-content-box {
-      background: #fffdf9;
-      border: 1px solid #f0e2d0;
-      border-left: 4px solid var(--gorin-color);
-      border-radius: 6px;
-      padding: 16px;
-      margin-top: 10px;
-      max-height: 500px;
-      overflow-y: auto;
-    }
-
-    .gorin-title {
-      font-weight: bold;
-      color: var(--gorin-color);
-      font-size: 1.1rem;
-      margin-bottom: 12px;
-      border-bottom: 1px solid #f0e2d0;
-      padding-bottom: 6px;
-    }
-
-    .gorin-text {
-      font-size: 0.95rem;
-      line-height: 1.8;
-      color: #333;
-      white-space: pre-wrap;
-    }
-
-    /* 履歴アイテム */
+    /* 履歴リスト */
     .log-item {
-      background: var(--card-bg);
-      border-left: 4px solid var(--accent-color);
-      border-radius: 6px;
+      background: white;
+      border-radius: 8px;
       padding: 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      margin-bottom: 10px;
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-color);
     }
 
     .log-header {
       display: flex;
       justify-content: space-between;
-      font-weight: bold;
+      align-items: center;
       margin-bottom: 6px;
-      color: var(--primary-color);
+    }
+
+    .log-date {
+      font-size: 0.85rem;
+      color: #7f8c8d;
+      font-weight: bold;
     }
 
     .log-menu {
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .log-count {
+      font-size: 0.85rem;
+      background: #eef2f7;
+      padding: 2px 8px;
+      border-radius: 12px;
       color: var(--accent-color);
     }
 
     .log-memo {
       font-size: 0.9rem;
-      color: #555;
+      color: #475569;
       white-space: pre-wrap;
       margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #e2e8f0;
+    }
+
+    /* 五輪書ビューア */
+    .gorin-box {
+      background: #fffdfa;
+      border: 1px solid #f3e5f5;
+      border-left: 4px solid var(--gorin-color);
+      border-radius: 6px;
+      padding: 14px;
+      margin-top: 10px;
+      max-height: 450px;
+      overflow-y: auto;
+    }
+
+    .gorin-chapter-title {
+      font-weight: bold;
+      color: var(--gorin-color);
+      font-size: 1rem;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #f0e2d0;
+      padding-bottom: 4px;
+    }
+
+    .gorin-body {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
     }
 
     .empty-state {
       text-align: center;
-      color: #888;
-      padding: 20px 0;
+      color: #94a3b8;
+      padding: 30px 0;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <header>
     <h1>🥋 武道稽古記録 & AIアドバイザー</h1>
+  </header>
 
-    <!-- 記録入力フォーム -->
-    <div class="card">
-      <form id="keikoForm">
-        <div class="form-group">
-          <label for="date">稽古日</label>
-          <input type="date" id="date" required>
+  <!-- タブ切り替えメニュー -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('recordTab')">📝 記録する</button>
+    <button class="tab-btn" onclick="switchTab('historyTab')">📋 稽古履歴</button>
+    <button class="tab-btn" onclick="switchTab('analysisTab')">📊 過去分析</button>
+    <button class="tab-btn" onclick="switchTab('gorinTab')">📖 五輪書</button>
+  </div>
+
+  <div class="container">
+
+    <!-- 【1. 記録タブ】 -->
+    <div id="recordTab" class="tab-content active">
+      <div class="card">
+        <div class="card-title">本日の稽古を記録</div>
+        <form id="keikoForm">
+          <div class="form-group">
+            <label for="date">稽古日</label>
+            <input type="date" id="date" required>
+          </div>
+
+          <div class="form-group">
+            <label for="menu">種目名</label>
+            <input type="text" id="menu" placeholder="例: 形、横一、素振り、禅" required>
+          </div>
+
+          <div class="form-group">
+            <label for="count">回数・時間</label>
+            <input type="number" id="count" placeholder="例: 10 (本/分)" required>
+          </div>
+
+          <div class="form-group">
+            <label for="memo">メモ・気づき</label>
+            <textarea id="memo" placeholder="例: 横一の振りを意識。重心が少しぶれた"></textarea>
+          </div>
+
+          <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
+          <button type="button" id="aiBtn" class="btn btn-ai">✨ 保存＆AIアドバイスをもらう</button>
+        </form>
+
+        <div id="aiAdviceBox" class="ai-box">
+          <div class="ai-title">🤖 AI武道師範のアドバイス</div>
+          <div id="aiAdviceContent" class="ai-text"></div>
         </div>
-
-        <div class="form-group">
-          <label for="menu">種目名</label>
-          <input type="text" id="menu" placeholder="例: 形、禅、ストレッチ" required>
-        </div>
-
-        <div class="form-group">
-          <label for="count">回数・時間</label>
-          <input type="number" id="count" placeholder="例: 10 (本/分など)" required>
-        </div>
-
-        <div class="form-group">
-          <label for="memo">メモ・気づき</label>
-          <textarea id="memo" placeholder="例: 横一の振りを意識した、重心がぶれた"></textarea>
-        </div>
-
-        <button type="submit" id="submitBtn">記録を保存する</button>
-        <button type="button" id="aiBtn" class="btn-ai">✨ 保存＆AIアドバイスをもらう</button>
-      </form>
-
-      <!-- AIアドバイス結果エリア -->
-      <div id="aiAdviceBox" class="ai-advice-box">
-        <div class="ai-advice-title">🤖 AI武道師範のアドバイス</div>
-        <div id="aiAdviceContent" class="ai-advice-content"></div>
       </div>
     </div>
 
-    <!-- 📖 五輪書 閲覧エリア -->
-    <h2>📖 五輪書（宮本武蔵）現代語訳</h2>
-    <div class="card">
-      <div class="form-group gorin-select">
-        <label for="gorinChapter">読む章を選択してください</label>
-        <select id="gorinChapter">
-          <option value="chi">地の巻（兵法の土台・基本思想）</option>
-          <option value="mizu">水の巻（心構え・構え・身体の運用・剣術）</option>
-          <option value="hi">火の巻（戦いの実戦・勝敗・駆け引き）</option>
-          <option value="kaze">風の巻（他流派の研究・兵法の本質）</option>
-          <option value="ku">空の巻（極意・自然の理・あるがまま）</option>
-        </select>
-      </div>
-
-      <div class="gorin-content-box">
-        <div id="gorinTitle" class="gorin-title">地の巻</div>
-        <div id="gorinText" class="gorin-text"></div>
+    <!-- 【2. 履歴タブ】 -->
+    <div id="historyTab" class="tab-content">
+      <div class="card">
+        <div class="card-title">稽古の記録一覧</div>
+        <div id="logList">
+          <div class="empty-state">読み込み中...</div>
+        </div>
       </div>
     </div>
 
-    <!-- 履歴表示エリア -->
-    <h2>稽古履歴</h2>
-    <div id="logList">
-      <div class="empty-state">データを読み込み中...</div>
+    <!-- 【3. 過去分析タブ】（復活） -->
+    <div id="analysisTab" class="tab-content">
+      <div class="card">
+        <div class="card-title">🔍 蓄積データのAI分析</div>
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 14px;">
+          これまでの稽古ログ全体をAIが振り返り、全体の傾向や成長の兆し、今後の稽古の指針をアドバイスします。
+        </p>
+        <button type="button" id="analyzeAllBtn" class="btn btn-ai">全稽古ログをAI分析する</button>
+
+        <div id="analysisResultBox" class="ai-box">
+          <div class="ai-title">📊 稽古傾向とアドバイス</div>
+          <div id="analysisResultContent" class="ai-text"></div>
+        </div>
+      </div>
     </div>
+
+    <!-- 【4. 五輪書タブ】（全文） -->
+    <div id="gorinTab" class="tab-content">
+      <div class="card">
+        <div class="card-title">📖 五輪書（宮本武蔵）現代語訳</div>
+        <div class="form-group">
+          <label for="gorinSelect">読む章を選択</label>
+          <select id="gorinSelect" onchange="loadGorinChapter()">
+            <option value="chi">地の巻（兵法の土台・基本思想）</option>
+            <option value="mizu">水の巻（心構え・構え・身体運用）</option>
+            <option value="hi">火の巻（実戦・勝負・駆け引き）</option>
+            <option value="kaze">風の巻（他流派研究・兵法の本質）</option>
+            <option value="ku">空の巻（極意・自然の理・あるがまま）</option>
+          </select>
+        </div>
+
+        <div class="gorin-box">
+          <div id="gorinTitle" class="gorin-chapter-title"></div>
+          <div id="gorinText" class="gorin-body"></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
-    // --- 設定情報 ---
+    // Supabase 設定
     const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 五輪書（現代語訳全文データ）
+    // グローバル変数（ログデータ保持用）
+    let cachedLogs = [];
+
+    // 五輪書 現代語訳データ（全文）
     const gorinData = {
       chi: {
         title: "地の巻（ちのまき）- 兵法の土台と理念",
@@ -311,7 +420,7 @@
 九、役に立たない無駄なことをしないこと。`
       },
       mizu: {
-        title: "水の巻（みずのまき）- 心構え・構え・身体の運用・剣術",
+        title: "水の巻（みずのまき）- 心構え・構え・身体の運用",
         text: `【心構え：水の心】
 水は四角い器にも丸い器にも柔軟にその形を変え、一滴の水滴ともなれば、広大な大海ともなる。兵法の心もまた、水のように柔軟で透明であり、何物にもとらわれない平常心を保たねばならない。
 
@@ -382,62 +491,60 @@
       }
     };
 
-    // 五輪書の切り替え処理
-    const gorinSelect = document.getElementById('gorinChapter');
-    const gorinTitle = document.getElementById('gorinTitle');
-    const gorinText = document.getElementById('gorinText');
+    // タブ切り替え処理
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
 
-    function updateGorin() {
-      const selected = gorinSelect.value;
-      if (gorinData[selected]) {
-        gorinTitle.textContent = gorinData[selected].title;
-        gorinText.textContent = gorinData[selected].text;
+      if (tabId === 'historyTab') {
+        fetchLogs();
       }
     }
 
-    gorinSelect.addEventListener('change', updateGorin);
-    updateGorin(); // 初期表示
-
-    // 今日の日付を初期値としてセット
+    // 今日の日付をセット
     document.getElementById('date').valueAsDate = new Date();
 
-    // 稽古記録を取得して画面に表示する関数
+    // ログ取得
     async function fetchLogs() {
       const logList = document.getElementById('logList');
-      
-      const { data: logs, error } = await supabaseClient
+      const { data, error } = await supabaseClient
         .from('keiko_logs')
         .select('*')
         .order('date', { ascending: false })
         .order('id', { ascending: false });
 
       if (error) {
-        console.error('取得エラー:', error);
         logList.innerHTML = '<div class="empty-state">データの取得に失敗しました</div>';
         return;
       }
 
-      if (!logs || logs.length === 0) {
+      cachedLogs = data || [];
+
+      if (cachedLogs.length === 0) {
         logList.innerHTML = '<div class="empty-state">まだ記録がありません</div>';
         return;
       }
 
       logList.innerHTML = '';
-      logs.forEach(log => {
-        const item = document.createElement('div');
-        item.className = 'log-item';
-        item.innerHTML = `
+      cachedLogs.forEach(log => {
+        const div = document.createElement('div');
+        div.className = 'log-item';
+        div.innerHTML = `
           <div class="log-header">
-            <span>${log.date || '日付なし'}</span>
-            <span class="log-menu">${log.menu || ''} (${log.count || 0})</span>
+            <span class="log-menu">${escapeHtml(log.menu || '稽古')}</span>
+            <span class="log-count">${log.count || 0}</span>
           </div>
+          <div class="log-date">${log.date || ''}</div>
           ${log.memo ? `<div class="log-memo">${escapeHtml(log.memo)}</div>` : ''}
         `;
-        logList.appendChild(item);
+        logList.appendChild(div);
       });
     }
 
-    // 共通のデータ保存処理
+    // データ保存
     async function saveLogData() {
       const date = document.getElementById('date').value;
       const menu = document.getElementById('menu').value;
@@ -445,7 +552,7 @@
       const memo = document.getElementById('memo').value;
 
       if (!menu || isNaN(count)) {
-        alert('種目名と回数・時間を入力してください。');
+        alert('種目名と回数を入力してください。');
         return null;
       }
 
@@ -454,110 +561,170 @@
         .insert([{ date, menu, count, memo }]);
 
       if (error) {
-        console.error('保存エラー:', error);
-        alert('保存に失敗しました: ' + error.message);
+        alert('保存エラー: ' + error.message);
         return null;
       }
 
-      await fetchLogs();
       return { date, menu, count, memo };
     }
 
-    // 通常の保存ボタン
+    // 保存ボタン
     document.getElementById('keikoForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
 
-      const result = await saveLogData();
-      if (result) {
+      const res = await saveLogData();
+      if (res) {
+        alert('稽古記録を保存しました！');
         document.getElementById('menu').value = '';
         document.getElementById('count').value = '';
         document.getElementById('memo').value = '';
         document.getElementById('aiAdviceBox').style.display = 'none';
+        fetchLogs();
       }
-
-      submitBtn.disabled = false;
+      btn.disabled = false;
     });
 
-    // ✨ AIアドバイスボタンの処理
-    document.getElementById('aiBtn').addEventListener('click', async () => {
-      const aiBtn = document.getElementById('aiBtn');
-      const adviceBox = document.getElementById('aiAdviceBox');
-      const adviceContent = document.getElementById('aiAdviceContent');
-
-      // APIキーをローカルストレージ（ブラウザ内）に保持、なければ入力してもらう
-      let apiKey = localStorage.getItem('gemini_api_key');
-      if (!apiKey) {
-        apiKey = prompt('Gemini APIキーを入力してください:');
-        if (apiKey) {
-          localStorage.setItem('gemini_api_key', apiKey.trim());
-        } else {
-          alert('APIキーが入力されなかったため、AIアドバイスはキャンセルされました。');
-          return;
+    // APIキーの確保用関数
+    function getApiKey() {
+      let key = localStorage.getItem('gemini_api_key');
+      if (!key) {
+        key = prompt('Gemini APIキーを入力してください:');
+        if (key) {
+          localStorage.setItem('gemini_api_key', key.trim());
         }
       }
+      return key;
+    }
+
+    // 単発AIアドバイス
+    document.getElementById('aiBtn').addEventListener('click', async () => {
+      const apiKey = getApiKey();
+      if (!apiKey) return;
+
+      const aiBtn = document.getElementById('aiBtn');
+      const box = document.getElementById('aiAdviceBox');
+      const content = document.getElementById('aiAdviceContent');
 
       aiBtn.disabled = true;
       aiBtn.textContent = '思考中...';
-      adviceBox.style.display = 'block';
-      adviceContent.textContent = '稽古内容を分析してアドバイスを生成しています...';
+      box.style.display = 'block';
+      content.textContent = '分析中...';
 
-      // 1. データを保存
-      const logData = await saveLogData();
-      if (!logData) {
+      const log = await saveLogData();
+      if (!log) {
         aiBtn.disabled = false;
         aiBtn.textContent = '✨ 保存＆AIアドバイスをもらう';
         return;
       }
 
-      // 2. Gemini API へ送信プロンプトを作成
-      const promptText = `あなたは思慮深く温かい武道の師範・相談役です。
-以下の稽古内容と気づき（メモ）を読み、五輪書の教え（観の目、鍛錬、平常心など）も踏まえつつ、励ましと具体的なワンポイントアドバイス（短く簡潔に120〜150文字程度）を提供してください。
-
-【本日の稽古】
-- 種目: ${logData.menu}
-- 回数/時間: ${logData.count}
-- 気づき・メモ: ${logData.memo || '特になし'}
-`;
+      const prompt = `あなたは思慮深い武道の師範です。以下の稽古内容とメモを読み、短く的確なワンポイントアドバイス（120〜150字程度）を送信してください。
+種目: ${log.menu}, 回数: ${log.count}, メモ: ${log.memo || 'なし'}`;
 
       try {
-        // 3. Gemini API 呼び出し
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: promptText }] }]
-          })
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
-
-        const data = await response.json();
-        
+        const data = await res.json();
         if (data.candidates && data.candidates[0].content.parts[0].text) {
-          const reply = data.candidates[0].content.parts[0].text;
-          adviceContent.textContent = reply;
+          content.textContent = data.candidates[0].content.parts[0].text;
         } else {
-          adviceContent.textContent = 'アドバイスの生成に失敗しました。APIキーを確認してください。';
+          content.textContent = '生成に失敗しました。APIキーを確認してください。';
           localStorage.removeItem('gemini_api_key');
         }
       } catch (err) {
-        console.error('API Error:', err);
-        adviceContent.textContent = '通信エラーが発生しました。';
+        content.textContent = '通信エラーが発生しました。';
       }
 
       aiBtn.disabled = false;
       aiBtn.textContent = '✨ 保存＆AIアドバイスをもらう';
     });
 
-    // エスケープ処理
+    // 過去分析（全体AI分析機能）
+    document.getElementById('analyzeAllBtn').addEventListener('click', async () => {
+      const apiKey = getApiKey();
+      if (!apiKey) return;
+
+      const btn = document.getElementById('analyzeAllBtn');
+      const box = document.getElementById('analysisResultBox');
+      const content = document.getElementById('analysisResultContent');
+
+      btn.disabled = true;
+      btn.textContent = '過去ログを分析中...';
+      box.style.display = 'block';
+      content.textContent = 'これまでの稽古データを読み込んで傾向を分析しています...';
+
+      // ログが未取得なら取得
+      if (cachedLogs.length === 0) {
+        await fetchLogs();
+      }
+
+      if (cachedLogs.length === 0) {
+        content.textContent = '分析するための稽古データがまだありません。まずは稽古を記録してみましょう！';
+        btn.disabled = false;
+        btn.textContent = '全稽古ログをAI分析する';
+        return;
+      }
+
+      // 過去ログを整形してテキスト化
+      const logsSummary = cachedLogs.slice(0, 30).map(l => 
+        `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`
+      ).join('\n');
+
+      const prompt = `あなたは武道稽古の師範・アドバイザーです。以下に蓄積された過去の稽古記録を読み込み、以下の点について総合的なアドバイスとフィードバック（300字程度）を提供してください。
+
+1. 最近の稽古の継続傾向や集中的に行っている種目
+2. メモから読み取れる技術的・精神的な成長や課題
+3. 今後の稽古に向けた温かい励ましとアドバイス
+
+【稽古ログデータ】
+${logsSummary}`;
+
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const data = await res.json();
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+          content.textContent = data.candidates[0].content.parts[0].text;
+        } else {
+          content.textContent = '分析に失敗しました。APIキーを確認してください。';
+          localStorage.removeItem('gemini_api_key');
+        }
+      } catch (err) {
+        content.textContent = '通信エラーが発生しました。';
+      }
+
+      btn.disabled = false;
+      btn.textContent = '全稽古ログをAI分析する';
+    });
+
+    // 五輪書テキスト表示
+    function loadGorinChapter() {
+      const val = document.getElementById('gorinSelect').value;
+      if (gorinData[val]) {
+        document.getElementById('gorinTitle').textContent = gorinData[val].title;
+        document.getElementById('gorinText').textContent = gorinData[val].text;
+      }
+    }
+
+    // エスケープ関数
     function escapeHtml(str) {
       return str.replace(/[&<>'"]/g, 
         tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
       );
     }
 
-    // ページ読み込み時にログを取得
-    window.addEventListener('DOMContentLoaded', fetchLogs);
+    // 初期化
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchLogs();
+      loadGorinChapter();
+    });
   </script>
 </body>
 </html>
