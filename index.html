@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>武道稽古記録 & アドバイザー</title>
+  <title>武道稽古記録 & 無外さんアドバイザー</title>
 
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -12,7 +12,7 @@
     :root {
       --primary-color: #1b2a4a;
       --accent-color: #2b5c8f;
-      --ai-color: #6b3ba7;
+      --ai-color: #2c7a7b;
       --gorin-color: #c05621;
       --bg-color: #f1f5f9;
       --card-bg: #ffffff;
@@ -54,20 +54,23 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      overflow-x: auto;
     }
 
     .tab-btn {
       flex: 1;
+      min-width: 75px;
       padding: 12px 2px;
       background: none;
       border: none;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       font-weight: bold;
       color: #64748b;
       cursor: pointer;
       border-bottom: 3px solid transparent;
       transition: all 0.2s;
       text-align: center;
+      white-space: nowrap;
     }
 
     .tab-btn.active {
@@ -188,8 +191,8 @@
     }
 
     .ai-box {
-      background: #f3e8ff;
-      border: 1px solid #d8b4fe;
+      background: #e6fffa;
+      border: 1px solid #b2f5ea;
       border-left: 5px solid var(--ai-color);
       border-radius: 8px;
       padding: 14px;
@@ -294,13 +297,15 @@
 <body>
 
   <header>
-    <h1>🥋 武道稽古記録 & アドバイザー</h1>
+    <h1>🥋 武道稽古記録 & 無外さんアドバイザー</h1>
   </header>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('recordTab', this)">📝 記録する</button>
-    <button class="tab-btn" onclick="switchTab('historyTab', this)">📋 稽古履歴</button>
-    <button class="tab-btn" onclick="switchTab('analysisTab', this)">📊 稽古分析</button>
+    <button class="tab-btn active" onclick="switchTab('recordTab', this)">📝 記録</button>
+    <button class="tab-btn" onclick="switchTab('historyTab', this)">📋 履歴</button>
+    <button class="tab-btn" onclick="switchTab('dailyTab', this)">☀️ 日次分析</button>
+    <button class="tab-btn" onclick="switchTab('weeklyTab', this)">📈 週次分析</button>
+    <button class="tab-btn" onclick="switchTab('monthlyTab', this)">🗓️ 月次分析</button>
     <button class="tab-btn" onclick="switchTab('gorinTab', this)">📖 五輪書</button>
   </div>
 
@@ -319,7 +324,6 @@
           <div class="form-group">
             <label for="menuSelect">種目を選択</label>
             <select id="menuSelect" onchange="toggleCustomMenu()">
-              <!-- 補強・基本 -->
               <optgroup label="補強・基本・体さばき">
                 <option value="補強：腕立て伏せ">補強：腕立て伏せ</option>
                 <option value="補強：腹筋">補強：腹筋</option>
@@ -332,7 +336,6 @@
                 <option value="基本：体さばき・運足">基本：体さばき・運足</option>
               </optgroup>
 
-              <!-- 形 -->
               <optgroup label="形（居合形）">
                 <option value="形：基本一">形：基本一</option>
                 <option value="形：基本二">形：基本二</option>
@@ -359,7 +362,6 @@
                 <option value="形：走り懸り・四方">形：走り懸り・四方</option>
               </optgroup>
 
-              <!-- 約束組太刀 -->
               <optgroup label="約束組太刀：太刀打之形">
                 <option value="約束組太刀：太刀打之形 北斗">約束組太刀：太刀打之形 北斗</option>
                 <option value="約束組太刀：太刀打之形 太白">約束組太刀：太刀打之形 太白</option>
@@ -396,13 +398,11 @@
                 <option value="約束組太刀：神道流 突出">約束組太刀：神道流 突出</option>
               </optgroup>
 
-              <!-- 自由組太刀 -->
               <optgroup label="自由組太刀">
                 <option value="自由組太刀：基本サバキ（一番〜七番）">自由組太刀：基本サバキ（一番〜七番）</option>
                 <option value="自由組太刀：スパーリング">自由組太刀：スパーリング</option>
               </optgroup>
 
-              <!-- 試し斬り -->
               <optgroup label="試し斬り">
                 <option value="試し斬り：基本一">試し斬り：基本一</option>
                 <option value="試し斬り：基本二">試し斬り：基本二</option>
@@ -429,7 +429,6 @@
                 <option value="試し斬り：走り懸り・四方">試し斬り：走り懸り・四方</option>
               </optgroup>
 
-              <!-- 禅 -->
               <optgroup label="禅">
                 <option value="座禅・黙想">座禅・黙想</option>
               </optgroup>
@@ -457,11 +456,11 @@
           </div>
 
           <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
-          <button type="button" id="quickAdviceBtn" class="btn btn-ai">✨ 本日のワンポイント指導</button>
+          <button type="button" id="quickAdviceBtn" class="btn btn-ai">✨ 本日のワンポイント指導（無外流風）</button>
         </form>
 
         <div id="aiAdviceBox" class="ai-box">
-          <div class="ai-title">🤖 武道師範からの言葉</div>
+          <div class="ai-title">⚔️ 無外さんからの言葉</div>
           <div id="aiAdviceContent" class="ai-text"></div>
         </div>
       </div>
@@ -477,23 +476,52 @@
       </div>
     </div>
 
-    <!-- 3. 過去分析タブ -->
-    <div id="analysisTab" class="tab-content">
+    <!-- 3. 日次分析タブ -->
+    <div id="dailyTab" class="tab-content">
       <div class="card">
-        <div class="card-title">📊 稽古データの集計とAI指示コピー</div>
+        <div class="card-title">☀️ 日次分析プロンプトをコピー</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          ボタンを押すと、分析指示（プロンプト）付きで全ログがクリップボードにコピーされます。そのままチャットに貼り付けてください！
+          直近の稽古データをもとに、無外さんとして今日の調子や身体の運用について深みのあるコメントをもらうためのプロンプトをコピーします。
         </p>
-        <button type="button" id="localAnalyzeBtn" class="btn btn-ai">📋 分析指示付きでコピーする</button>
-
-        <div id="analysisResultBox" class="ai-box">
+        <button type="button" id="dailyAnalyzeBtn" class="btn btn-ai">📋 日次分析用プロンプトをコピー</button>
+        <div id="dailyResultBox" class="ai-box">
           <div class="ai-title">📈 コピー状況</div>
-          <div id="analysisResultContent" class="ai-text"></div>
+          <div id="dailyResultContent" class="ai-text"></div>
         </div>
       </div>
     </div>
 
-    <!-- 4. 五輪書タブ -->
+    <!-- 4. 週次分析タブ -->
+    <div id="weeklyTab" class="tab-content">
+      <div class="card">
+        <div class="card-title">📈 週次分析プロンプトをコピー</div>
+        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
+          過去7日間の稽古の偏りやペース配分を振り返り、無外さんとして今週の総括と来週への指針を出力させるプロンプトです。
+        </p>
+        <button type="button" id="weeklyAnalyzeBtn" class="btn btn-ai">📋 週次分析用プロンプトをコピー</button>
+        <div id="weeklyResultBox" class="ai-box">
+          <div class="ai-title">📈 コピー状況</div>
+          <div id="weeklyResultContent" class="ai-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 月次分析タブ -->
+    <div id="monthlyTab" class="tab-content">
+      <div class="card">
+        <div class="card-title">🗓️ 月次分析プロンプトをコピー</div>
+        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
+          過去1ヶ月の全ログを集計し、無外流の理合や五輪書の精神に照らし合わせて長月の成長を評価してもらうプロンプトです。
+        </p>
+        <button type="button" id="monthlyAnalyzeBtn" class="btn btn-ai">📋 月次分析用プロンプトをコピー</button>
+        <div id="monthlyResultBox" class="ai-box">
+          <div class="ai-title">📈 コピー状況</div>
+          <div id="monthlyResultContent" class="ai-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. 五輪書タブ -->
     <div id="gorinTab" class="tab-content">
       <div class="card">
         <div class="card-title">📖 五輪書 現代語訳</div>
@@ -646,7 +674,7 @@
 
       const res = await saveLogData();
       if (res) {
-        alert('稽古記録を保存しました！');
+        alert('稽古記録を保存しました。');
         document.getElementById('count').value = '';
         document.getElementById('memo').value = '';
         document.getElementById('aiAdviceBox').style.display = 'none';
@@ -660,15 +688,15 @@
       const content = document.getElementById('aiAdviceContent');
 
       box.style.display = 'block';
-      content.textContent = '記録を保存中...';
+      content.textContent = '無外流の理合を確認中...';
 
       const log = await saveLogData();
       if (!log) return;
 
       const advices = [
-        "素晴らしい稽古です。初太刀の気迫、そして体の軸がブレていないかが勝負の分かれ目となります。",
-        "日々の地道な積み重ねこそが「錬」に至る唯一の道です。型の細部まで意識を絶やさずに。",
-        "よくぞやり切りました。技の速さだけでなく、間合いの支配と呼吸の調和を大切に。"
+        "ほう……今日の『" + log.menu + "』、その数とメモか。形にとらわれず、太刀の重みと自らの中心線が一致しているかどうかが肝要だ。無外流の極意は、動中静あり。焦らずとも、己の気配を消し去るつもりでな。",
+        "ふむ、悪くない稽古だ。ただ数をこなすのではなく、一刀一刀に生死の理合を込めることだ。その気づきを忘れなければ、自ずと技は冴える。",
+        "無外流の真髄は、敵なきところの敵を斬るが如し。今日のその一歩、その刃筋……。形相だけでなく、内面の静けさを伴っていたか？よく噛み締めておけ。"
       ];
       const randomAdvice = advices[Math.floor(Math.random() * advices.length)];
 
@@ -678,52 +706,65 @@
       fetchLogs();
     });
 
-    // 詳細なAI分析プロンプト付きでコピー
-    document.getElementById('localAnalyzeBtn').addEventListener('click', async () => {
-      const box = document.getElementById('analysisResultBox');
-      const content = document.getElementById('analysisResultContent');
+    // 共通のコピー処理関数（無外さん口調指定）
+    async function copyAnalysisPrompt(type, boxId, contentId) {
+      const box = document.getElementById(boxId);
+      const content = document.getElementById(contentId);
 
       box.style.display = 'block';
-      content.textContent = 'データを集計中...';
+      content.textContent = 'データを準備中...';
 
       if (cachedLogs.length === 0) {
         await fetchLogs();
       }
 
       if (cachedLogs.length === 0) {
-        content.textContent = '集計対象の稽古データがありません。';
+        content.textContent = '分析対象の稽古データがまだないようだな。まずは日々の記録をつけることだ。';
         return;
       }
 
-      const totalCount = cachedLogs.reduce((sum, l) => sum + (Number(l.count) || 0), 0);
-      const totalDays = new Set(cachedLogs.map(l => l.date)).size;
-
       const textToCopy = cachedLogs.map(l => `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`).join('\n');
-      
-      const fullPromptText = `以下の私の武道（居合・剣術等）の稽古ログデータを読み込み、厳格かつ温かい武道師範の視点から、以下の3点について詳細に分析とアドバイスを行ってください。
+      let promptTitle = "";
+      let promptInstructions = "";
 
-1. 【稽古の偏りと傾向の分析】
-   - どの種目（基本、形、組太刀など）に注力できているか、あるいは偏りや不足している要素がないか。
-2. 【メモからの課題抽出】
-   - 各メモ（刃筋、軸、間合いなど）に書かれている内容から、現在克服しようとしている課題や、今後意識すべき身体操作のポイント。
-3. 【次回の稽古に向けた具体的な提案】
-   - 宮本武蔵の『五輪書』の思想や教え（地の巻〜空の巻）も交えつつ、次回の稽古で優先して取り組むべきテーマ。
+      if (type === 'daily') {
+        promptTitle = "【日次分析】";
+        promptInstructions = "直近（今日または一番新しい日）の稽古内容とメモを精査し、無外流の理合や武士の視点を交えて、今日の調子や明日への心構えを「無外さん」の口調（「〜だ」「〜ことだ」「ほう……」など、落ち着いた古武道の達人のような、深みと厳しさ、優しさを湛えたトーン）で答えてくれ。";
+      } else if (type === 'weekly') {
+        promptTitle = "【週次分析】";
+        promptInstructions = "過去7日間の稽古データを総覧し、この一週間の偏りや精進の跡を振り返り、無外流の精神に基づいて来週への指針を「無外さん」の口調で重厚かつ示唆に富む形で総括してくれ。";
+      } else if (type === 'monthly') {
+        promptTitle = "【月次分析】";
+        promptInstructions = "過去1ヶ月の全データを集計し、この一ヶ月の修練の深まりを『五輪書』や無外流の教えに照らし合わせて、長期的な成長の軌跡を「無外さん」の口調で深く評価してくれ。";
+      }
+
+      const fullPromptText = `以下の私の武道稽古ログデータを読み込んで、${promptTitle}を行ってくれ。
+口調は「無外さん」のような、無外流や古武道に通じた達人のような、重みと渋みがあって、静かに見守ってくれるようなトーンで頼む。
+
+${promptInstructions}
 
 ---
-【稽古実績サマリー】
-・総稽古日数: ${totalDays} 日
-・総記録件数: ${cachedLogs.length} 件
-・累計本数・時間: ${totalCount}
-
-【詳細ログ一覧】
+【全ログデータ】
 ${textToCopy}`;
 
       try {
         await navigator.clipboard.writeText(fullPromptText);
-        content.textContent = `✅ 【プロンプト付きコピー成功！】\n・総稽古日数: ${totalDays} 日\n・総記録件数: ${cachedLogs.length} 件\n\n📋 AI師範への分析指示（プロンプト）と全ログがコピーされました！このチャットの入力欄にそのままペースト（貼り付け）して送信してください。`;
+        content.textContent = `✅ ${promptTitle}プロンプトのコピーに成功した。\n\n📋 このチャットの入力欄にそのままペースト（貼り付け）して送信してくれ。`;
       } catch (err) {
-        content.textContent = `📋 クリップボードへのコピーに失敗しました。お使いのブラウザの権限をご確認ください。`;
+        content.textContent = `📋 クリップボードへのコピーに失敗したようだ。ブラウザの設定を確認してほしい。`;
       }
+    }
+
+    document.getElementById('dailyAnalyzeBtn').addEventListener('click', () => {
+      copyAnalysisPrompt('daily', 'dailyResultBox', 'dailyResultContent');
+    });
+
+    document.getElementById('weeklyAnalyzeBtn').addEventListener('click', () => {
+      copyAnalysisPrompt('weekly', 'weeklyResultBox', 'weeklyResultContent');
+    });
+
+    document.getElementById('monthlyAnalyzeBtn').addEventListener('click', () => {
+      copyAnalysisPrompt('monthly', 'monthlyResultBox', 'monthlyResultContent');
     });
 
     function loadGorinChapter() {
