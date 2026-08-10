@@ -480,14 +480,14 @@
     <!-- 3. 過去分析タブ -->
     <div id="analysisTab" class="tab-content">
       <div class="card">
-        <div class="card-title">📊 稽古データの集計とAI用コピー</div>
+        <div class="card-title">📊 稽古データの集計とAI指示コピー</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          ボタンを押すと集計と同時に全ログがクリップボードにコピーされます。このチャットにそのまま貼り付ければAI師範が詳細に分析します！
+          ボタンを押すと、分析指示（プロンプト）付きで全ログがクリップボードにコピーされます。そのままチャットに貼り付けてください！
         </p>
-        <button type="button" id="localAnalyzeBtn" class="btn btn-ai">📋 データを集計＆コピーする</button>
+        <button type="button" id="localAnalyzeBtn" class="btn btn-ai">📋 分析指示付きでコピーする</button>
 
         <div id="analysisResultBox" class="ai-box">
-          <div class="ai-title">📈 集計結果 & コピー状況</div>
+          <div class="ai-title">📈 コピー状況</div>
           <div id="analysisResultContent" class="ai-text"></div>
         </div>
       </div>
@@ -647,7 +647,7 @@
       const res = await saveLogData();
       if (res) {
         alert('稽古記録を保存しました！');
-        document.getElementById('count').value = '';
+        document.getElementById('count'].value = '';
         document.getElementById('memo').value = '';
         document.getElementById('aiAdviceBox').style.display = 'none';
         fetchLogs();
@@ -678,7 +678,7 @@
       fetchLogs();
     });
 
-    // 集計 ＆ クリップボードコピー
+    // 詳細なAI分析プロンプト付きでコピー
     document.getElementById('localAnalyzeBtn').addEventListener('click', async () => {
       const box = document.getElementById('analysisResultBox');
       const content = document.getElementById('analysisResultContent');
@@ -698,15 +698,32 @@
       const totalCount = cachedLogs.reduce((sum, l) => sum + (Number(l.count) || 0), 0);
       const totalDays = new Set(cachedLogs.map(l => l.date)).size;
 
-      // コピー用テキストの作成
+      // コピーされるテキスト（AIへの細かい指示プロンプト＋全ログデータ）
       const textToCopy = cachedLogs.map(l => `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`).join('\n');
-      const fullText = `【武道稽古ログ一覧（総日数:${totalDays}日 / 累計本数:${totalCount}）】\n\n` + textToCopy;
+      
+      const fullPromptText = `以下の私の武道（居合・剣術等）の稽古ログデータを読み込み、厳格かつ温かい武道師範の視点から、以下の3点について詳細に分析とアドバイスを行ってください。
+
+1. 【稽古の偏りと傾向の分析】
+   - どの種目（基本、形、組太刀など）に注力できているか、あるいは偏りや不足している要素がないか。
+2. 【メモからの課題抽出】
+   - 各メモ（刃筋、軸、間合いなど）に書かれている内容から、現在克服しようとしている課題や、今後意識すべき身体操作のポイント。
+3. 【次回の稽古に向けた具体的な提案】
+   - 宮本武蔵の『五輪書』の思想や教え（地の巻〜空の巻）も交えつつ、次回の稽古で優先して取り組むべきテーマ。
+
+---
+【稽古実績サマリー】
+・総稽古日数: ${totalDays} 日
+・総記録件数: ${cachedLogs.length} 件
+・累計本数・時間: ${totalCount}
+
+【詳細ログ一覧】
+${textToCopy}`;
 
       try {
-        await navigator.clipboard.writeText(fullText);
-        content.textContent = `✅ 【集計完了 ＆ クリップボードコピー成功！】\n・総稽古日数: ${totalDays} 日\n・総記録件数: ${cachedLogs.length} 件\n・累計本数・時間: ${totalCount}\n\n📋 全データのコピーが完了しました！このチャットにそのままペースト（貼り付け）していただければ、私（AI）がすぐに本格的な分析とアドバイスを行います。`;
+        await navigator.clipboard.writeText(fullPromptText);
+        content.textContent = `✅ 【プロンプト付きコピー成功！】\n・総稽古日数: ${totalDays} 日\n・総記録件数: ${cachedLogs.length} 件\n\n📋 AI師範への分析指示（プロンプト）と全ログがコピーされました！このチャットの入力欄にそのままペースト（貼り付け）して送信してください。`;
       } catch (err) {
-        content.textContent = `📋 【集計結果】\n・総稽古日数: ${totalDays} 日\n・累計本数・時間: ${totalCount}\n\n(※お使いのブラウザの制限により自動コピーができなかったため、履歴タブからデータをご確認ください)`;
+        content.textContent = `📋 クリップボードへのコピーに失敗しました。お使いのブラウザの権限をご確認ください。`;
       }
     });
 
