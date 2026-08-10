@@ -4,93 +4,79 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>武道稽古記録 & AIアドバイザー</title>
-
-  <!-- Supabase JS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root {
-      --primary-color: #1b2a4a;
-      --accent-color: #2b5c8f;
-      --ai-color: #6b3ba7;
-      --gorin-color: #c05621;
-      --bg-color: #f1f5f9;
+      --primary-color: #1e293b;
+      --accent-color: #4f46e5;
+      --bg-color: #f8fafc;
       --card-bg: #ffffff;
-      --border-color: #cbd5e1;
-      --text-color: #1e293b;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      --text-color: #334155;
+      --border-color: #e2e8f0;
     }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
+      margin: 0;
+      padding: 0;
       line-height: 1.6;
-      padding-bottom: 40px;
     }
 
-    /* バージョン確認バー */
     .version-bar {
       background-color: #e2e8f0;
-      color: #475569;
-      font-size: 0.75rem;
+      color: #64748b;
       text-align: center;
-      padding: 3px 0;
-      font-weight: 600;
-      border-bottom: 1px solid var(--border-color);
+      padding: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
     }
 
     header {
-      background: var(--primary-color);
-      color: #ffffff;
+      background-color: var(--primary-color);
+      color: white;
       text-align: center;
-      padding: 18px 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      padding: 1.5rem 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
     header h1 {
-      font-size: 1.25rem;
-      font-weight: 700;
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 1rem;
     }
 
     .nav-tabs {
       display: flex;
-      background: #ffffff;
-      border-bottom: 2px solid #e2e8f0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      background-color: var(--card-bg);
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 1rem;
+      border-radius: 8px 8px 0 0;
+      overflow: hidden;
     }
 
     .tab-btn {
       flex: 1;
-      padding: 12px 2px;
-      background: none;
+      padding: 12px 8px;
       border: none;
-      font-size: 0.85rem;
+      background: none;
+      font-size: 0.95rem;
       font-weight: bold;
       color: #64748b;
       cursor: pointer;
-      border-bottom: 3px solid transparent;
       transition: all 0.2s;
       text-align: center;
     }
 
     .tab-btn.active {
       color: var(--accent-color);
-      border-bottom-color: var(--accent-color);
-      background-color: #f8fafc;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: 16px auto;
-      padding: 0 12px;
+      border-bottom: 3px solid var(--accent-color);
+      background-color: #f1f5f9;
     }
 
     .tab-content {
@@ -103,203 +89,123 @@
 
     .card {
       background: var(--card-bg);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      margin-bottom: 16px;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       border: 1px solid var(--border-color);
     }
 
-    .card-title {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: var(--primary-color);
-      margin-bottom: 16px;
-      border-bottom: 2px solid #f1f5f9;
-      padding-bottom: 8px;
-    }
-
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 1rem;
     }
 
     label {
       display: block;
       font-weight: bold;
-      font-size: 0.85rem;
-      margin-bottom: 6px;
-      color: #334155;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
     }
 
     input[type="date"],
     input[type="text"],
-    input[type="number"],
-    textarea,
-    select {
+    input[type="password"],
+    select,
+    textarea {
       width: 100%;
-      padding: 10px 12px;
+      padding: 10px;
       border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      background-color: #fff;
-    }
-
-    .chip-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    .chip-btn {
-      padding: 6px 12px;
-      background: #e2e8f0;
-      border: none;
-      border-radius: 16px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #334155;
-      cursor: pointer;
-    }
-
-    .chip-btn:active {
-      background: var(--accent-color);
-      color: white;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 1rem;
     }
 
     textarea {
       resize: vertical;
-      height: 90px;
+      min-height: 80px;
     }
 
-    .btn {
+    button.btn-primary {
       width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .btn:active {
-      opacity: 0.85;
-    }
-
-    .btn-primary {
       background-color: var(--accent-color);
       color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
     }
 
-    .btn-ai {
-      background-color: var(--ai-color);
-      color: white;
-      margin-top: 10px;
+    button.btn-primary:hover {
+      background-color: #4338ca;
     }
 
-    .btn-secondary {
+    button.btn-secondary {
+      width: 100%;
       background-color: #64748b;
       color: white;
-      margin-top: 6px;
-      padding: 6px;
-      font-size: 0.8rem;
-    }
-
-    .ai-box {
-      background: #f3e8ff;
-      border: 1px solid #d8b4fe;
-      border-left: 5px solid var(--ai-color);
-      border-radius: 8px;
-      padding: 14px;
-      margin-top: 16px;
-      display: none;
-    }
-
-    .ai-title {
-      font-weight: bold;
-      color: var(--ai-color);
-      font-size: 0.95rem;
-      margin-bottom: 6px;
-    }
-
-    .ai-text {
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
       font-size: 0.9rem;
-      white-space: pre-wrap;
-      line-height: 1.6;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 0.5rem;
     }
 
     .log-item {
-      background: white;
-      border-radius: 8px;
-      padding: 14px;
-      margin-bottom: 10px;
-      border: 1px solid var(--border-color);
       border-left: 4px solid var(--accent-color);
+      padding-left: 1rem;
+      margin-bottom: 1.5rem;
+      position: relative;
     }
 
     .log-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .log-menu {
-      font-weight: bold;
-      color: var(--primary-color);
-      font-size: 1rem;
-    }
-
-    .log-count {
-      font-size: 0.85rem;
-      background: #e2e8f0;
-      padding: 2px 10px;
-      border-radius: 12px;
-      color: var(--accent-color);
-      font-weight: bold;
+      margin-bottom: 0.5rem;
     }
 
     .log-date {
-      font-size: 0.8rem;
-      color: #64748b;
-      margin-bottom: 4px;
-    }
-
-    .log-memo {
-      font-size: 0.9rem;
-      color: #334155;
-      white-space: pre-wrap;
-      margin-top: 6px;
-      padding-top: 6px;
-      border-top: 1px dashed #e2e8f0;
-    }
-
-    .gorin-box {
-      background: #fffdfa;
-      border: 1px solid #fed7aa;
-      border-left: 5px solid var(--gorin-color);
-      border-radius: 8px;
-      padding: 16px;
-      margin-top: 12px;
-      max-height: 420px;
-      overflow-y: auto;
-    }
-
-    .gorin-chapter-title {
       font-weight: bold;
-      color: var(--gorin-color);
-      font-size: 1rem;
-      margin-bottom: 10px;
-      border-bottom: 1px solid #ffedd5;
-      padding-bottom: 6px;
+      color: var(--primary-color);
     }
 
-    .gorin-body {
-      font-size: 0.9rem;
-      line-height: 1.8;
-      white-space: pre-wrap;
-      color: #292524;
+    .log-category {
+      background-color: #e0e7ff;
+      color: #3730a3;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    .ai-response {
+      background-color: #f3e8ff;
+      border: 1px solid #d8b4fe;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-top: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .ai-response h4 {
+      margin-top: 0;
+      color: #6b21a8;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      font-size: 0.8rem;
+      text-decoration: underline;
     }
 
     .empty-state {
@@ -308,22 +214,43 @@
       padding: 24px 0;
       font-size: 0.9rem;
     }
+
+    .gorin-book {
+      background-color: #fffbeb;
+      border: 1px solid #fef3c7;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .gorin-title {
+      font-weight: bold;
+      color: #92400e;
+      margin-bottom: 0.5rem;
+    }
+
+    .gorin-body {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      color: #292524;
+    }
   </style>
 </head>
 <body>
 
   <!-- バージョン確認用バー -->
-  <div class="version-bar">Ver 1.3.1 (Gemini 2.5 Flash / 五輪書対応)</div>
+  <div class="version-bar">Ver 1.3.2 (Gemini 2.0 Flash / 五輪書対応)</div>
 
   <header>
     <h1>🥋 武道稽古記録 & AIアドバイザー</h1>
   </header>
 
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('recordTab', this)">📝 記録する</button>
-    <button class="tab-btn" onclick="switchTab('historyTab', this)">📋 稽古履歴</button>
-    <button class="tab-btn" onclick="switchTab('analysisTab', this)">📊 過去分析</button>
-    <button class="tab-btn" onclick="switchTab('gorinTab', this)">📖 五輪書</button>
+    <button class="tab-btn active" onclick="switchTab('recordTab')">📝 記録する</button>
+    <button class="tab-btn" onclick="switchTab('historyTab')">📋 稽古履歴</button>
+    <button class="tab-btn" onclick="switchTab('analysisTab')">📊 過去分析</button>
+    <button class="tab-btn" onclick="switchTab('gorinTab')">📖 五輪書</button>
   </div>
 
   <div class="container">
@@ -331,209 +258,73 @@
     <!-- 1. 記録タブ -->
     <div id="recordTab" class="tab-content active">
       <div class="card">
-        <div class="card-title">本日の稽古を記録</div>
         <form id="keikoForm">
           <div class="form-group">
             <label for="date">稽古日</label>
             <input type="date" id="date" required>
           </div>
-
           <div class="form-group">
-            <label for="menuSelect">種目を選択</label>
-            <select id="menuSelect" onchange="toggleCustomMenu()">
-              <!-- 補強・基本 -->
-              <optgroup label="補強・基本・体さばき">
-                <option value="補強：腕立て伏せ">補強：腕立て伏せ</option>
-                <option value="補強：腹筋">補強：腹筋</option>
-                <option value="補強：背筋">補強：背筋</option>
-                <option value="補強：スクワット">補強：スクワット</option>
-                <option value="基本：素振り（真向）">基本：素振り（真向）</option>
-                <option value="基本：素振り（左右袈裟）">基本：素振り（左右袈裟）</option>
-                <option value="基本：素振り（左右逆袈裟）">基本：素振り（左右逆袈裟）</option>
-                <option value="基本：素振り（横一文字）">基本：素振り（横一文字）</option>
-                <option value="基本：体さばき・運足">基本：体さばき・運足</option>
-              </optgroup>
-
-              <!-- 形 -->
-              <optgroup label="形（居合形）">
-                <option value="形：基本一">形：基本一</option>
-                <option value="形：基本二">形：基本二</option>
-                <option value="形：基本三">形：基本三</option>
-                <option value="形：五用・真">形：五用・真</option>
-                <option value="形：五用・連">形：五用・連</option>
-                <option value="形：五用・左">形：五用・左</option>
-                <option value="形：五用・右">形：五用・右</option>
-                <option value="形：五用・捨">形：五用・捨</option>
-                <option value="形：五箇・水月">形：五箇・水月</option>
-                <option value="形：五箇・陰中陽">形：五箇・陰中陽</option>
-                <option value="形：五箇・陽中陰">形：五箇・陽中陰</option>
-                <option value="形：五箇・響き返し">形：五箇・響き返し</option>
-                <option value="形：五箇・破図味">形：五箇・破図味</option>
-                <option value="形：五応・胸尽し">形：五応・胸尽し</option>
-                <option value="形：五応・円要">形：五応・円要</option>
-                <option value="形：五応・両車">形：五応・両車</option>
-                <option value="形：五応・野送り">形：五応・野送り</option>
-                <option value="形：五応・玉光">形：五応・玉光</option>
-                <option value="形：走り懸り・前腰">形：走り懸り・前腰</option>
-                <option value="形：走り懸り・夢想返し">形：走り懸り・夢想返し</option>
-                <option value="形：走り懸り・廻り懸り">形：走り懸り・廻り懸り</option>
-                <option value="形：走り懸り・右の敵">形：走り懸り・右の敵</option>
-                <option value="形：走り懸り・四方">形：走り懸り・四方</option>
-              </optgroup>
-
-              <!-- 約束組太刀 -->
-              <optgroup label="約束組太刀：太刀打之形">
-                <option value="約束組太刀：太刀打之形 北斗">約束組太刀：太刀打之形 北斗</option>
-                <option value="約束組太刀：太刀打之形 太白">約束組太刀：太刀打之形 太白</option>
-                <option value="約束組太刀：太刀打之形 稲妻">約束組太刀：太刀打之形 稲妻</option>
-                <option value="約束組太刀：太刀打之形 霞">約束組太刀：太刀打之形 霞</option>
-                <option value="約束組太刀：太刀打之形 流星">約束組太刀：太刀打之形 流星</option>
-              </optgroup>
-              <optgroup label="約束組太刀：脇差之形">
-                <option value="約束組太刀：脇差之形 切留">約束組太刀：脇差之形 切留</option>
-                <option value="約束組太刀：脇差之形 突留">約束組太刀：脇差之形 突留</option>
-                <option value="約束組太刀：脇差之形 受流し">約束組太刀：脇差之形 受流し</option>
-                <option value="約束組太刀：脇差之形 切上">約束組太刀：脇差之形 切上</option>
-                <option value="約束組太刀：脇差之形 位詰">約束組太刀：脇差之形 位詰</option>
-              </optgroup>
-              <optgroup label="約束組太刀：剣術形">
-                <option value="約束組太刀：剣術形 獅王剣">約束組太刀：剣術形 獅王剣</option>
-                <option value="約束組太刀：剣術形 翻車刀">約束組太刀：剣術形 翻車刀</option>
-                <option value="約束組太刀：剣術形 神明剣">約束組太刀：剣術形 神明剣</option>
-                <option value="約束組太刀：剣術形 水月感応">約束組太刀：剣術形 水月感応</option>
-                <option value="約束組太刀：剣術形 玉簾不断">約束組太刀：剣術形 玉簾不断</option>
-              </optgroup>
-              <optgroup label="約束組太刀：神道流剣術">
-                <option value="約束組太刀：神道流 相寸">約束組太刀：神道流 相寸</option>
-                <option value="約束組太刀：神道流 相寸逆">約束組太刀：神道流 相寸逆</option>
-                <option value="約束組太刀：神道流 鷲">約束組太刀：神道流 鷲</option>
-                <option value="約束組太刀：神道流 左輪">約束組太刀：神道流 左輪</option>
-                <option value="約束組太刀：神道流 乳拂">約束組太刀：神道流 乳拂</option>
-                <option value="約束組太刀：神道流 受返">約束組太刀：神道流 受返</option>
-                <option value="約束組太刀：神道流 二刀合">約束組太刀：神道流 二刀合</option>
-                <option value="約束組太刀：神道流 擦込">約束組太刀：神道流 擦込</option>
-                <option value="約束組太刀：神道流 受流">約束組太刀：神道流 受流</option>
-                <option value="約束組太刀：神道流 咽中">約束組太刀：神道流 咽中</option>
-                <option value="約束組太刀：神道流 三受留">約束組太刀：神道流 三受留</option>
-                <option value="約束組太刀：神道流 突出">約束組太刀：神道流 突出</option>
-              </optgroup>
-
-              <!-- 自由組太刀 -->
-              <optgroup label="自由組太刀">
-                <option value="自由組太刀：基本サバキ（一番〜七番）">自由組太刀：基本サバキ（一番〜七番）</option>
-                <option value="自由組太刀：スパーリング">自由組太刀：スパーリング</option>
-              </optgroup>
-
-              <!-- 試し斬り -->
-              <optgroup label="試し斬り">
-                <option value="試し斬り：基本一">試し斬り：基本一</option>
-                <option value="試し斬り：基本二">試し斬り：基本二</option>
-                <option value="試し斬り：基本三">試し斬り：基本三</option>
-                <option value="試し斬り：五用・真">試し斬り：五用・真</option>
-                <option value="試し斬り：五用・連">試し斬り：五用・連</option>
-                <option value="試し斬り：五用・左">試し斬り：五用・左</option>
-                <option value="試し斬り：五用・右">試し斬り：五用・右</option>
-                <option value="試し斬り：五用・捨">試し斬り：五用・捨</option>
-                <option value="試し斬り：五箇・水月">試し斬り：五箇・水月</option>
-                <option value="試し斬り：五箇・陰中陽">試し斬り：五箇・陰中陽</option>
-                <option value="試し斬り：五箇・陽中陰">試し斬り：五箇・陽中陰</option>
-                <option value="試し斬り：五箇・響き返し">試し斬り：五箇・響き返し</option>
-                <option value="試し斬り：五箇・破図味">試し斬り：五箇・破図味</option>
-                <option value="試し斬り：五応・胸尽し">試し斬り：五応・胸尽し</option>
-                <option value="試し斬り：五応・円要">試し斬り：五応・円要</option>
-                <option value="試し斬り：五応・両車">試し斬り：五応・両車</option>
-                <option value="試し斬り：五応・野送り">試し斬り：五応・野送り</option>
-                <option value="試し斬り：五応・玉光">試し斬り：五応・玉光</option>
-                <option value="試し斬り：走り懸り・前腰">試し斬り：走り懸り・前腰</option>
-                <option value="試し斬り：走り懸り・夢想返し">試し斬り：走り懸り・夢想返し</option>
-                <option value="試し斬り：走り懸り・廻り懸り">試し斬り：走り懸り・廻り懸り</option>
-                <option value="試し斬り：走り懸り・右の敵">試し斬り：走り懸り・右の敵</option>
-                <option value="試し斬り：走り懸り・四方">試し斬り：走り懸り・四方</option>
-              </optgroup>
-
-              <!-- 禅 -->
-              <optgroup label="禅">
-                <option value="座禅・黙想">座禅・黙想</option>
-              </optgroup>
-
-              <option value="custom">その他（直接入力）</option>
+            <label for="category">種目・区分</label>
+            <select id="category">
+              <option value="居合道">居合道</option>
+              <option value="剣道">剣道</option>
+              <option value="空手">空手</option>
+              <option value="古武術">古武術</option>
+              <option value="体幹・筋トレ">体幹・筋トレ</option>
+              <option value="その他">その他</option>
             </select>
-            <input type="text" id="customMenuInput" placeholder="種目名を入力" style="display:none; margin-top:8px;">
           </div>
-
           <div class="form-group">
-            <label for="count">回数・時間 (本 / 分)</label>
-            <input type="number" id="count" placeholder="例: 10" required>
-            <div class="chip-group">
-              <button type="button" class="chip-btn" onclick="setCount(10)">10本/分</button>
-              <button type="button" class="chip-btn" onclick="setCount(20)">20本/分</button>
-              <button type="button" class="chip-btn" onclick="setCount(30)">30本/分</button>
-              <button type="button" class="chip-btn" onclick="setCount(50)">50本/分</button>
-              <button type="button" class="chip-btn" onclick="setCount(100)">100本/分</button>
-            </div>
+            <label for="content">稽古内容（型、技、実施回数など）</label>
+            <textarea id="content" placeholder="例: 基本の一、横一からの振りかぶりを中心に100本稽古。" required></textarea>
           </div>
-
           <div class="form-group">
-            <label for="memo">メモ・気づき</label>
-            <textarea id="memo" placeholder="例: 刃筋と体の軸を意識。間合いの取り方に留意した"></textarea>
+            <label for="reflection">気づき・課題・ 反省点</label>
+            <textarea id="reflection" placeholder="例: 切先の下がりが気になった。軸足の踏み込みをもう少し意識する。"></textarea>
           </div>
-
-          <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
-          <button type="button" id="aiBtn" class="btn btn-ai">✨ 保存＆AIアドバイスをもらう</button>
+          <button type="submit" class="btn-primary">記録してAIアドバイスを受ける</button>
         </form>
-
-        <div id="aiAdviceBox" class="ai-box">
-          <div class="ai-title">🤖 AI武道師範のアドバイス</div>
-          <div id="aiAdviceContent" class="ai-text"></div>
-        </div>
       </div>
     </div>
 
     <!-- 2. 履歴タブ -->
     <div id="historyTab" class="tab-content">
       <div class="card">
-        <div class="card-title">稽古の記録一覧</div>
-        <div id="logList">
-          <div class="empty-state">データを読み込んでいます...</div>
-        </div>
+        <h3>📜 過去の稽古記録一覧</h3>
+        <div id="logList" class="empty-state">まだ記録がありません。</div>
       </div>
     </div>
 
-    <!-- 3. 過去分析タブ -->
+    <!-- 3. 分析タブ -->
     <div id="analysisTab" class="tab-content">
       <div class="card">
-        <div class="card-title">🔍 蓄積データのAI分析</div>
-        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          これまでの稽古ログ全体をAIが振り返り、全体の傾向や成長の兆し、今後の課題を分析します。
-        </p>
-        <button type="button" id="analyzeAllBtn" class="btn btn-ai">全稽古ログをAI分析する</button>
-        <button type="button" class="btn btn-secondary" onclick="resetApiKey()">🔑 APIキーを再設定する</button>
-
-        <div id="analysisResultBox" class="ai-box">
-          <div class="ai-title">📊 稽古傾向とアドバイス</div>
-          <div id="analysisResultContent" class="ai-text"></div>
-        </div>
+        <h3>🔍 蓄積データのAI分析</h3>
+        <p style="font-size: 0.9rem; color: #64748b;">これまでの稽古ログ全体をAIが振り返り、全体の傾向や成長の兆し、今後の課題を分析します。</p>
+        <button onclick="analyzeAllLogs()" class="btn-primary" style="background-color: #6b21a8;">全稽古ログをAI分析する</button>
+        <button onclick="resetApiKey()" class="btn-secondary">🔑 APIキーを再設定する</button>
+        
+        <div id="analysisResult" style="display: none; margin-top: 1rem;"></div>
       </div>
     </div>
 
     <!-- 4. 五輪書タブ -->
     <div id="gorinTab" class="tab-content">
       <div class="card">
-        <div class="card-title">📖 五輪書 現代語訳</div>
-        <div class="form-group">
-          <label for="gorinSelect">読む章を選択</label>
-          <select id="gorinSelect" onchange="loadGorinChapter()">
-            <option value="chi">地の巻（兵法の土台・基本思想）</option>
-            <option value="mizu">水の巻（心構え・構え・身体運用）</option>
-            <option value="hi">火の巻（実戦・勝負・駆け引き）</option>
-            <option value="kaze">風の巻（他流派研究・兵法の本質）</option>
-            <option value="ku">空の巻（極意・自然の理・あるがまま）</option>
-          </select>
+        <h3>📖 宮本武蔵『五輪書』に学ぶ</h3>
+        <div class="gorin-book">
+          <div class="gorin-title">【地の巻】兵法の道を立てる段</div>
+          <div class="gorin-body">「千日の稽古を鍛とし、万日の稽古を錬とす」
+千日の稽古によって基礎を固め（鍛）、万日の稽古によって技を研ぎ澄ます（錬）。武道の道は日々の愚直な反復の先にある。</div>
         </div>
-
-        <div class="gorin-box">
-          <div id="gorinTitle" class="gorin-chapter-title"></div>
-          <div id="gorinText" class="gorin-body"></div>
+        <div class="gorin-book">
+          <div class="gorin-title">【水の巻】心持ちの段</div>
+          <div class="gorin-body">「心は広く直にして、きつくひっぱらず、ちっともゆるめず、心が偏らぬように、心を中央におく」
+構えや意識において、どこか一所に心を囚われてはならない。水のように柔軟で、かつ平常心を保つこと。</div>
+        </div>
+        <div class="gorin-book">
+          <div class="gorin-title">【火の巻】戦いの段</div>
+          <div class="gorin-body">「先を制するの事」
+先手を取るには、単に早く動くことではない。相手の発想や気配を察知し、その変化の起こりを制することが真の「先」である。</div>
         </div>
       </div>
     </div>
@@ -541,150 +332,29 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    let cachedLogs = [];
-
-    const gorinData = {
-      chi: {
-        title: "地の巻 - 兵法の土台と理念",
-        text: `【兵法の道を建てるということ】\n兵法を学ぶ者は、まずその土台（地）を固めなければならない。大工の棟梁が建物の構造を理解し、材木を見極めるように、兵法家も道具の特性を知り、己の身体と技を巧みに用いることが求められる。\n\n【鍛錬の心構え】\n千日の稽古を「鍛（たん）」とし、万日の稽古を「錬（れん）」とする。日々の休みなき継続と追求の先においてのみ、真の技と心が錬り上げられる。`
-      },
-      mizu: {
-        title: "水の巻 - 心構え・構え・身体の運用",
-        text: `【心構え：水の心】\n水は四角い器にも丸い器にも柔軟にその形を変える。兵法の心もまた、水のように柔軟で透明であり、何物にもとらわれない平常心を保たねばならない。\n\n【目付け：観の目と見の目】\n「観（かん）の目を強く、見（けん）の目を弱く」することが極意である。表面的な動き（見）ではなく、相手の心根や全体の拍子（観）を見抜け。`
-      },
-      hi: {
-        title: "火の巻 - 実戦・勝負・駆け引き",
-        text: `【戦いにおける火の勢い】\n火は瞬時に大きく広がる。状況は一刻一刻変化する。火の巻では、実際の戦いにおける勝負の駆け引き、勢いと拍子の支配について説く。\n\n【三つの先】\n1. 意の先：相手が動く前に制する\n2. 対の先：相手の攻めに応じつつ先を取る\n3. 構の先：相手の動揺を誘い先を制する`
-      },
-      kaze: {
-        title: "風の巻 - 他流派の研究・兵法の本質",
-        text: `【他流を知る意義】\n自らの兵法を真に極めるためには、他流派の特徴、長所、短所を正しく知らねばならない。\n\n【固執を去る】\n特定の型や道具、異端なテクニックに執着する流派は本質を見失う。兵法の道とは、極めてシンプルで、理にかなった自然体の追求である。`
-      },
-      ku: {
-        title: "空の巻 - 極意・自然の理",
-        text: `【空の境地】\n自意識や執着、迷いや偏りがすべて消え去った澄み渡った境地を指す。\n\n【知から空へ】\n初めは技や理屈を学ぶ。しかし修練の果てに、意識することなく身体が自然に動く領域に達する。これこそが「空」である。`
-      }
-    };
-
-    function switchTab(tabId, btn) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    // タブ切り替え logic
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       
       document.getElementById(tabId).classList.add('active');
-      if (btn) btn.classList.add('active');
+      event.currentTarget.classList.add('active');
 
       if (tabId === 'historyTab') {
-        fetchLogs();
+        renderLogs();
       }
     }
 
-    function toggleCustomMenu() {
-      const select = document.getElementById('menuSelect');
-      const customInput = document.getElementById('customMenuInput');
-      if (select.value === 'custom') {
-        customInput.style.display = 'block';
-        customInput.required = true;
-      } else {
-        customInput.style.display = 'none';
-        customInput.required = false;
-      }
-    }
-
-    function setCount(val) {
-      document.getElementById('count').value = val;
-    }
-
+    // 初期化：本日の日付をセット
     document.getElementById('date').valueAsDate = new Date();
 
-    async function fetchLogs() {
-      const logList = document.getElementById('logList');
-      logList.innerHTML = '<div class="empty-state">データを読み込んでいます...</div>';
-
-      const { data, error } = await supabaseClient
-        .from('keiko_logs')
-        .select('*')
-        .order('id', { ascending: false });
-
-      if (error) {
-        logList.innerHTML = `<div class="empty-state"><p>取得エラー: ${error.message}</p></div>`;
-        return;
-      }
-
-      cachedLogs = data || [];
-
-      if (cachedLogs.length === 0) {
-        logList.innerHTML = '<div class="empty-state">まだ記録がありません</div>';
-        return;
-      }
-
-      logList.innerHTML = '';
-      cachedLogs.forEach(log => {
-        const div = document.createElement('div');
-        div.className = 'log-item';
-        div.innerHTML = `
-          <div class="log-header">
-            <span class="log-menu">${escapeHtml(log.menu || '稽古')}</span>
-            <span class="log-count">${log.count || 0}</span>
-          </div>
-          <div class="log-date">${log.date || ''}</div>
-          ${log.memo ? `<div class="log-memo">${escapeHtml(log.memo)}</div>` : ''}
-        `;
-        logList.appendChild(div);
-      });
-    }
-
-    async function saveLogData() {
-      const date = document.getElementById('date').value;
-      const selectVal = document.getElementById('menuSelect').value;
-      const menu = selectVal === 'custom' ? document.getElementById('customMenuInput').value : selectVal;
-      const count = parseInt(document.getElementById('count').value, 10);
-      const memo = document.getElementById('memo').value;
-
-      if (!menu || isNaN(count)) {
-        alert('種目名と回数を入力してください。');
-        return null;
-      }
-
-      const payload = { date, menu, count, memo };
-      const { error } = await supabaseClient
-        .from('keiko_logs')
-        .insert([payload]);
-
-      if (error) {
-        alert('保存エラー: ' + error.message);
-        return null;
-      }
-
-      return payload;
-    }
-
-    document.getElementById('keikoForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      btn.disabled = true;
-
-      const res = await saveLogData();
-      if (res) {
-        alert('稽古記録を保存しました！');
-        document.getElementById('count').value = '';
-        document.getElementById('memo').value = '';
-        document.getElementById('aiAdviceBox').style.display = 'none';
-        fetchLogs();
-      }
-      btn.disabled = false;
-    });
-
+    // APIキーの取得または保存
     function getApiKey() {
       let key = localStorage.getItem('gemini_api_key');
       if (!key) {
-        key = prompt('Gemini APIキーを入力してください:');
+        key = prompt("Google Gemini APIキーを入力してください:");
         if (key) {
-          key = key.trim();
-          localStorage.setItem('gemini_api_key', key);
+          localStorage.setItem('gemini_api_key', key.trim());
         }
       }
       return key;
@@ -692,134 +362,176 @@
 
     function resetApiKey() {
       localStorage.removeItem('gemini_api_key');
-      alert('APIキーを削除しました。次にAIボタンを押した際に再入力画面が出ます。');
+      alert("APIキーを消去しました。次回実行時に再入力してください。");
     }
 
-    document.getElementById('aiBtn').addEventListener('click', async () => {
+    // フォーム送信処理
+    document.getElementById('keikoForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        alert("APIキーが必要です。");
+        return;
+      }
+
+      const date = document.getElementById('date').value;
+      const category = document.getElementById('category').value;
+      const content = document.getElementById('content').value;
+      const reflection = document.getElementById('reflection').value;
+
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.innerText = "AIが思考中...";
+      submitBtn.disabled = true;
+
+      try {
+        const promptText = `武道（${category}）の稽古記録です。専門的かつ温かく、今後の稽古の励みになるような短いアドバイスとポイントを教えてください。
+
+【稽古内容】: ${content}
+【気づき・課題】: ${reflection}`;
+
+        // エンドポイントを v1beta / gemini-2.0-flash に設定
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+          })
+        });
+
+        const data = await res.json();
+        
+        if (data.error) {
+          throw new Error(data.error.message || "APIエラーが発生しました");
+        }
+
+        const aiAdvice = data.candidates[0].content.parts[0].text;
+
+        const logEntry = {
+          id: Date.now(),
+          date,
+          category,
+          content,
+          reflection,
+          aiAdvice
+        };
+
+        saveLog(logEntry);
+        alert("稽古記録を保存しました！");
+        this.reset();
+        document.getElementById('date').valueAsDate = new Date();
+        switchTab('historyTab');
+
+      } catch (err) {
+        alert("エラーが発生しました: " + err.message);
+      } finally {
+        submitBtn.innerText = "記録してAIアドバイスを受ける";
+        submitBtn.disabled = false;
+      }
+    });
+
+    // ローカルストレージ処理
+    function getLogs() {
+      return JSON.parse(localStorage.getItem('keiko_logs') || '[]');
+    }
+
+    function saveLog(entry) {
+      const logs = getLogs();
+      logs.unshift(entry);
+      localStorage.setItem('keiko_logs', JSON.stringify(logs));
+    }
+
+    function deleteLog(id) {
+      if (confirm("この記録を削除してもよろしいですか？")) {
+        const logs = getLogs().filter(log => log.id !== id);
+        localStorage.setItem('keiko_logs', JSON.stringify(logs));
+        renderLogs();
+      }
+    }
+
+    // 履歴描画
+    function renderLogs() {
+      const logs = getLogs();
+      const container = document.getElementById('logList');
+
+      if (logs.length === 0) {
+        container.className = "empty-state";
+        container.innerHTML = "まだ記録がありません。";
+        return;
+      }
+
+      container.className = "";
+      container.innerHTML = logs.map(log => `
+        <div class="log-item">
+          <div class="log-header">
+            <span class="log-date">${log.date}</span>
+            <span class="log-category">${log.category}</span>
+          </div>
+          <div><strong>稽古内容:</strong> ${escapeHtml(log.content)}</div>
+          ${log.reflection ? `<div><strong>気づき・課題:</strong> ${escapeHtml(log.reflection)}</div>` : ''}
+          ${log.aiAdvice ? `
+            <div class="ai-response">
+              <h4>🤖 AIアドバイス</h4>
+              <div>${escapeHtml(log.aiAdvice).replace(/\n/g, '<br>')}</div>
+            </div>
+          ` : ''}
+          <div style="text-align: right; margin-top: 0.5rem;">
+            <button class="delete-btn" onclick="deleteLog(${log.id})">削除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 蓄積データ全体のAI分析
+    async function analyzeAllLogs() {
+      const logs = getLogs();
+      if (logs.length === 0) {
+        alert("分析する稽古記録がまだありません。");
+        return;
+      }
+
       const apiKey = getApiKey();
       if (!apiKey) return;
 
-      const aiBtn = document.getElementById('aiBtn');
-      const box = document.getElementById('aiAdviceBox');
-      const content = document.getElementById('aiAdviceContent');
+      const resultDiv = document.getElementById('analysisResult');
+      resultDiv.style.display = 'block';
+      resultDiv.className = 'ai-response';
+      resultDiv.innerHTML = "<h4>📊 AIが全データを分析中...</h4>";
 
-      aiBtn.disabled = true;
-      box.style.display = 'block';
-      content.style.color = '#1e293b';
-      content.textContent = '分析中...';
-
-      const log = await saveLogData();
-      if (!log) {
-        aiBtn.disabled = false;
-        return;
-      }
-
-      const promptText = `あなたは思慮深い武道の師範です。以下の稽古内容とメモを読み、短く的確なワンポイントアドバイス（120〜150字程度）を送信してください。
-種目: ${log.menu}, 回数: ${log.count}, メモ: ${log.memo || 'なし'}`;
+      const summaryText = logs.map(l => `[${l.date}] 種目:${l.category} / 内容:${l.content} / 課題:${l.reflection}`).join("\n");
+      const promptText = `以下は私の過去の武道稽古ログです。全体を通した稽古傾向、成長の傾向、重点的に取り組むべき課題をまとめて分析してください。\n\n${summaryText}`;
 
       try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        // エンドポイントを v1beta / gemini-2.0-flash に設定
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+          })
         });
+
         const data = await res.json();
-        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-          content.textContent = data.candidates[0].content.parts[0].text;
-        } else if (data.error) {
-          content.style.color = 'red';
-          content.textContent = `❌ エラーが発生しました:\n${data.error.message} (Code: ${data.error.code})`;
-        } else {
-          content.style.color = 'red';
-          content.textContent = 'アドバイスの生成に失敗しました（レスポンス形式異常）。';
+
+        if (data.error) {
+          throw new Error(data.error.message || "APIエラーが発生しました");
         }
+
+        const analysis = data.candidates[0].content.parts[0].text;
+        resultDiv.innerHTML = `
+          <h4>📊 稽古傾向とアドバイス</h4>
+          <div>${escapeHtml(analysis).replace(/\n/g, '<br>')}</div>
+        `;
+
       } catch (err) {
-        content.style.color = 'red';
-        content.textContent = '通信エラーが発生しました: ' + err.message;
-      }
-
-      aiBtn.disabled = false;
-    });
-
-    document.getElementById('analyzeAllBtn').addEventListener('click', async () => {
-      const apiKey = getApiKey();
-      if (!apiKey) {
-        alert('APIキーが指定されていません。');
-        return;
-      }
-
-      const btn = document.getElementById('analyzeAllBtn');
-      const box = document.getElementById('analysisResultBox');
-      const content = document.getElementById('analysisResultContent');
-
-      btn.disabled = true;
-      box.style.display = 'block';
-      content.style.color = '#1e293b';
-      content.textContent = 'これまでの稽古データを分析中...';
-
-      if (cachedLogs.length === 0) {
-        await fetchLogs();
-      }
-
-      if (cachedLogs.length === 0) {
-        content.textContent = '分析対象の稽古データがありません。まず「記録する」タブでデータを保存してください。';
-        btn.disabled = false;
-        return;
-      }
-
-      const logsSummary = cachedLogs.slice(0, 30).map(l => 
-        `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`
-      ).join('\n');
-
-      const promptText = `あなたは武道稽古の師範・アドバイザーです。以下に蓄積された過去の稽古記録を読み込み、全体的なアドバイス（300字程度）を提供してください。
-
-【稽古ログ】
-${logsSummary}`;
-
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-        });
-        const data = await res.json();
-        
-        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-          content.textContent = data.candidates[0].content.parts[0].text;
-        } else if (data.error) {
-          content.style.color = 'red';
-          content.textContent = `❌ エラーが発生しました:\n${data.error.message} (Code: ${data.error.code})`;
-        } else {
-          content.style.color = 'red';
-          content.textContent = '分析に失敗しました。レスポンス異常。';
-        }
-      } catch (err) {
-        content.style.color = 'red';
-        content.textContent = '通信エラーが発生しました: ' + err.message;
-      }
-
-      btn.disabled = false;
-    });
-
-    function loadGorinChapter() {
-      const val = document.getElementById('gorinSelect').value;
-      if (gorinData[val]) {
-        document.getElementById('gorinTitle').textContent = gorinData[val].title;
-        document.getElementById('gorinText').textContent = gorinData[val].text;
+        resultDiv.innerHTML = `<span style="color: red;">❌ エラーが発生しました: ${escapeHtml(err.message)}</span>`;
       }
     }
 
     function escapeHtml(str) {
-      if (typeof str !== 'string') return str;
-      return str.replace(/[&<>'"]/g, 
-        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-      );
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      fetchLogs();
-      loadGorinChapter();
-    });
   </script>
 </body>
 </html>
