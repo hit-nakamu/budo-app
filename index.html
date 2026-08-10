@@ -43,11 +43,11 @@
     }
     nav button {
       flex: 1;
-      padding: 12px;
+      padding: 12px 5px;
       background: none;
       border: none;
       color: #888;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       cursor: pointer;
       font-family: inherit;
     }
@@ -115,10 +115,76 @@
       border-left: 3px solid var(--accent-color);
       padding-left: 10px;
       margin-bottom: 12px;
+      position: relative;
     }
     .log-date { font-size: 0.8rem; color: #888; }
     .log-type { font-weight: bold; color: var(--accent-color); }
     .log-note { font-size: 0.9rem; margin-top: 4px; white-space: pre-wrap; }
+    .btn-delete {
+      position: absolute;
+      right: 0;
+      top: 0;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    /* 集計表示用 */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .filter-tabs button {
+      flex: 1;
+      padding: 8px;
+      background-color: #1a1a1a;
+      border: 1px solid var(--border-color);
+      color: #aaa;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .filter-tabs button.active {
+      background-color: var(--accent-color);
+      color: #111;
+      font-weight: bold;
+    }
+    .stat-summary {
+      text-align: center;
+      padding: 15px;
+      background: #111;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+    .stat-number {
+      font-size: 2rem;
+      color: var(--accent-color);
+      font-weight: bold;
+    }
+    .stat-bar-container {
+      margin-bottom: 10px;
+    }
+    .stat-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-bottom: 3px;
+    }
+    .stat-bar-bg {
+      background-color: #111;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .stat-bar-fill {
+      background-color: var(--accent-color);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
 
     /* 五輪書スタイル */
     .quote-box {
@@ -145,7 +211,8 @@
   <nav>
     <button id="tab-gorin" class="active" onclick="switchTab('gorin')">五輪書</button>
     <button id="tab-record" onclick="switchTab('record')">稽古記録</button>
-    <button id="tab-history" onclick="switchTab('history')">鍛錬履歴</button>
+    <button id="tab-stats" onclick="switchTab('stats')">累計分析</button>
+    <button id="tab-history" onclick="switchTab('history')">履歴</button>
   </nav>
 
   <main>
@@ -161,6 +228,7 @@
       <div class="card">
         <h2>巻を選択して学ぶ</h2>
         <select id="vol-select" onchange="showVolQuote()">
+          <option value="all">全巻からランダム</option>
           <option value="chi">地の巻（兵法の道の基礎）</option>
           <option value="mizu">水の巻（心持ち・構え・刃筋）</option>
           <option value="hi">火の巻（合戦・勝負の拍子）</option>
@@ -180,11 +248,13 @@
 
           <label>稽古種目</label>
           <select id="log-type">
-            <option value="形・素振り">形・素振り</option>
-            <option value="道場稽古">道場稽古</option>
-            <option value="組討・座捕">組討・座捕</option>
-            <option value="座学・兵法解釈">座学・兵法解釈</option>
-            <option value="自主トレ・体幹">自主トレ・体幹</option>
+            <option value="ストレッチ">ストレッチ</option>
+            <option value="補強">補強</option>
+            <option value="形">形</option>
+            <option value="約束組太刀">約束組太刀</option>
+            <option value="自由組太刀">自由組太刀</option>
+            <option value="試し斬り">試し斬り</option>
+            <option value="禅">禅</option>
           </select>
 
           <label>気づき・反省点・メモ</label>
@@ -195,7 +265,30 @@
       </div>
     </div>
 
-    <!-- ③ 履歴一覧 -->
+    <!-- ③ 累計分析（日次・週次・月次・年次） -->
+    <div id="sec-stats" class="section">
+      <div class="card">
+        <h2>稽古の累計・分析</h2>
+        <div class="filter-tabs">
+          <button id="f-daily" class="active" onclick="setStatsPeriod('daily')">日次</button>
+          <button id="f-weekly" onclick="setStatsPeriod('weekly')">週次</button>
+          <button id="f-monthly" onclick="setStatsPeriod('monthly')">月次</button>
+          <button id="f-yearly" onclick="setStatsPeriod('yearly')">年次</button>
+        </div>
+
+        <div class="stat-summary">
+          <div style="font-size: 0.85rem; color: #888;" id="stat-period-label">本日の稽古回数</div>
+          <div class="stat-number" id="stat-total-count">0<span style="font-size: 1rem; color: #888;"> 回</span></div>
+        </div>
+
+        <h3 style="font-size: 0.95rem; color: var(--accent-color); margin-bottom: 12px;">種目別内訳</h3>
+        <div id="stats-bars">
+          <!-- JSで動的にバーを挿入 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ 履歴一覧 -->
     <div id="sec-history" class="section">
       <div class="card">
         <h2>過去の稽古記録</h2>
@@ -207,16 +300,22 @@
   </main>
 
   <script>
+    // 種目リスト
+    const TYPES = ['ストレッチ', '補強', '形', '約束組太刀', '自由組太刀', '試し斬り', '禅'];
+
     // 五輪書の言葉データ
     const quotes = [
-      { text: "千日の稽古を鍛とし、万日の稽古を錬とす。", vol: "地の巻" },
-      { text: "身を浅く思い、世を深く思う。", vol: "独行道" },
-      { text: "構えありて構えなし。目付けは両の目の玉を動かさず、心を静かに据えるべし。", vol: "水の巻" },
-      { text: "観の目強く、見の目弱く、遠き所を目付け、近き所を観ること。", vol: "水の巻" },
-      { text: "先をとるに三つあり。懸の先、対の先、体体の先。", vol: "火の巻" },
-      { text: "拍子を調べるに、合う拍子と合わざる拍子あり。拍子の陰陽を知るべし。", vol: "地の巻" },
-      { text: "知らざる所を実と思うなかれ。空を道とし、道を空と見ること。", vol: "空の巻" }
+      { text: "千日の稽古を鍛とし、万日の稽古を錬とす。", vol: "地の巻", key: "chi" },
+      { text: "身を浅く思い、世を深く思う。", vol: "独行道", key: "chi" },
+      { text: "構えありて構えなし。目付けは両の目の玉を動かさず、心を静かに据えるべし。", vol: "水の巻", key: "mizu" },
+      { text: "観の目強く、見の目弱く、遠き所を目付け、近き所を観ること。", vol: "水の巻", key: "mizu" },
+      { text: "先をとるに三つあり。懸の先、対の先、体体の先。", vol: "火の巻", key: "hi" },
+      { text: "拍子を調べるに、合う拍子と合わざる拍子あり。拍子の陰陽を知るべし。", vol: "地の巻", key: "chi" },
+      { text: "敵を知り、敵の流儀を知り、敵の身形を知ること、風の巻なり。", vol: "風の巻", key: "kaze" },
+      { text: "知らざる所を実と思うなかれ。空を道とし、道を空と見ること。", vol: "空の巻", key: "ku" }
     ];
+
+    let currentPeriod = 'daily';
 
     // タブ切り替え
     function switchTab(tabName) {
@@ -227,13 +326,25 @@
       document.getElementById('tab-' + tabName).classList.add('active');
 
       if (tabName === 'history') loadHistory();
+      if (tabName === 'stats') renderStats();
     }
 
     // ランダム教訓
     function randomQuote() {
-      const q = quotes[Math.floor(Math.random() * quotes.length)];
+      const selectedVol = document.getElementById('vol-select').value;
+      let filtered = quotes;
+      if (selectedVol !== 'all') {
+        filtered = quotes.filter(q => q.key === selectedVol);
+      }
+      if (filtered.length === 0) filtered = quotes;
+
+      const q = filtered[Math.floor(Math.random() * filtered.length)];
       document.getElementById('quote-text').innerText = "「" + q.text + "」";
       document.getElementById('quote-vol').innerText = "― 宮本武蔵『" + q.vol + "』";
+    }
+
+    function showVolQuote() {
+      randomQuote();
     }
 
     // 稽古記録の保存（LocalStorage）
@@ -250,7 +361,16 @@
 
       alert('稽古内容を保存しました！');
       document.getElementById('log-note').value = '';
-      switchTab('history');
+      switchTab('stats');
+    }
+
+    // 削除機能
+    function deleteLog(id) {
+      if (!confirm('この記録を削除しますか？')) return;
+      let logs = JSON.parse(localStorage.getItem('budo_logs') || '[]');
+      logs = logs.filter(l => l.id !== id);
+      localStorage.setItem('budo_logs', JSON.stringify(logs));
+      loadHistory();
     }
 
     // 履歴読み込み
@@ -265,11 +385,84 @@
 
       container.innerHTML = logs.map(log => `
         <div class="log-item">
+          <button class="btn-delete" onclick="deleteLog(${log.id})">削除</button>
           <div class="log-date">${log.date}</div>
           <div class="log-type">${log.type}</div>
           <div class="log-note">${escapeHtml(log.note)}</div>
         </div>
       `).join('<hr style="border:0; border-top:1px solid #333; margin:15px 0;">');
+    }
+
+    // 期間別切り替え
+    function setStatsPeriod(period) {
+      currentPeriod = period;
+      document.querySelectorAll('.filter-tabs button').forEach(b => b.classList.remove('active'));
+      document.getElementById('f-' + period).classList.add('active');
+      renderStats();
+    }
+
+    // 累計集計ロジック（日次・週次・月次・年次）
+    function renderStats() {
+      const logs = JSON.parse(localStorage.getItem('budo_logs') || '[]');
+      const now = new Date();
+      const todayStr = now.toISOString().split('T')[0];
+
+      let filteredLogs = [];
+      let labelText = '';
+
+      if (currentPeriod === 'daily') {
+        labelText = '本日（' + todayStr + '）の稽古数';
+        filteredLogs = logs.filter(l => l.date === todayStr);
+      } else if (currentPeriod === 'weekly') {
+        labelText = '今週の稽古数';
+        const startOfWeek = new Date(now);
+        const day = startOfWeek.getDay() || 7; // 月曜起算
+        startOfWeek.setDate(now.getDate() - day + 1);
+        startOfWeek.setHours(0,0,0,0);
+
+        filteredLogs = logs.filter(l => {
+          const d = new Date(l.date);
+          return d >= startOfWeek && d <= now;
+        });
+      } else if (currentPeriod === 'monthly') {
+        const monthStr = todayStr.substring(0, 7); // YYYY-MM
+        labelText = '今月（' + monthStr + '）の稽古数';
+        filteredLogs = logs.filter(l => l.date && l.date.startsWith(monthStr));
+      } else if (currentPeriod === 'yearly') {
+        const yearStr = todayStr.substring(0, 4); // YYYY
+        labelText = '今年（' + yearStr + '年）の稽古数';
+        filteredLogs = logs.filter(l => l.date && l.date.startsWith(yearStr));
+      }
+
+      // 集計
+      const counts = {};
+      TYPES.forEach(t => counts[t] = 0);
+      filteredLogs.forEach(l => {
+        if (counts[l.type] !== undefined) counts[l.type]++;
+        else counts[l.type] = 1;
+      });
+
+      const total = filteredLogs.length;
+      document.getElementById('stat-period-label').innerText = labelText;
+      document.getElementById('stat-total-count').innerHTML = total + '<span style="font-size: 1rem; color: #888;"> 回</span>';
+
+      // バー表示
+      const container = document.getElementById('stats-bars');
+      container.innerHTML = TYPES.map(t => {
+        const cnt = counts[t] || 0;
+        const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
+        return `
+          <div class="stat-bar-container">
+            <div class="stat-label">
+              <span>${t}</span>
+              <span style="color:var(--accent-color);">${cnt} 回 (${pct}%)</span>
+            </div>
+            <div class="stat-bar-bg">
+              <div class="stat-bar-fill" style="width: ${pct}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function escapeHtml(str) {
