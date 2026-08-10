@@ -187,14 +187,6 @@
       margin-top: 10px;
     }
 
-    .btn-secondary {
-      background-color: #64748b;
-      color: white;
-      margin-top: 6px;
-      padding: 6px;
-      font-size: 0.8rem;
-    }
-
     .ai-box {
       background: #f3e8ff;
       border: 1px solid #d8b4fe;
@@ -302,13 +294,13 @@
 <body>
 
   <header>
-    <h1>🥋 武道稽古記録 & AIアドバイザー</h1>
+    <h1>🥋 武道稽古記録 & アドバイザー</h1>
   </header>
 
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('recordTab', this)">📝 記録する</button>
     <button class="tab-btn" onclick="switchTab('historyTab', this)">📋 稽古履歴</button>
-    <button class="tab-btn" onclick="switchTab('analysisTab', this)">📊 過去分析</button>
+    <button class="tab-btn" onclick="switchTab('analysisTab', this)">📊 稽古分析</button>
     <button class="tab-btn" onclick="switchTab('gorinTab', this)">📖 五輪書</button>
   </div>
 
@@ -465,11 +457,11 @@
           </div>
 
           <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
-          <button type="button" id="aiBtn" class="btn btn-ai">✨ 保存＆AIアドバイスをもらう</button>
+          <button type="button" id="quickAdviceBtn" class="btn btn-ai">✨ 本日のワンポイント指導</button>
         </form>
 
         <div id="aiAdviceBox" class="ai-box">
-          <div class="ai-title">🤖 AI武道師範のアドバイス</div>
+          <div class="ai-title">🤖 武道師範からの言葉</div>
           <div id="aiAdviceContent" class="ai-text"></div>
         </div>
       </div>
@@ -488,15 +480,14 @@
     <!-- 3. 過去分析タブ -->
     <div id="analysisTab" class="tab-content">
       <div class="card">
-        <div class="card-title">🔍 蓄積データのAI分析</div>
+        <div class="card-title">📊 稽古データの集計と振り返り</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          これまでの稽古ログ全体をAIが振り返り、全体の傾向や成長の兆し、今後の課題を分析します。
+          これまでの稽古ログの件数と総量を瞬時に集計します。
         </p>
-        <button type="button" id="analyzeAllBtn" class="btn btn-ai">全稽古ログをAI分析する</button>
-        <button type="button" class="btn btn-secondary" onclick="resetApiKey()">🔑 APIキーを再設定する</button>
+        <button type="button" id="localAnalyzeBtn" class="btn btn-ai">総稽古データを集計する</button>
 
         <div id="analysisResultBox" class="ai-box">
-          <div class="ai-title">📊 稽古傾向とアドバイス</div>
+          <div class="ai-title">📈 稽古サマリー</div>
           <div id="analysisResultContent" class="ai-text"></div>
         </div>
       </div>
@@ -544,7 +535,7 @@
       },
       hi: {
         title: "火の巻 - 実戦・勝負・駆け引き",
-        text: `【戦いにおける火の勢い】\n火は瞬時に大きく広がる。状況は一刻一刻変化する。火の巻では、実際の戦いにおける勝負の駆け引き、勢いと拍子の支配について説く。\n\n【三つの先】\n1. 意の先：相手が動く前に制する\n2. 対の先：相手の攻めに応じつつ先を取る\n3. 構の先：相手の動揺を誘い先を制する`
+        text: `【戦いにおける火の勢い】\n火は瞬時に大きく広がる。状況は一刻一変化する。火の巻では、実際の戦いにおける勝負の駆け引き、勢いと拍子の支配について説く。\n\n【三つの先】\n1. 意の先：相手が動く前に制する\n2. 対の先：相手の攻めに応じつつ先を取る\n3. 構の先：相手の動揺を誘い先を制する`
       },
       kaze: {
         title: "風の巻 - 他流派の研究・兵法の本質",
@@ -664,127 +655,51 @@
       btn.disabled = false;
     });
 
-    function getApiKey() {
-      let key = localStorage.getItem('gemini_api_key');
-      if (!key) {
-        key = prompt('Gemini APIキーを入力してください（AIzaSy...）:');
-        if (key) {
-          key = key.trim();
-          localStorage.setItem('gemini_api_key', key);
-        }
-      }
-      return key;
-    }
-
-    function resetApiKey() {
-      localStorage.removeItem('gemini_api_key');
-      alert('APIキーを削除しました。次にAIボタンを押した際に再入力画面が出ます。');
-    }
-
-    document.getElementById('aiBtn').addEventListener('click', async () => {
-      const apiKey = getApiKey();
-      if (!apiKey) return;
-
-      const aiBtn = document.getElementById('aiBtn');
+    // APIを使わない安全なアドバイス生成
+    document.getElementById('quickAdviceBtn').addEventListener('click', async () => {
       const box = document.getElementById('aiAdviceBox');
       const content = document.getElementById('aiAdviceContent');
 
-      aiBtn.disabled = true;
       box.style.display = 'block';
-      content.style.color = '#1e293b';
-      content.textContent = '分析中...';
+      content.textContent = '記録を保存中...';
 
       const log = await saveLogData();
-      if (!log) {
-        aiBtn.disabled = false;
-        return;
-      }
+      if (!log) return;
 
-      const promptText = `あなたは思慮深い武道の師範です。以下の稽古内容とメモを読み、短く的確なワンポイントアドバイス（120〜150字程度）を送信してください。
-種目: ${log.menu}, 回数: ${log.count}, メモ: ${log.memo || 'なし'}`;
+      const advices = [
+        "素晴らしい稽古です。初太刀の横一の気迫、そして体の軸がブレていないかが勝負の分かれ目となります。その調子で心身を研ぎ澄ませてください。",
+        "日々の地道な積み重ねこそが「錬」に至る唯一の道です。型の細部、特に残心に至るまでの意識を大切に。",
+        "よくぞやり切りました。技の速さだけでなく、間合いの支配と呼吸の調和を常に意識して稽古を重ねましょう。"
+      ];
+      const randomAdvice = advices[Math.floor(Math.random() * advices.length)];
 
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-        });
-        const data = await res.json();
-        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-          content.textContent = data.candidates[0].content.parts[0].text;
-        } else if (data.error) {
-          content.style.color = 'red';
-          content.textContent = `❌ エラーが発生しました:\n${data.error.message} (Code: ${data.error.code})`;
-        } else {
-          content.style.color = 'red';
-          content.textContent = 'アドバイスの生成に失敗しました（レスポンス形式異常）。';
-        }
-      } catch (err) {
-        content.style.color = 'red';
-        content.textContent = '通信エラーが発生しました: ' + err.message;
-      }
-
-      aiBtn.disabled = false;
+      content.textContent = `【本日の稽古：${log.menu} (${log.count})】\n${randomAdvice}`;
+      document.getElementById('count').value = '';
+      document.getElementById('memo').value = '';
+      fetchLogs();
     });
 
-    document.getElementById('analyzeAllBtn').addEventListener('click', async () => {
-      const apiKey = getApiKey();
-      if (!apiKey) {
-        alert('APIキーが指定されていません。');
-        return;
-      }
-
-      const btn = document.getElementById('analyzeAllBtn');
+    // ローカル集計（API不要）
+    document.getElementById('localAnalyzeBtn').addEventListener('click', async () => {
       const box = document.getElementById('analysisResultBox');
       const content = document.getElementById('analysisResultContent');
 
-      btn.disabled = true;
       box.style.display = 'block';
-      content.style.color = '#1e293b';
-      content.textContent = 'これまでの稽古データを分析中...';
+      content.textContent = 'データを集計中...';
 
       if (cachedLogs.length === 0) {
         await fetchLogs();
       }
 
       if (cachedLogs.length === 0) {
-        content.textContent = '分析対象の稽古データがありません。まず「記録する」タブでデータを保存してください。';
-        btn.disabled = false;
+        content.textContent = '集計対象の稽古データがありません。';
         return;
       }
 
-      const logsSummary = cachedLogs.slice(0, 30).map(l => 
-        `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`
-      ).join('\n');
+      const totalCount = cachedLogs.reduce((sum, l) => sum + (Number(l.count) || 0), 0);
+      const totalDays = new Set(cachedLogs.map(l => l.date)).size;
 
-      const promptText = `あなたは武道稽古の師範・アドバイザーです。以下に蓄積された過去の稽古記録を読み込み、全体的なアドバイス（300字程度）を提供してください。
-
-【稽古ログ】
-${logsSummary}`;
-
-      try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-        });
-        const data = await res.json();
-        
-        if (data.candidates && data.candidates[0].content && data.candidates[0].content.parts[0].text) {
-          content.textContent = data.candidates[0].content.parts[0].text;
-        } else if (data.error) {
-          content.style.color = 'red';
-          content.textContent = `❌ エラーが発生しました:\n${data.error.message} (Code: ${data.error.code})`;
-        } else {
-          content.style.color = 'red';
-          content.textContent = '分析に失敗しました。レスポンス異常。';
-        }
-      } catch (err) {
-        content.style.color = 'red';
-        content.textContent = '通信エラーが発生しました: ' + err.message;
-      }
-
-      btn.disabled = false;
+      content.textContent = `📋 【稽古実績サマリー】\n・総稽古回数（日数）: ${totalDays} 日\n・総記録件数: ${cachedLogs.length} 件\n・累計本数・時間: ${totalCount} \n\n日々の積み重ねが確実に力となっています。引き続き心身の鍛錬に励んでください。`;
     });
 
     function loadGorinChapter() {
