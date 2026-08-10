@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>武道稽古記録</title>
+  <title>武道稽古記録 & 五輪書</title>
   
   <!-- Supabase JavaScript SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -12,6 +12,8 @@
     :root {
       --primary-color: #2c3e50;
       --accent-color: #2980b9;
+      --ai-color: #8e44ad;
+      --gorin-color: #d35400;
       --bg-color: #f8f9fa;
       --card-bg: #ffffff;
       --border-color: #e0e0e0;
@@ -37,6 +39,13 @@
       color: var(--primary-color);
       font-size: 1.5rem;
       margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      color: var(--primary-color);
+      margin-top: 24px;
+      margin-bottom: 12px;
     }
 
     .card {
@@ -94,6 +103,68 @@
       background-color: #1f6391;
     }
 
+    .btn-ai {
+      background-color: var(--ai-color);
+      margin-top: 10px;
+    }
+
+    .btn-ai:hover {
+      background-color: #732d91;
+    }
+
+    /* AIアドバイス表示エリア */
+    .ai-advice-box {
+      background: #f3ebf7;
+      border: 1px solid #dcd0e5;
+      border-left: 4px solid var(--ai-color);
+      border-radius: 6px;
+      padding: 14px;
+      margin-top: 14px;
+      display: none;
+    }
+
+    .ai-advice-title {
+      font-weight: bold;
+      color: var(--ai-color);
+      margin-bottom: 6px;
+    }
+
+    .ai-advice-content {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #333;
+      white-space: pre-wrap;
+    }
+
+    /* 五輪書セクション */
+    .gorin-select {
+      margin-bottom: 12px;
+    }
+
+    .gorin-content-box {
+      background: #fffdf9;
+      border: 1px solid #f0e2d0;
+      border-left: 4px solid var(--gorin-color);
+      border-radius: 6px;
+      padding: 16px;
+      margin-top: 10px;
+    }
+
+    .gorin-title {
+      font-weight: bold;
+      color: var(--gorin-color);
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .gorin-text {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: #444;
+      white-space: pre-wrap;
+    }
+
+    /* 履歴アイテム */
     .log-item {
       background: var(--card-bg);
       border-left: 4px solid var(--accent-color);
@@ -132,7 +203,7 @@
 <body>
 
   <div class="container">
-    <h1>🥋 武道稽古記録</h1>
+    <h1>🥋 武道稽古記録 & AIアドバイザー</h1>
 
     <!-- 記録入力フォーム -->
     <div class="card">
@@ -154,11 +225,38 @@
 
         <div class="form-group">
           <label for="memo">メモ・気づき</label>
-          <textarea id="memo" placeholder="例: 横一の振りを意識した"></textarea>
+          <textarea id="memo" placeholder="例: 横一の振りを意識した、重心がぶれた"></textarea>
         </div>
 
         <button type="submit" id="submitBtn">記録を保存する</button>
+        <button type="button" id="aiBtn" class="btn-ai">✨ 保存＆AIアドバイスをもらう</button>
       </form>
+
+      <!-- AIアドバイス結果エリア -->
+      <div id="aiAdviceBox" class="ai-advice-box">
+        <div class="ai-advice-title">🤖 AI武道師範のアドバイス</div>
+        <div id="aiAdviceContent" class="ai-advice-content"></div>
+      </div>
+    </div>
+
+    <!-- 📖 五輪書 閲覧エリア -->
+    <h2>📖 五輪書（宮本武蔵）</h2>
+    <div class="card">
+      <div class="form-group gorin-select">
+        <label for="gorinChapter">読む章を選択してください</label>
+        <select id="gorinChapter">
+          <option value="chi">地の巻（兵法の土台・基本思想）</option>
+          <option value="mizu">水の巻（構え・身体の使い方・剣技）</option>
+          <option value="hi">火の巻（戦いの勝敗・駆け引き・心理）</option>
+          <option value="kaze">風の巻（他流派の研究・兵法の視点）</option>
+          <option value="ku">空の巻（極意・あるがままの境地）</option>
+        </select>
+      </div>
+
+      <div class="gorin-content-box">
+        <div id="gorinTitle" class="gorin-title">地の巻</div>
+        <div id="gorinText" class="gorin-text"></div>
+      </div>
     </div>
 
     <!-- 履歴表示エリア -->
@@ -169,10 +267,50 @@
   </div>
 
   <script>
-    // Supabase 設定
+    // --- 設定情報 ---
     const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 五輪書のデータ（要約・現代語訳テキスト）
+    const gorinData = {
+      chi: {
+        title: "地の巻（ちのまき）- 兵法の基本・土台",
+        text: `兵法の道をまっすぐに建てる基礎となる巻である。\n\n大工の棟梁が建物の構造を理解し、材木を適材適所に配するように、兵法家も道具の特性を知り、己の鍛錬を重ねなければならない。\n\n千日の稽古を鍛とし、万日の稽古を錬とする。「鍛錬」とは、日々の継続により真の技と心を練り上げることである。`
+      },
+      mizu: {
+        title: "水の巻（みずのまき）- 心構え・体術・剣技",
+        text: `水は丸い器にも四角い器にも従い、一滴ともなり清濁どちらにも合わせる。水のような心をもって兵法の基準とする。\n\n【心構え】\n心は常に平常であり、広く直く、伸びやかに保つこと。硬くならず、緩みすぎず、偏りのない「平常心」が要である。\n\n【目付け】\n観の目（全体の真実を見抜く目）を強く、見の目（表面の動きを追う目）を弱くすること。遠い山を見るように全体を捉えよ。`
+      },
+      hi: {
+        title: "火の巻（ひのまき）- 合戦・駆け引き・勝利の理",
+        text: `火は小さく燃え上がり、大きく広がり、変幻自在である。戦いにおける勢いと攻防を説く。\n\n【先を制する】\n・意の先：敵が動く前に打つ\n・体（対）の先：敵の攻撃に応じて打つ\n・構の先：敵と同時に動いて制する\n\n敵の姿勢を崩し、拍子（リズム）を乱し、敵になりかわって思考することが勝利への道である。`
+      },
+      kaze: {
+        title: "風の巻（かぜのまき）- 他流派の研究・自己の確立",
+        text: `「風」とは世風や他流のことである。他者の技や癖を知らなければ、真に己の兵法を知ることはできない。\n\n長すぎる太刀に頼る者は遠くを意識しすぎて間合いを誤り、急ぎすぎる者は拍子を崩す。\n\n真の兵法は、特別な技巧に逃げず、理にかなった自然な動作の中にこそ存在する。`
+      },
+      ku: {
+        title: "空の巻（くうのまき）- 執着を離れた極意",
+        text: `知らんとする心、学ぶ動作を突き抜けた先にある「空」の境地。\n\n迷いがなくなり、心が何物にもとらわれなくなったとき、自ずと真の道があらわれる。\n\n「心を空にして、直き心を道とす」\n鍛錬の果てに自意識を消し去り、自然体で技が繰り出される状態を目指すこと。`
+      }
+    };
+
+    // 五輪書の切り替え処理
+    const gorinSelect = document.getElementById('gorinChapter');
+    const gorinTitle = document.getElementById('gorinTitle');
+    const gorinText = document.getElementById('gorinText');
+
+    function updateGorin() {
+      const selected = gorinSelect.value;
+      if (gorinData[selected]) {
+        gorinTitle.textContent = gorinData[selected].title;
+        gorinText.textContent = gorinData[selected].text;
+      }
+    }
+
+    gorinSelect.addEventListener('change', updateGorin);
+    updateGorin(); // 初期表示
 
     // 今日の日付を初期値としてセット
     document.getElementById('date').valueAsDate = new Date();
@@ -213,18 +351,17 @@
       });
     }
 
-    // フォーム送信時の処理（追加保存）
-    document.getElementById('keikoForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const submitBtn = document.getElementById('submitBtn');
-      submitBtn.disabled = true;
-      submitBtn.textContent = '保存中...';
-
+    // 共通のデータ保存処理
+    async function saveLogData() {
       const date = document.getElementById('date').value;
       const menu = document.getElementById('menu').value;
       const count = parseInt(document.getElementById('count').value, 10);
       const memo = document.getElementById('memo').value;
+
+      if (!menu || isNaN(count)) {
+        alert('種目名と回数・時間を入力してください。');
+        return null;
+      }
 
       const { error } = await supabaseClient
         .from('keiko_logs')
@@ -233,21 +370,101 @@
       if (error) {
         console.error('保存エラー:', error);
         alert('保存に失敗しました: ' + error.message);
-      } else {
-        // フォームのリセット（日付は維持）
+        return null;
+      }
+
+      await fetchLogs();
+      return { date, menu, count, memo };
+    }
+
+    // 通常の保存ボタン
+    document.getElementById('keikoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+
+      const result = await saveLogData();
+      if (result) {
         document.getElementById('menu').value = '';
         document.getElementById('count').value = '';
         document.getElementById('memo').value = '';
-        
-        // 最新一覧の再取得
-        await fetchLogs();
+        document.getElementById('aiAdviceBox').style.display = 'none';
       }
 
       submitBtn.disabled = false;
-      submitBtn.textContent = '記録を保存する';
     });
 
-    // エスケープ処理（安全対策）
+    // ✨ AIアドバイスボタンの処理
+    document.getElementById('aiBtn').addEventListener('click', async () => {
+      const aiBtn = document.getElementById('aiBtn');
+      const adviceBox = document.getElementById('aiAdviceBox');
+      const adviceContent = document.getElementById('aiAdviceContent');
+
+      // APIキーをローカルストレージ（ブラウザ内）に保持、なければ入力してもらう
+      let apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) {
+        apiKey = prompt('Gemini APIキーを入力してください:');
+        if (apiKey) {
+          localStorage.setItem('gemini_api_key', apiKey.trim());
+        } else {
+          alert('APIキーが入力されなかったため、AIアドバイスはキャンセルされました。');
+          return;
+        }
+      }
+
+      aiBtn.disabled = true;
+      aiBtn.textContent = '思考中...';
+      adviceBox.style.display = 'block';
+      adviceContent.textContent = '稽古内容を分析してアドバイスを生成しています...';
+
+      // 1. データを保存
+      const logData = await saveLogData();
+      if (!logData) {
+        aiBtn.disabled = false;
+        aiBtn.textContent = '✨ 保存＆AIアドバイスをもらう';
+        return;
+      }
+
+      // 2. Gemini API へ送信プロンプトを作成
+      const promptText = `あなたは思慮深く温かい武道の師範・相談役です。
+以下の稽古内容と気づき（メモ）を読み、五輪書の教え（観の目、鍛錬、平常心など）も踏まえつつ、励ましと具体的なワンポイントアドバイス（短く簡潔に120〜150文字程度）を提供してください。
+
+【本日の稽古】
+- 種目: ${logData.menu}
+- 回数/時間: ${logData.count}
+- 気づき・メモ: ${logData.memo || '特になし'}
+`;
+
+      try {
+        // 3. Gemini API 呼び出し
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+          })
+        });
+
+        const data = await response.json();
+        
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+          const reply = data.candidates[0].content.parts[0].text;
+          adviceContent.textContent = reply;
+        } else {
+          adviceContent.textContent = 'アドバイスの生成に失敗しました。APIキーを確認してください。';
+          // エラー時は一度キーを削除して次回再入力できるようにする
+          localStorage.removeItem('gemini_api_key');
+        }
+      } catch (err) {
+        console.error('API Error:', err);
+        adviceContent.textContent = '通信エラーが発生しました。';
+      }
+
+      aiBtn.disabled = false;
+      aiBtn.textContent = '✨ 保存＆AIアドバイスをもらう';
+    });
+
+    // エスケープ処理
     function escapeHtml(str) {
       return str.replace(/[&<>'"]/g, 
         tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
