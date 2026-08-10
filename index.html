@@ -119,7 +119,8 @@
     }
     .log-date { font-size: 0.8rem; color: #888; }
     .log-type { font-weight: bold; color: var(--accent-color); }
-    .log-note { font-size: 0.9rem; margin-top: 4px; white-space: pre-wrap; }
+    .log-detail { font-size: 0.9rem; color: #ddd; margin-top: 2px; }
+    .log-note { font-size: 0.85rem; margin-top: 4px; color: #bbb; white-space: pre-wrap; }
     .btn-delete {
       position: absolute;
       right: 0;
@@ -152,38 +153,27 @@
       color: #111;
       font-weight: bold;
     }
-    .stat-summary {
-      text-align: center;
-      padding: 15px;
-      background: #111;
-      border-radius: 6px;
+    .stat-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
       margin-bottom: 15px;
     }
-    .stat-number {
-      font-size: 2rem;
+    .stat-box {
+      background: #111;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+      border: 1px solid #333;
+    }
+    .stat-box .val {
+      font-size: 1.3rem;
       color: var(--accent-color);
       font-weight: bold;
     }
-    .stat-bar-container {
-      margin-bottom: 10px;
-    }
-    .stat-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85rem;
-      margin-bottom: 3px;
-    }
-    .stat-bar-bg {
-      background-color: #111;
-      height: 10px;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-    .stat-bar-fill {
-      background-color: var(--accent-color);
-      height: 100%;
-      width: 0%;
-      transition: width 0.3s ease;
+    .stat-box .lbl {
+      font-size: 0.75rem;
+      color: #888;
     }
 
     /* 五輪書スタイル */
@@ -247,7 +237,7 @@
           <input type="date" id="log-date" required>
 
           <label>稽古種目</label>
-          <select id="log-type">
+          <select id="log-type" onchange="updateFormFields()">
             <option value="ストレッチ">ストレッチ</option>
             <option value="補強">補強</option>
             <option value="形">形</option>
@@ -257,7 +247,12 @@
             <option value="禅">禅</option>
           </select>
 
-          <label>気づき・反省点・メモ</label>
+          <!-- 動的に切り替わる入力フィールド -->
+          <div id="dynamic-fields">
+            <!-- JavaScriptで切り替え -->
+          </div>
+
+          <label>気づき・反省点・メモ（吉記など）</label>
           <textarea id="log-note" rows="4" placeholder="初太刀の刃筋、足捌きの拍子、気付きなどを記録..." required></textarea>
 
           <button type="submit" class="btn-primary">鍛錬録に保存</button>
@@ -276,14 +271,12 @@
           <button id="f-yearly" onclick="setStatsPeriod('yearly')">年次</button>
         </div>
 
-        <div class="stat-summary">
-          <div style="font-size: 0.85rem; color: #888;" id="stat-period-label">本日の稽古回数</div>
-          <div class="stat-number" id="stat-total-count">0<span style="font-size: 1rem; color: #888;"> 回</span></div>
+        <div style="text-align: center; font-size: 0.85rem; color: #888; margin-bottom: 10px;" id="stat-period-label">
+          本日の集計
         </div>
 
-        <h3 style="font-size: 0.95rem; color: var(--accent-color); margin-bottom: 12px;">種目別内訳</h3>
-        <div id="stats-bars">
-          <!-- JSで動的にバーを挿入 -->
+        <div class="stat-summary-grid" id="stats-summary-grid">
+          <!-- JSで動的に集計数・時間を表示 -->
         </div>
       </div>
     </div>
@@ -300,9 +293,6 @@
   </main>
 
   <script>
-    // 種目リスト
-    const TYPES = ['ストレッチ', '補強', '形', '約束組太刀', '自由組太刀', '試し斬り', '禅'];
-
     // 五輪書の言葉データ
     const quotes = [
       { text: "千日の稽古を鍛とし、万日の稽古を錬とす。", vol: "地の巻", key: "chi" },
@@ -316,6 +306,31 @@
     ];
 
     let currentPeriod = 'daily';
+
+    // 種目に応じたフォーム切り替え
+    function updateFormFields() {
+      const type = document.getElementById('log-type').value;
+      const container = document.getElementById('dynamic-fields');
+
+      if (type === 'ストレッチ' || type === '禅') {
+        container.innerHTML = `
+          <label>時間（分）</label>
+          <input type="number" id="input-time" min="1" placeholder="例: 15" required>
+        `;
+      } else if (type === '形' || type === '約束組太刀' || type === '自由組太刀' || type === '補強') {
+        container.innerHTML = `
+          <label>演目・技・部位（内容）</label>
+          <input type="text" id="input-item" placeholder="例: 基本の一、腕立て、腹筋など" required>
+          <label>回数 / 本数</label>
+          <input type="number" id="input-count" min="1" placeholder="例: 10" required>
+        `;
+      } else if (type === '試し斬り') {
+        container.innerHTML = `
+          <label>斬試本数（本）</label>
+          <input type="number" id="input-count" min="1" placeholder="例: 5" required>
+        `;
+      }
+    }
 
     // タブ切り替え
     function switchTab(tabName) {
@@ -354,7 +369,19 @@
       const type = document.getElementById('log-type').value;
       const note = document.getElementById('log-note').value;
 
-      const newLog = { date, type, note, id: Date.now() };
+      let time = 0;
+      let item = '';
+      let count = 0;
+
+      const timeEl = document.getElementById('input-time');
+      const itemEl = document.getElementById('input-item');
+      const countEl = document.getElementById('input-count');
+
+      if (timeEl) time = parseInt(timeEl.value) || 0;
+      if (itemEl) item = itemEl.value;
+      if (countEl) count = parseInt(countEl.value) || 0;
+
+      const newLog = { date, type, time, item, count, note, id: Date.now() };
       const logs = JSON.parse(localStorage.getItem('budo_logs') || '[]');
       logs.unshift(newLog);
       localStorage.setItem('budo_logs', JSON.stringify(logs));
@@ -383,14 +410,21 @@
         return;
       }
 
-      container.innerHTML = logs.map(log => `
-        <div class="log-item">
-          <button class="btn-delete" onclick="deleteLog(${log.id})">削除</button>
-          <div class="log-date">${log.date}</div>
-          <div class="log-type">${log.type}</div>
-          <div class="log-note">${escapeHtml(log.note)}</div>
-        </div>
-      `).join('<hr style="border:0; border-top:1px solid #333; margin:15px 0;">');
+      container.innerHTML = logs.map(log => {
+        let detailText = '';
+        if (log.time > 0) detailText = `【時間】${log.time} 分`;
+        else if (log.count > 0) detailText = `${log.item ? log.item + ' : ' : ''}${log.count} 回/本`;
+
+        return `
+          <div class="log-item">
+            <button class="btn-delete" onclick="deleteLog(${log.id})">削除</button>
+            <div class="log-date">${log.date}</div>
+            <div class="log-type">${log.type}</div>
+            ${detailText ? `<div class="log-detail">${detailText}</div>` : ''}
+            <div class="log-note">${escapeHtml(log.note)}</div>
+          </div>
+        `;
+      }).join('<hr style="border:0; border-top:1px solid #333; margin:15px 0;">');
     }
 
     // 期間別切り替え
@@ -411,10 +445,10 @@
       let labelText = '';
 
       if (currentPeriod === 'daily') {
-        labelText = '本日（' + todayStr + '）の稽古数';
+        labelText = '本日（' + todayStr + '）の累計';
         filteredLogs = logs.filter(l => l.date === todayStr);
       } else if (currentPeriod === 'weekly') {
-        labelText = '今週の稽古数';
+        labelText = '今週の累計';
         const startOfWeek = new Date(now);
         const day = startOfWeek.getDay() || 7; // 月曜起算
         startOfWeek.setDate(now.getDate() - day + 1);
@@ -425,44 +459,61 @@
           return d >= startOfWeek && d <= now;
         });
       } else if (currentPeriod === 'monthly') {
-        const monthStr = todayStr.substring(0, 7); // YYYY-MM
-        labelText = '今月（' + monthStr + '）の稽古数';
+        const monthStr = todayStr.substring(0, 7);
+        labelText = '今月（' + monthStr + '）の累計';
         filteredLogs = logs.filter(l => l.date && l.date.startsWith(monthStr));
       } else if (currentPeriod === 'yearly') {
-        const yearStr = todayStr.substring(0, 4); // YYYY
-        labelText = '今年（' + yearStr + '年）の稽古数';
+        const yearStr = todayStr.substring(0, 4);
+        labelText = '今年（' + yearStr + '年）の累計';
         filteredLogs = logs.filter(l => l.date && l.date.startsWith(yearStr));
       }
 
-      // 集計
-      const counts = {};
-      TYPES.forEach(t => counts[t] = 0);
+      // 集計データの計算
+      let totalTime = 0;  // ストレッチ＋禅
+      let kataCount = 0;  // 形
+      let kumiCount = 0;  // 約束＋自由組太刀
+      let cutCount = 0;   // 試し斬り
+      let hokyoCount = 0; // 補強
+
       filteredLogs.forEach(l => {
-        if (counts[l.type] !== undefined) counts[l.type]++;
-        else counts[l.type] = 1;
+        if (l.type === 'ストレッチ' || l.type === '禅') {
+          totalTime += (l.time || 0);
+        } else if (l.type === '形') {
+          kataCount += (l.count || 0);
+        } else if (l.type === '約束組太刀' || l.type === '自由組太刀') {
+          kumiCount += (l.count || 0);
+        } else if (l.type === '試し斬り') {
+          cutCount += (l.count || 0);
+        } else if (l.type === '補強') {
+          hokyoCount += (l.count || 0);
+        }
       });
 
-      const total = filteredLogs.length;
       document.getElementById('stat-period-label').innerText = labelText;
-      document.getElementById('stat-total-count').innerHTML = total + '<span style="font-size: 1rem; color: #888;"> 回</span>';
 
-      // バー表示
-      const container = document.getElementById('stats-bars');
-      container.innerHTML = TYPES.map(t => {
-        const cnt = counts[t] || 0;
-        const pct = total > 0 ? Math.round((cnt / total) * 100) : 0;
-        return `
-          <div class="stat-bar-container">
-            <div class="stat-label">
-              <span>${t}</span>
-              <span style="color:var(--accent-color);">${cnt} 回 (${pct}%)</span>
-            </div>
-            <div class="stat-bar-bg">
-              <div class="stat-bar-fill" style="width: ${pct}%;"></div>
-            </div>
-          </div>
-        `;
-      }).join('');
+      const grid = document.getElementById('stats-summary-grid');
+      grid.innerHTML = `
+        <div class="stat-box">
+          <div class="val">${totalTime} <span style="font-size:0.8rem">分</span></div>
+          <div class="lbl">静修（ストレッチ・禅）</div>
+        </div>
+        <div class="stat-box">
+          <div class="val">${kataCount} <span style="font-size:0.8rem">回</span></div>
+          <div class="lbl">形</div>
+        </div>
+        <div class="stat-box">
+          <div class="val">${kumiCount} <span style="font-size:0.8rem">本</span></div>
+          <div class="lbl">組太刀（約束・自由）</div>
+        </div>
+        <div class="stat-box">
+          <div class="val">${cutCount} <span style="font-size:0.8rem">本</span></div>
+          <div class="lbl">試し斬り</div>
+        </div>
+        <div class="stat-box" style="grid-column: span 2;">
+          <div class="val">${hokyoCount} <span style="font-size:0.8rem">回</span></div>
+          <div class="lbl">補強（体幹・補強運動）</div>
+        </div>
+      `;
     }
 
     function escapeHtml(str) {
@@ -471,6 +522,7 @@
 
     // 初期化
     document.getElementById('log-date').valueAsDate = new Date();
+    updateFormFields();
   </script>
 </body>
 </html>
