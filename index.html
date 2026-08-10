@@ -10,7 +10,7 @@
 
   <style>
     :root {
-      --primary-color: #1b2a4a; /* 深みのある紺色 */
+      --primary-color: #1b2a4a;
       --accent-color: #2b5c8f;
       --ai-color: #6b3ba7;
       --gorin-color: #c05621;
@@ -34,7 +34,6 @@
       padding-bottom: 40px;
     }
 
-    /* ヘッダー */
     header {
       background: var(--primary-color);
       color: #ffffff;
@@ -46,10 +45,8 @@
     header h1 {
       font-size: 1.25rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
     }
 
-    /* ナビゲーションタブ */
     .nav-tabs {
       display: flex;
       background: #ffffff;
@@ -79,7 +76,6 @@
       background-color: #f8fafc;
     }
 
-    /* コンテナ */
     .container {
       max-width: 600px;
       margin: 16px auto;
@@ -94,7 +90,6 @@
       display: block;
     }
 
-    /* カード */
     .card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -113,9 +108,8 @@
       padding-bottom: 8px;
     }
 
-    /* フォーム */
     .form-group {
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
 
     label {
@@ -139,12 +133,34 @@
       background-color: #fff;
     }
 
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .chip-btn {
+      padding: 6px 12px;
+      background: #e2e8f0;
+      border: none;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .chip-btn:active {
+      background: var(--accent-color);
+      color: white;
+    }
+
     textarea {
       resize: vertical;
       height: 90px;
     }
 
-    /* ボタン */
     .btn {
       width: 100%;
       padding: 12px;
@@ -171,7 +187,6 @@
       margin-top: 10px;
     }
 
-    /* AIボックス */
     .ai-box {
       background: #f3e8ff;
       border: 1px solid #d8b4fe;
@@ -195,7 +210,6 @@
       line-height: 1.6;
     }
 
-    /* 履歴リスト */
     .log-item {
       background: white;
       border-radius: 8px;
@@ -242,7 +256,6 @@
       border-top: 1px dashed #e2e8f0;
     }
 
-    /* 五輪書ビューア */
     .gorin-box {
       background: #fffdfa;
       border: 1px solid #fed7aa;
@@ -276,15 +289,6 @@
       padding: 24px 0;
       font-size: 0.9rem;
     }
-
-    .error-msg {
-      color: #dc2626;
-      background: #fef2f2;
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      margin-top: 8px;
-    }
   </style>
 </head>
 <body>
@@ -293,7 +297,6 @@
     <h1>🥋 武道稽古記録 & AIアドバイザー</h1>
   </header>
 
-  <!-- タブナビゲーション -->
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('recordTab', this)">📝 記録する</button>
     <button class="tab-btn" onclick="switchTab('historyTab', this)">📋 稽古履歴</button>
@@ -313,19 +316,37 @@
             <input type="date" id="date" required>
           </div>
 
+          <!-- 選択式 種目選択 -->
           <div class="form-group">
-            <label for="menu">種目名</label>
-            <input type="text" id="menu" placeholder="例: 形、横一、素振り" required>
+            <label for="menuSelect">種目を選択</label>
+            <select id="menuSelect" onchange="toggleCustomMenu()">
+              <option value="横一">横一</option>
+              <option value="基本一">基本一</option>
+              <option value="形">形</option>
+              <option value="素振り">素振り</option>
+              <option value="組太刀">組太刀</option>
+              <option value="禅">禅</option>
+              <option value="custom">その他（直接入力）</option>
+            </select>
+            <input type="text" id="customMenuInput" placeholder="種目名を入力" style="display:none; margin-top:8px;">
           </div>
 
+          <!-- 選択チップ ＆ 直接入力ができる回数 -->
           <div class="form-group">
-            <label for="count">回数・時間</label>
+            <label for="count">回数・時間 (本 / 分)</label>
             <input type="number" id="count" placeholder="例: 10" required>
+            <div class="chip-group">
+              <button type="button" class="chip-btn" onclick="setCount(10)">10本</button>
+              <button type="button" class="chip-btn" onclick="setCount(20)">20本</button>
+              <button type="button" class="chip-btn" onclick="setCount(30)">30本</button>
+              <button type="button" class="chip-btn" onclick="setCount(50)">50本</button>
+              <button type="button" class="chip-btn" onclick="setCount(100)">100本</button>
+            </div>
           </div>
 
           <div class="form-group">
             <label for="memo">メモ・気づき</label>
-            <textarea id="memo" placeholder="例: 横一の振りを意識。重心を意識した"></textarea>
+            <textarea id="memo" placeholder="例: 横一の初太刀で刃筋を意識。軸がブレないよう留意した"></textarea>
           </div>
 
           <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
@@ -395,9 +416,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let cachedLogs = [];
-    let detectedTable = 'keiko_logs'; // デフォルトテーブル名
 
-    // 五輪書データ
     const gorinData = {
       chi: {
         title: "地の巻 - 兵法の土台と理念",
@@ -433,43 +452,41 @@
       }
     }
 
+    // 種目の自由入力切り替え
+    function toggleCustomMenu() {
+      const select = document.getElementById('menuSelect');
+      const customInput = document.getElementById('customMenuInput');
+      if (select.value === 'custom') {
+        customInput.style.display = 'block';
+        customInput.required = true;
+      } else {
+        customInput.style.display = 'none';
+        customInput.required = false;
+      }
+    }
+
+    // 回数チップ設定
+    function setCount(val) {
+      document.getElementById('count').value = val;
+    }
+
     document.getElementById('date').valueAsDate = new Date();
 
-    // ログ取得（テーブル名フォールバック機能付き）
     async function fetchLogs() {
       const logList = document.getElementById('logList');
       logList.innerHTML = '<div class="empty-state">データを読み込んでいます...</div>';
 
-      const possibleTables = ['keiko_logs', 'logs', 'keiko', 'records'];
-      let lastError = null;
-      let loadedData = null;
+      const { data, error } = await supabaseClient
+        .from('keiko_logs')
+        .select('*')
+        .order('id', { ascending: false });
 
-      for (const table of possibleTables) {
-        const { data, error } = await supabaseClient
-          .from(table)
-          .select('*')
-          .order('id', { ascending: false });
-
-        if (!error && data) {
-          loadedData = data;
-          detectedTable = table;
-          break;
-        } else {
-          lastError = error;
-        }
-      }
-
-      if (!loadedData) {
-        logList.innerHTML = `
-          <div class="empty-state">
-            <p>データの取得に失敗しました。</p>
-            <div class="error-msg">エラー詳細: ${lastError ? lastError.message : 'テーブルが見つかりません'}</div>
-            <p style="margin-top:8px; font-size:0.8rem;">※Supabaseのテーブル名をご確認ください。</p>
-          </div>`;
+      if (error) {
+        logList.innerHTML = `<div class="empty-state"><p>取得エラー: ${error.message}</p></div>`;
         return;
       }
 
-      cachedLogs = loadedData;
+      cachedLogs = data || [];
 
       if (cachedLogs.length === 0) {
         logList.innerHTML = '<div class="empty-state">まだ記録がありません</div>';
@@ -482,20 +499,20 @@
         div.className = 'log-item';
         div.innerHTML = `
           <div class="log-header">
-            <span class="log-menu">${escapeHtml(log.menu || log.title || '稽古')}</span>
-            <span class="log-count">${log.count || log.quantity || 0}</span>
+            <span class="log-menu">${escapeHtml(log.menu || '稽古')}</span>
+            <span class="log-count">${log.count || 0}</span>
           </div>
-          <div class="log-date">${log.date || log.created_at || ''}</div>
-          ${(log.memo || log.note) ? `<div class="log-memo">${escapeHtml(log.memo || log.note)}</div>` : ''}
+          <div class="log-date">${log.date || ''}</div>
+          ${log.memo ? `<div class="log-memo">${escapeHtml(log.memo)}</div>` : ''}
         `;
         logList.appendChild(div);
       });
     }
 
-    // 保存処理
     async function saveLogData() {
       const date = document.getElementById('date').value;
-      const menu = document.getElementById('menu').value;
+      const selectVal = document.getElementById('menuSelect').value;
+      const menu = selectVal === 'custom' ? document.getElementById('customMenuInput').value : selectVal;
       const count = parseInt(document.getElementById('count').value, 10);
       const memo = document.getElementById('memo').value;
 
@@ -506,7 +523,7 @@
 
       const payload = { date, menu, count, memo };
       const { error } = await supabaseClient
-        .from(detectedTable)
+        .from('keiko_logs')
         .insert([payload]);
 
       if (error) {
@@ -517,7 +534,6 @@
       return payload;
     }
 
-    // フォーム送信
     document.getElementById('keikoForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
@@ -526,7 +542,6 @@
       const res = await saveLogData();
       if (res) {
         alert('稽古記録を保存しました！');
-        document.getElementById('menu').value = '';
         document.getElementById('count').value = '';
         document.getElementById('memo').value = '';
         document.getElementById('aiAdviceBox').style.display = 'none';
@@ -546,7 +561,6 @@
       return key;
     }
 
-    // AIアドバイス（単発）
     document.getElementById('aiBtn').addEventListener('click', async () => {
       const apiKey = getApiKey();
       if (!apiKey) return;
@@ -587,7 +601,6 @@
       aiBtn.disabled = false;
     });
 
-    // 過去分析
     document.getElementById('analyzeAllBtn').addEventListener('click', async () => {
       const apiKey = getApiKey();
       if (!apiKey) return;
@@ -611,7 +624,7 @@
       }
 
       const logsSummary = cachedLogs.slice(0, 30).map(l => 
-        `・[${l.date || l.created_at}] ${l.menu || l.title} (${l.count || l.quantity}) / メモ: ${l.memo || l.note || 'なし'}`
+        `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`
       ).join('\n');
 
       const promptText = `あなたは武道稽古の師範・アドバイザーです。以下に蓄積された過去の稽古記録を読み込み、全体的なアドバイス（300字程度）を提供してください。
