@@ -316,15 +316,16 @@
             <input type="date" id="date" required>
           </div>
 
-          <!-- 選択式 種目選択 -->
+          <!-- 指定された7つの選択肢＋直接入力 -->
           <div class="form-group">
             <label for="menuSelect">種目を選択</label>
             <select id="menuSelect" onchange="toggleCustomMenu()">
-              <option value="横一">横一</option>
-              <option value="基本一">基本一</option>
+              <option value="ストレッチ">ストレッチ</option>
+              <option value="補強">補強</option>
               <option value="形">形</option>
-              <option value="素振り">素振り</option>
-              <option value="組太刀">組太刀</option>
+              <option value="約束組太刀">約束組太刀</option>
+              <option value="自由組太刀">自由組太刀</option>
+              <option value="試し斬り">試し斬り</option>
               <option value="禅">禅</option>
               <option value="custom">その他（直接入力）</option>
             </select>
@@ -336,17 +337,17 @@
             <label for="count">回数・時間 (本 / 分)</label>
             <input type="number" id="count" placeholder="例: 10" required>
             <div class="chip-group">
-              <button type="button" class="chip-btn" onclick="setCount(10)">10本</button>
-              <button type="button" class="chip-btn" onclick="setCount(20)">20本</button>
-              <button type="button" class="chip-btn" onclick="setCount(30)">30本</button>
-              <button type="button" class="chip-btn" onclick="setCount(50)">50本</button>
-              <button type="button" class="chip-btn" onclick="setCount(100)">100本</button>
+              <button type="button" class="chip-btn" onclick="setCount(10)">10本/分</button>
+              <button type="button" class="chip-btn" onclick="setCount(20)">20本/分</button>
+              <button type="button" class="chip-btn" onclick="setCount(30)">30本/分</button>
+              <button type="button" class="chip-btn" onclick="setCount(50)">50本/分</button>
+              <button type="button" class="chip-btn" onclick="setCount(100)">100本/分</button>
             </div>
           </div>
 
           <div class="form-group">
             <label for="memo">メモ・気づき</label>
-            <textarea id="memo" placeholder="例: 横一の初太刀で刃筋を意識。軸がブレないよう留意した"></textarea>
+            <textarea id="memo" placeholder="例: 初太刀での刃筋と体の軸を意識。間合いの取り方に留意した"></textarea>
           </div>
 
           <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
