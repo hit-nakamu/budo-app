@@ -316,17 +316,125 @@
             <input type="date" id="date" required>
           </div>
 
-          <!-- 指定された7つの選択肢＋直接入力 -->
+          <!-- 1階層下まで細分化した詳細種目選択 -->
           <div class="form-group">
             <label for="menuSelect">種目を選択</label>
             <select id="menuSelect" onchange="toggleCustomMenu()">
-              <option value="ストレッチ">ストレッチ</option>
-              <option value="補強">補強</option>
-              <option value="形">形</option>
-              <option value="約束組太刀">約束組太刀</option>
-              <option value="自由組太刀">自由組太刀</option>
-              <option value="試し斬り">試し斬り</option>
-              <option value="禅">禅</option>
+              <!-- 補強・基本 -->
+              <optgroup label="補強・基本・体さばき">
+                <option value="補強：腕立て伏せ">補強：腕立て伏せ</option>
+                <option value="補強：腹筋">補強：腹筋</option>
+                <option value="補強：背筋">補強：背筋</option>
+                <option value="補強：スクワット">補強：スクワット</option>
+                <option value="基本：素振り（真向）">基本：素振り（真向）</option>
+                <option value="基本：素振り（左右袈裟）">基本：素振り（左右袈裟）</option>
+                <option value="基本：素振り（左右逆袈裟）">基本：素振り（左右逆袈裟）</option>
+                <option value="基本：素振り（横一文字）">基本：素振り（横一文字）</option>
+                <option value="基本：体さばき・運足">基本：体さばき・運足</option>
+              </optgroup>
+
+              <!-- 形 -->
+              <optgroup label="形（居合形）">
+                <option value="形：基本一">形：基本一</option>
+                <option value="形：基本二">形：基本二</option>
+                <option value="形：基本三">形：基本三</option>
+                <option value="形：五用・真">形：五用・真</option>
+                <option value="形：五用・連">形：五用・連</option>
+                <option value="形：五用・左">形：五用・左</option>
+                <option value="形：五用・右">形：五用・右</option>
+                <option value="形：五用・捨">形：五用・捨</option>
+                <option value="形：五箇・水月">形：五箇・水月</option>
+                <option value="形：五箇・陰中陽">形：五箇・陰中陽</option>
+                <option value="形：五箇・陽中陰">形：五箇・陽中陰</option>
+                <option value="形：五箇・響き返し">形：五箇・響き返し</option>
+                <option value="形：五箇・破図味">形：五箇・破図味</option>
+                <option value="形：五応・胸尽し">形：五応・胸尽し</option>
+                <option value="形：五応・円要">形：五応・円要</option>
+                <option value="形：五応・両車">形：五応・両車</option>
+                <option value="形：五応・野送り">形：五応・野送り</option>
+                <option value="形：五応・玉光">形：五応・玉光</option>
+                <option value="形：走り懸り・前腰">形：走り懸り・前腰</option>
+                <option value="形：走り懸り・夢想返し">形：走り懸り・夢想返し</option>
+                <option value="形：走り懸り・廻り懸り">形：走り懸り・廻り懸り</option>
+                <option value="形：走り懸り・右の敵">形：走り懸り・右の敵</option>
+                <option value="形：走り懸り・四方">形：走り懸り・四方</option>
+              </optgroup>
+
+              <!-- 約束組太刀 -->
+              <optgroup label="約束組太刀：太刀打之形">
+                <option value="約束組太刀：太刀打之形 北斗">約束組太刀：太刀打之形 北斗</option>
+                <option value="約束組太刀：太刀打之形 太白">約束組太刀：太刀打之形 太白</option>
+                <option value="約束組太刀：太刀打之形 稲妻">約束組太刀：太刀打之形 稲妻</option>
+                <option value="約束組太刀：太刀打之形 霞">約束組太刀：太刀打之形 霞</option>
+                <option value="約束組太刀：太刀打之形 流星">約束組太刀：太刀打之形 流星</option>
+              </optgroup>
+              <optgroup label="約束組太刀：脇差之形">
+                <option value="約束組太刀：脇差之形 切留">約束組太刀：脇差之形 切留</option>
+                <option value="約束組太刀：脇差之形 突留">約束組太刀：脇差之形 突留</option>
+                <option value="約束組太刀：脇差之形 受流し">約束組太刀：脇差之形 受流し</option>
+                <option value="約束組太刀：脇差之形 切上">約束組太刀：脇差之形 切上</option>
+                <option value="約束組太刀：脇差之形 位詰">約束組太刀：脇差之形 位詰</option>
+              </optgroup>
+              <optgroup label="約束組太刀：剣術形">
+                <option value="約束組太刀：剣術形 獅王剣">約束組太刀：剣術形 獅王剣</option>
+                <option value="約束組太刀：剣術形 翻車刀">約束組太刀：剣術形 翻車刀</option>
+                <option value="約束組太刀：剣術形 神明剣">約束組太刀：剣術形 神明剣</option>
+                <option value="約束組太刀：剣術形 水月感応">約束組太刀：剣術形 水月感応</option>
+                <option value="約束組太刀：剣術形 玉簾不断">約束組太刀：剣術形 玉簾不断</option>
+              </optgroup>
+              <optgroup label="約束組太刀：神道流剣術">
+                <option value="約束組太刀：神道流 相寸">約束組太刀：神道流 相寸</option>
+                <option value="約束組太刀：神道流 相寸逆">約束組太刀：神道流 相寸逆</option>
+                <option value="約束組太刀：神道流 鷲">約束組太刀：神道流 鷲</option>
+                <option value="約束組太刀：神道流 左輪">約束組太刀：神道流 左輪</option>
+                <option value="約束組太刀：神道流 乳拂">約束組太刀：神道流 乳拂</option>
+                <option value="約束組太刀：神道流 受返">約束組太刀：神道流 受返</option>
+                <option value="約束組太刀：神道流 二刀合">約束組太刀：神道流 二刀合</option>
+                <option value="約束組太刀：神道流 擦込">約束組太刀：神道流 擦込</option>
+                <option value="約束組太刀：神道流 受流">約束組太刀：神道流 受流</option>
+                <option value="約束組太刀：神道流 咽中">約束組太刀：神道流 咽中</option>
+                <option value="約束組太刀：神道流 三受留">約束組太刀：神道流 三受留</option>
+                <option value="約束組太刀：神道流 突出">約束組太刀：神道流 突出</option>
+              </optgroup>
+
+              <!-- 自由組太刀 -->
+              <optgroup label="自由組太刀">
+                <option value="自由組太刀：基本サバキ（一番〜七番）">自由組太刀：基本サバキ（一番〜七番）</option>
+                <option value="自由組太刀：スパーリング">自由組太刀：スパーリング</option>
+              </optgroup>
+
+              <!-- 試し斬り -->
+              <optgroup label="試し斬り">
+                <option value="試し斬り：基本一">試し斬り：基本一</option>
+                <option value="試し斬り：基本二">試し斬り：基本二</option>
+                <option value="試し斬り：基本三">試し斬り：基本三</option>
+                <option value="試し斬り：五用・真">試し斬り：五用・真</option>
+                <option value="試し斬り：五用・連">試し斬り：五用・連</option>
+                <option value="試し斬り：五用・左">試し斬り：五用・左</option>
+                <option value="試し斬り：五用・右">試し斬り：五用・右</option>
+                <option value="試し斬り：五用・捨">試し斬り：五用・捨</option>
+                <option value="試し斬り：五箇・水月">試し斬り：五箇・水月</option>
+                <option value="試し斬り：五箇・陰中陽">試し斬り：五箇・陰中陽</option>
+                <option value="試し斬り：五箇・陽中陰">試し斬り：五箇・陽中陰</option>
+                <option value="試し斬り：五箇・響き返し">試し斬り：五箇・響き返し</option>
+                <option value="試し斬り：五箇・破図味">試し斬り：五箇・破図味</option>
+                <option value="試し斬り：五応・胸尽し">試し斬り：五応・胸尽し</option>
+                <option value="試し斬り：五応・円要">試し斬り：五応・円要</option>
+                <option value="試し斬り：五応・両車">試し斬り：五応・両車</option>
+                <option value="試し斬り：五応・野送り">試し斬り：五応・野送り</option>
+                <option value="試し斬り：五応・玉光">試し斬り：五応・玉光</option>
+                <option value="試し斬り：走り懸り・前腰">試し斬り：走り懸り・前腰</option>
+                <option value="試し斬り：走り懸り・夢想返し">試し斬り：走り懸り・夢想返し</option>
+                <option value="試し斬り：走り懸り・廻り懸り">試し斬り：走り懸り・廻り懸り</option>
+                <option value="試し斬り：走り懸り・右の敵">試し斬り：走り懸り・右の敵</option>
+                <option value="試し斬り：走り懸り・四方">試し斬り：走り懸り・四方</option>
+              </optgroup>
+
+              <!-- 禅 -->
+              <optgroup label="禅">
+                <option value="座禅・黙想">座禅・黙想</option>
+              </optgroup>
+
               <option value="custom">その他（直接入力）</option>
             </select>
             <input type="text" id="customMenuInput" placeholder="種目名を入力" style="display:none; margin-top:8px;">
@@ -347,7 +455,7 @@
 
           <div class="form-group">
             <label for="memo">メモ・気づき</label>
-            <textarea id="memo" placeholder="例: 初太刀での刃筋と体の軸を意識。間合いの取り方に留意した"></textarea>
+            <textarea id="memo" placeholder="例: 刃筋と体の軸を意識。間合いの取り方に留意した"></textarea>
           </div>
 
           <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
