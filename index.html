@@ -3,526 +3,259 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>武道鍛錬帳 - 五輪書と稽古録</title>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>武道稽古記録</title>
+  
+  <!-- Supabase JavaScript SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
-      --bg-color: #1a1a1a;
-      --card-bg: #2a2a2a;
-      --text-color: #e0e0e0;
-      --accent-color: #c9a063; /* 落ち着いた金・木肌色 */
-      --border-color: #444;
+      --primary-color: #2c3e50;
+      --accent-color: #2980b9;
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --border-color: #e0e0e0;
     }
+
     body {
-      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg-color);
-      color: var(--text-color);
+      color: #333;
       margin: 0;
-      padding: 0;
+      padding: 16px;
       display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+      justify-content: center;
     }
-    header {
-      background-color: #111;
-      border-bottom: 2px solid var(--accent-color);
-      padding: 15px;
-      text-align: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.3rem;
-      color: var(--accent-color);
-      letter-spacing: 2px;
-    }
-    nav {
-      display: flex;
-      background-color: #222;
-      border-bottom: 1px solid var(--border-color);
-    }
-    nav button {
-      flex: 1;
-      padding: 12px 5px;
-      background: none;
-      border: none;
-      color: #888;
-      font-size: 0.85rem;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    nav button.active {
-      color: var(--accent-color);
-      border-bottom: 3px solid var(--accent-color);
-      font-weight: bold;
-    }
-    main {
-      flex: 1;
-      padding: 15px;
+
+    .container {
+      width: 100%;
       max-width: 600px;
-      margin: 0 auto;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .section { display: none; }
-    .section.active { display: block; }
-    
-    /* カードスタイル */
-    .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 15px;
-      margin-bottom: 15px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    }
-    .card h2 {
-      margin-top: 0;
-      font-size: 1.1rem;
-      color: var(--accent-color);
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 8px;
-    }
-    
-    /* フォーム要素 */
-    label { display: block; margin-top: 10px; font-size: 0.85rem; color: #aaa; }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      background-color: #1a1a1a;
-      border: 1px solid var(--border-color);
-      color: #fff;
-      border-radius: 4px;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    button.btn-primary {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      background-color: var(--accent-color);
-      color: #111;
-      border: none;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
     }
 
-    /* 履歴表示 */
-    .log-item {
-      border-left: 3px solid var(--accent-color);
-      padding-left: 10px;
-      margin-bottom: 12px;
-      position: relative;
-    }
-    .log-date { font-size: 0.8rem; color: #888; }
-    .log-type { font-weight: bold; color: var(--accent-color); }
-    .log-detail { font-size: 0.9rem; color: #ddd; margin-top: 2px; }
-    .log-note { font-size: 0.85rem; margin-top: 4px; color: #bbb; white-space: pre-wrap; }
-    .btn-delete {
-      position: absolute;
-      right: 0;
-      top: 0;
-      background: none;
-      border: none;
-      color: #888;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-
-    /* 集計表示用 */
-    .filter-tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 15px;
-    }
-    .filter-tabs button {
-      flex: 1;
-      padding: 8px;
-      background-color: #1a1a1a;
-      border: 1px solid var(--border-color);
-      color: #aaa;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.85rem;
-    }
-    .filter-tabs button.active {
-      background-color: var(--accent-color);
-      color: #111;
-      font-weight: bold;
-    }
-    .stat-summary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    .stat-box {
-      background: #111;
-      padding: 10px;
-      border-radius: 6px;
+    h1 {
       text-align: center;
-      border: 1px solid #333;
-    }
-    .stat-box .val {
-      font-size: 1.3rem;
-      color: var(--accent-color);
-      font-weight: bold;
-    }
-    .stat-box .lbl {
-      font-size: 0.75rem;
-      color: #888;
+      color: var(--primary-color);
+      font-size: 1.5rem;
+      margin-bottom: 20px;
     }
 
-    /* 五輪書スタイル */
-    .quote-box {
-      font-size: 1.05rem;
-      line-height: 1.8;
-      font-style: italic;
-      color: #f0e6d2;
-      padding: 10px 0;
+    .card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
     }
-    .quote-source {
-      text-align: right;
-      font-size: 0.85rem;
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: var(--primary-color);
+    }
+
+    input[type="date"],
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 80px;
+    }
+
+    button {
+      width: 100%;
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #1f6391;
+    }
+
+    .log-item {
+      background: var(--card-bg);
+      border-left: 4px solid var(--accent-color);
+      border-radius: 6px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: var(--primary-color);
+    }
+
+    .log-menu {
       color: var(--accent-color);
-      margin-top: 8px;
+    }
+
+    .log-memo {
+      font-size: 0.9rem;
+      color: #555;
+      white-space: pre-wrap;
+      margin-top: 6px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #888;
+      padding: 20px 0;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>武道鍛錬帳</h1>
-  </header>
+  <div class="container">
+    <h1>🥋 武道稽古記録</h1>
 
-  <nav>
-    <button id="tab-gorin" class="active" onclick="switchTab('gorin')">五輪書</button>
-    <button id="tab-record" onclick="switchTab('record')">稽古記録</button>
-    <button id="tab-stats" onclick="switchTab('stats')">累計分析</button>
-    <button id="tab-history" onclick="switchTab('history')">履歴</button>
-  </nav>
-
-  <main>
-    <!-- ① 五輪書・心構え -->
-    <div id="sec-gorin" class="section active">
-      <div class="card">
-        <h2>本日の教訓（五輪書）</h2>
-        <div class="quote-box" id="quote-text">「千日の稽古を鍛とし、万日の稽古を錬とす。」</div>
-        <div class="quote-source" id="quote-vol">― 宮本武蔵『五輪書』</div>
-        <button class="btn-primary" onclick="randomQuote()">別の教えを拝読する</button>
-      </div>
-
-      <div class="card">
-        <h2>巻を選択して学ぶ</h2>
-        <select id="vol-select" onchange="showVolQuote()">
-          <option value="all">全巻からランダム</option>
-          <option value="chi">地の巻（兵法の道の基礎）</option>
-          <option value="mizu">水の巻（心持ち・構え・刃筋）</option>
-          <option value="hi">火の巻（合戦・勝負の拍子）</option>
-          <option value="kaze">風の巻（他流を知る）</option>
-          <option value="ku">空の巻（無の境地・真の道）</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- ② 稽古記録フォーム -->
-    <div id="sec-record" class="section">
-      <div class="card">
-        <h2>本日の稽古を記録</h2>
-        <form id="log-form" onsubmit="saveLog(event)">
-          <label>日付</label>
-          <input type="date" id="log-date" required>
-
-          <label>稽古種目</label>
-          <select id="log-type" onchange="updateFormFields()">
-            <option value="ストレッチ">ストレッチ</option>
-            <option value="補強">補強</option>
-            <option value="形">形</option>
-            <option value="約束組太刀">約束組太刀</option>
-            <option value="自由組太刀">自由組太刀</option>
-            <option value="試し斬り">試し斬り</option>
-            <option value="禅">禅</option>
-          </select>
-
-          <!-- 動的に切り替わる入力フィールド -->
-          <div id="dynamic-fields">
-            <!-- JavaScriptで切り替え -->
-          </div>
-
-          <label>気づき・反省点・メモ（吉記など）</label>
-          <textarea id="log-note" rows="4" placeholder="初太刀の刃筋、足捌きの拍子、気付きなどを記録..." required></textarea>
-
-          <button type="submit" class="btn-primary">鍛錬録に保存</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- ③ 累計分析（日次・週次・月次・年次） -->
-    <div id="sec-stats" class="section">
-      <div class="card">
-        <h2>稽古の累計・分析</h2>
-        <div class="filter-tabs">
-          <button id="f-daily" class="active" onclick="setStatsPeriod('daily')">日次</button>
-          <button id="f-weekly" onclick="setStatsPeriod('weekly')">週次</button>
-          <button id="f-monthly" onclick="setStatsPeriod('monthly')">月次</button>
-          <button id="f-yearly" onclick="setStatsPeriod('yearly')">年次</button>
+    <!-- 記録入力フォーム -->
+    <div class="card">
+      <form id="keikoForm">
+        <div class="form-group">
+          <label for="date">稽古日</label>
+          <input type="date" id="date" required>
         </div>
 
-        <div style="text-align: center; font-size: 0.85rem; color: #888; margin-bottom: 10px;" id="stat-period-label">
-          本日の集計
+        <div class="form-group">
+          <label for="menu">種目名</label>
+          <input type="text" id="menu" placeholder="例: 形、禅、ストレッチ" required>
         </div>
 
-        <div class="stat-summary-grid" id="stats-summary-grid">
-          <!-- JSで動的に集計数・時間を表示 -->
+        <div class="form-group">
+          <label for="count">回数・時間</label>
+          <input type="number" id="count" placeholder="例: 10 (本/分など)" required>
         </div>
-      </div>
+
+        <div class="form-group">
+          <label for="memo">メモ・気づき</label>
+          <textarea id="memo" placeholder="例: 横一の振りを意識した"></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn">記録を保存する</button>
+      </form>
     </div>
 
-    <!-- ④ 履歴一覧 -->
-    <div id="sec-history" class="section">
-      <div class="card">
-        <h2>過去の稽古記録</h2>
-        <div id="history-list">
-          <p style="color:#888; text-align:center;">記録がまだありません。</p>
-        </div>
-      </div>
+    <!-- 履歴表示エリア -->
+    <h2>稽古履歴</h2>
+    <div id="logList">
+      <div class="empty-state">データを読み込み中...</div>
     </div>
-  </main>
+  </div>
 
   <script>
-    // 五輪書の言葉データ
-    const quotes = [
-      { text: "千日の稽古を鍛とし、万日の稽古を錬とす。", vol: "地の巻", key: "chi" },
-      { text: "身を浅く思い、世を深く思う。", vol: "独行道", key: "chi" },
-      { text: "構えありて構えなし。目付けは両の目の玉を動かさず、心を静かに据えるべし。", vol: "水の巻", key: "mizu" },
-      { text: "観の目強く、見の目弱く、遠き所を目付け、近き所を観ること。", vol: "水の巻", key: "mizu" },
-      { text: "先をとるに三つあり。懸の先、対の先、体体の先。", vol: "火の巻", key: "hi" },
-      { text: "拍子を調べるに、合う拍子と合わざる拍子あり。拍子の陰陽を知るべし。", vol: "地の巻", key: "chi" },
-      { text: "敵を知り、敵の流儀を知り、敵の身形を知ること、風の巻なり。", vol: "風の巻", key: "kaze" },
-      { text: "知らざる所を実と思うなかれ。空を道とし、道を空と見ること。", vol: "空の巻", key: "ku" }
-    ];
+    // Supabase 設定
+    const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentPeriod = 'daily';
+    // 今日の日付を初期値としてセット
+    document.getElementById('date').valueAsDate = new Date();
 
-    // 種目に応じたフォーム切り替え
-    function updateFormFields() {
-      const type = document.getElementById('log-type').value;
-      const container = document.getElementById('dynamic-fields');
-
-      if (type === 'ストレッチ' || type === '禅') {
-        container.innerHTML = `
-          <label>時間（分）</label>
-          <input type="number" id="input-time" min="1" placeholder="例: 15" required>
-        `;
-      } else if (type === '形' || type === '約束組太刀' || type === '自由組太刀' || type === '補強') {
-        container.innerHTML = `
-          <label>演目・技・部位（内容）</label>
-          <input type="text" id="input-item" placeholder="例: 基本の一、腕立て、腹筋など" required>
-          <label>回数 / 本数</label>
-          <input type="number" id="input-count" min="1" placeholder="例: 10" required>
-        `;
-      } else if (type === '試し斬り') {
-        container.innerHTML = `
-          <label>斬試本数（本）</label>
-          <input type="number" id="input-count" min="1" placeholder="例: 5" required>
-        `;
-      }
-    }
-
-    // タブ切り替え
-    function switchTab(tabName) {
-      document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+    // 稽古記録を取得して画面に表示する関数
+    async function fetchLogs() {
+      const logList = document.getElementById('logList');
       
-      document.getElementById('sec-' + tabName).classList.add('active');
-      document.getElementById('tab-' + tabName).classList.add('active');
+      const { data: logs, error } = await supabaseClient
+        .from('keiko_logs')
+        .select('*')
+        .order('date', { ascending: false })
+        .order('id', { ascending: false });
 
-      if (tabName === 'history') loadHistory();
-      if (tabName === 'stats') renderStats();
-    }
-
-    // ランダム教訓
-    function randomQuote() {
-      const selectedVol = document.getElementById('vol-select').value;
-      let filtered = quotes;
-      if (selectedVol !== 'all') {
-        filtered = quotes.filter(q => q.key === selectedVol);
-      }
-      if (filtered.length === 0) filtered = quotes;
-
-      const q = filtered[Math.floor(Math.random() * filtered.length)];
-      document.getElementById('quote-text').innerText = "「" + q.text + "」";
-      document.getElementById('quote-vol').innerText = "― 宮本武蔵『" + q.vol + "』";
-    }
-
-    function showVolQuote() {
-      randomQuote();
-    }
-
-    // 稽古記録の保存（LocalStorage）
-    function saveLog(e) {
-      e.preventDefault();
-      const date = document.getElementById('log-date').value;
-      const type = document.getElementById('log-type').value;
-      const note = document.getElementById('log-note').value;
-
-      let time = 0;
-      let item = '';
-      let count = 0;
-
-      const timeEl = document.getElementById('input-time');
-      const itemEl = document.getElementById('input-item');
-      const countEl = document.getElementById('input-count');
-
-      if (timeEl) time = parseInt(timeEl.value) || 0;
-      if (itemEl) item = itemEl.value;
-      if (countEl) count = parseInt(countEl.value) || 0;
-
-      const newLog = { date, type, time, item, count, note, id: Date.now() };
-      const logs = JSON.parse(localStorage.getItem('budo_logs') || '[]');
-      logs.unshift(newLog);
-      localStorage.setItem('budo_logs', JSON.stringify(logs));
-
-      alert('稽古内容を保存しました！');
-      document.getElementById('log-note').value = '';
-      switchTab('stats');
-    }
-
-    // 削除機能
-    function deleteLog(id) {
-      if (!confirm('この記録を削除しますか？')) return;
-      let logs = JSON.parse(localStorage.getItem('budo_logs') || '[]');
-      logs = logs.filter(l => l.id !== id);
-      localStorage.setItem('budo_logs', JSON.stringify(logs));
-      loadHistory();
-    }
-
-    // 履歴読み込み
-    function loadHistory() {
-      const logs = JSON.parse(localStorage.getItem('budo_logs') || '[]');
-      const container = document.getElementById('history-list');
-      
-      if (logs.length === 0) {
-        container.innerHTML = '<p style="color:#888; text-align:center;">記録がまだありません。</p>';
+      if (error) {
+        console.error('取得エラー:', error);
+        logList.innerHTML = '<div class="empty-state">データの取得に失敗しました</div>';
         return;
       }
 
-      container.innerHTML = logs.map(log => {
-        let detailText = '';
-        if (log.time > 0) detailText = `【時間】${log.time} 分`;
-        else if (log.count > 0) detailText = `${log.item ? log.item + ' : ' : ''}${log.count} 回/本`;
-
-        return `
-          <div class="log-item">
-            <button class="btn-delete" onclick="deleteLog(${log.id})">削除</button>
-            <div class="log-date">${log.date}</div>
-            <div class="log-type">${log.type}</div>
-            ${detailText ? `<div class="log-detail">${detailText}</div>` : ''}
-            <div class="log-note">${escapeHtml(log.note)}</div>
-          </div>
-        `;
-      }).join('<hr style="border:0; border-top:1px solid #333; margin:15px 0;">');
-    }
-
-    // 期間別切り替え
-    function setStatsPeriod(period) {
-      currentPeriod = period;
-      document.querySelectorAll('.filter-tabs button').forEach(b => b.classList.remove('active'));
-      document.getElementById('f-' + period).classList.add('active');
-      renderStats();
-    }
-
-    // 累計集計ロジック（日次・週次・月次・年次）
-    function renderStats() {
-      const logs = JSON.parse(localStorage.getItem('budo_logs') || '[]');
-      const now = new Date();
-      const todayStr = now.toISOString().split('T')[0];
-
-      let filteredLogs = [];
-      let labelText = '';
-
-      if (currentPeriod === 'daily') {
-        labelText = '本日（' + todayStr + '）の累計';
-        filteredLogs = logs.filter(l => l.date === todayStr);
-      } else if (currentPeriod === 'weekly') {
-        labelText = '今週の累計';
-        const startOfWeek = new Date(now);
-        const day = startOfWeek.getDay() || 7; // 月曜起算
-        startOfWeek.setDate(now.getDate() - day + 1);
-        startOfWeek.setHours(0,0,0,0);
-
-        filteredLogs = logs.filter(l => {
-          const d = new Date(l.date);
-          return d >= startOfWeek && d <= now;
-        });
-      } else if (currentPeriod === 'monthly') {
-        const monthStr = todayStr.substring(0, 7);
-        labelText = '今月（' + monthStr + '）の累計';
-        filteredLogs = logs.filter(l => l.date && l.date.startsWith(monthStr));
-      } else if (currentPeriod === 'yearly') {
-        const yearStr = todayStr.substring(0, 4);
-        labelText = '今年（' + yearStr + '年）の累計';
-        filteredLogs = logs.filter(l => l.date && l.date.startsWith(yearStr));
+      if (!logs || logs.length === 0) {
+        logList.innerHTML = '<div class="empty-state">まだ記録がありません</div>';
+        return;
       }
 
-      // 集計データの計算
-      let totalTime = 0;  // ストレッチ＋禅
-      let kataCount = 0;  // 形
-      let kumiCount = 0;  // 約束＋自由組太刀
-      let cutCount = 0;   // 試し斬り
-      let hokyoCount = 0; // 補強
-
-      filteredLogs.forEach(l => {
-        if (l.type === 'ストレッチ' || l.type === '禅') {
-          totalTime += (l.time || 0);
-        } else if (l.type === '形') {
-          kataCount += (l.count || 0);
-        } else if (l.type === '約束組太刀' || l.type === '自由組太刀') {
-          kumiCount += (l.count || 0);
-        } else if (l.type === '試し斬り') {
-          cutCount += (l.count || 0);
-        } else if (l.type === '補強') {
-          hokyoCount += (l.count || 0);
-        }
+      logList.innerHTML = '';
+      logs.forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'log-item';
+        item.innerHTML = `
+          <div class="log-header">
+            <span>${log.date || '日付なし'}</span>
+            <span class="log-menu">${log.menu || ''} (${log.count || 0})</span>
+          </div>
+          ${log.memo ? `<div class="log-memo">${escapeHtml(log.memo)}</div>` : ''}
+        `;
+        logList.appendChild(item);
       });
-
-      document.getElementById('stat-period-label').innerText = labelText;
-
-      const grid = document.getElementById('stats-summary-grid');
-      grid.innerHTML = `
-        <div class="stat-box">
-          <div class="val">${totalTime} <span style="font-size:0.8rem">分</span></div>
-          <div class="lbl">静修（ストレッチ・禅）</div>
-        </div>
-        <div class="stat-box">
-          <div class="val">${kataCount} <span style="font-size:0.8rem">回</span></div>
-          <div class="lbl">形</div>
-        </div>
-        <div class="stat-box">
-          <div class="val">${kumiCount} <span style="font-size:0.8rem">本</span></div>
-          <div class="lbl">組太刀（約束・自由）</div>
-        </div>
-        <div class="stat-box">
-          <div class="val">${cutCount} <span style="font-size:0.8rem">本</span></div>
-          <div class="lbl">試し斬り</div>
-        </div>
-        <div class="stat-box" style="grid-column: span 2;">
-          <div class="val">${hokyoCount} <span style="font-size:0.8rem">回</span></div>
-          <div class="lbl">補強（体幹・補強運動）</div>
-        </div>
-      `;
     }
 
+    // フォーム送信時の処理（追加保存）
+    document.getElementById('keikoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '保存中...';
+
+      const date = document.getElementById('date').value;
+      const menu = document.getElementById('menu').value;
+      const count = parseInt(document.getElementById('count').value, 10);
+      const memo = document.getElementById('memo').value;
+
+      const { error } = await supabaseClient
+        .from('keiko_logs')
+        .insert([{ date, menu, count, memo }]);
+
+      if (error) {
+        console.error('保存エラー:', error);
+        alert('保存に失敗しました: ' + error.message);
+      } else {
+        // フォームのリセット（日付は維持）
+        document.getElementById('menu').value = '';
+        document.getElementById('count').value = '';
+        document.getElementById('memo').value = '';
+        
+        // 最新一覧の再取得
+        await fetchLogs();
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = '記録を保存する';
+    });
+
+    // エスケープ処理（安全対策）
     function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
     }
 
-    // 初期化
-    document.getElementById('log-date').valueAsDate = new Date();
-    updateFormFields();
+    // ページ読み込み時にログを取得
+    window.addEventListener('DOMContentLoaded', fetchLogs);
   </script>
 </body>
 </html>
