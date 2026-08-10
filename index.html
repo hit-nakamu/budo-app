@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>武道鍛錬帳 - 五輪書と稽古録</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    :root {
+      --bg-color: #1a1a1a;
+      --card-bg: #2a2a2a;
+      --text-color: #e0e0e0;
+      --accent-color: #c9a063; /* 落ち着いた金・木肌色 */
+      --border-color: #444;
+    }
+    body {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background-color: #111;
+      border-bottom: 2px solid var(--accent-color);
+      padding: 15px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      color: var(--accent-color);
+      letter-spacing: 2px;
+    }
+    nav {
+      display: flex;
+      background-color: #222;
+      border-bottom: 1px solid var(--border-color);
+    }
+    nav button {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 0.95rem;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    nav button.active {
+      color: var(--accent-color);
+      border-bottom: 3px solid var(--accent-color);
+      font-weight: bold;
+    }
+    main {
+      flex: 1;
+      padding: 15px;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .section { display: none; }
+    .section.active { display: block; }
+    
+    /* カードスタイル */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      color: var(--accent-color);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+    
+    /* フォーム要素 */
+    label { display: block; margin-top: 10px; font-size: 0.85rem; color: #aaa; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      background-color: #1a1a1a;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    button.btn-primary {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background-color: var(--accent-color);
+      color: #111;
+      border: none;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    /* 履歴表示 */
+    .log-item {
+      border-left: 3px solid var(--accent-color);
+      padding-left: 10px;
+      margin-bottom: 12px;
+    }
+    .log-date { font-size: 0.8rem; color: #888; }
+    .log-type { font-weight: bold; color: var(--accent-color); }
+    .log-note { font-size: 0.9rem; margin-top: 4px; white-space: pre-wrap; }
+
+    /* 五輪書スタイル */
+    .quote-box {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      font-style: italic;
+      color: #f0e6d2;
+      padding: 10px 0;
+    }
+    .quote-source {
+      text-align: right;
+      font-size: 0.85rem;
+      color: var(--accent-color);
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>武道鍛錬帳</h1>
+  </header>
+
+  <nav>
+    <button id="tab-gorin" class="active" onclick="switchTab('gorin')">五輪書</button>
+    <button id="tab-record" onclick="switchTab('record')">稽古記録</button>
+    <button id="tab-history" onclick="switchTab('history')">鍛錬履歴</button>
+  </nav>
+
+  <main>
+    <!-- ① 五輪書・心構え -->
+    <div id="sec-gorin" class="section active">
+      <div class="card">
+        <h2>本日の教訓（五輪書）</h2>
+        <div class="quote-box" id="quote-text">「千日の稽古を鍛とし、万日の稽古を錬とす。」</div>
+        <div class="quote-source" id="quote-vol">― 宮本武蔵『五輪書』</div>
+        <button class="btn-primary" onclick="randomQuote()">別の教えを拝読する</button>
+      </div>
+
+      <div class="card">
+        <h2>巻を選択して学ぶ</h2>
+        <select id="vol-select" onchange="showVolQuote()">
+          <option value="chi">地の巻（兵法の道の基礎）</option>
+          <option value="mizu">水の巻（心持ち・構え・刃筋）</option>
+          <option value="hi">火の巻（合戦・勝負の拍子）</option>
+          <option value="kaze">風の巻（他流を知る）</option>
+          <option value="ku">空の巻（無の境地・真の道）</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ② 稽古記録フォーム -->
+    <div id="sec-record" class="section">
+      <div class="card">
+        <h2>本日の稽古を記録</h2>
+        <form id="log-form" onsubmit="saveLog(event)">
+          <label>日付</label>
+          <input type="date" id="log-date" required>
+
+          <label>稽古種目</label>
+          <select id="log-type">
+            <option value="形・素振り">形・素振り</option>
+            <option value="道場稽古">道場稽古</option>
+            <option value="組討・座捕">組討・座捕</option>
+            <option value="座学・兵法解釈">座学・兵法解釈</option>
+            <option value="自主トレ・体幹">自主トレ・体幹</option>
+          </select>
+
+          <label>気づき・反省点・メモ</label>
+          <textarea id="log-note" rows="4" placeholder="初太刀の刃筋、足捌きの拍子、気付きなどを記録..." required></textarea>
+
+          <button type="submit" class="btn-primary">鍛錬録に保存</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ③ 履歴一覧 -->
+    <div id="sec-history" class="section">
+      <div class="card">
+        <h2>過去の稽古記録</h2>
+        <div id="history-list">
+          <p style="color:#888; text-align:center;">記録がまだありません。</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // 五輪書の言葉データ
+    const quotes = [
+      { text: "千日の稽古を鍛とし、万日の稽古を錬とす。", vol: "地の巻" },
+      { text: "身を浅く思い、世を深く思う。", vol: "独行道" },
+      { text: "構えありて構えなし。目付けは両の目の玉を動かさず、心を静かに据えるべし。", vol: "水の巻" },
+      { text: "観の目強く、見の目弱く、遠き所を目付け、近き所を観ること。", vol: "水の巻" },
+      { text: "先をとるに三つあり。懸の先、対の先、体体の先。", vol: "火の巻" },
+      { text: "拍子を調べるに、合う拍子と合わざる拍子あり。拍子の陰陽を知るべし。", vol: "地の巻" },
+      { text: "知らざる所を実と思うなかれ。空を道とし、道を空と見ること。", vol: "空の巻" }
+    ];
+
+    // タブ切り替え
+    function switchTab(tabName) {
+      document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById('sec-' + tabName).classList.add('active');
+      document.getElementById('tab-' + tabName).classList.add('active');
+
+      if (tabName === 'history') loadHistory();
+    }
+
+    // ランダム教訓
+    function randomQuote() {
+      const q = quotes[Math.floor(Math.random() * quotes.length)];
+      document.getElementById('quote-text').innerText = "「" + q.text + "」";
+      document.getElementById('quote-vol').innerText = "― 宮本武蔵『" + q.vol + "』";
+    }
+
+    // 稽古記録の保存（LocalStorage）
+    function saveLog(e) {
+      e.preventDefault();
+      const date = document.getElementById('log-date').value;
+      const type = document.getElementById('log-type').value;
+      const note = document.getElementById('log-note').value;
+
+      const newLog = { date, type, note, id: Date.now() };
+      const logs = JSON.parse(localStorage.getItem('budo_logs') || '[]');
+      logs.unshift(newLog);
+      localStorage.setItem('budo_logs', JSON.stringify(logs));
+
+      alert('稽古内容を保存しました！');
+      document.getElementById('log-note').value = '';
+      switchTab('history');
+    }
+
+    // 履歴読み込み
+    function loadHistory() {
+      const logs = JSON.parse(localStorage.getItem('budo_logs') || '[]');
+      const container = document.getElementById('history-list');
+      
+      if (logs.length === 0) {
+        container.innerHTML = '<p style="color:#888; text-align:center;">記録がまだありません。</p>';
+        return;
+      }
+
+      container.innerHTML = logs.map(log => `
+        <div class="log-item">
+          <div class="log-date">${log.date}</div>
+          <div class="log-type">${log.type}</div>
+          <div class="log-note">${escapeHtml(log.note)}</div>
+        </div>
+      `).join('<hr style="border:0; border-top:1px solid #333; margin:15px 0;">');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    // 初期化
+    document.getElementById('log-date').valueAsDate = new Date();
+  </script>
+</body>
+</html>
