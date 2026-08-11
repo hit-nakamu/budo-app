@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>武道稽古記録 & 内弟子アドバイザー</title>
+    <title>武道稽古記録 & アドバイザー</title>
     <style>
         :root {
             --primary-color: #2b5797;
@@ -172,7 +172,7 @@
 
         textarea {
             resize: vertical;
-            height: 100px;
+            height: 120px;
             font-size: 0.95rem;
         }
 
@@ -209,7 +209,7 @@
             margin-bottom: 12px;
         }
 
-        .btn-advisor {
+        .btn-copy {
             display: block;
             width: 100%;
             background-color: var(--accent-color);
@@ -319,7 +319,7 @@
 
     <!-- ヘッダー -->
     <div class="header">
-        <span>🥋</span> 武道稽古記録 & 内弟子アドバイザー
+        <span>🥋</span> 武道稽古記録 & アドバイザー
     </div>
 
     <!-- タブナビゲーション -->
@@ -328,7 +328,7 @@
         <div class="tab-item active" onclick="switchPage('input-page', this)">📝 記録入力</div>
         <div class="tab-item" onclick="switchPage('history-page', this)">📋 履歴一覧</div>
         <div class="tab-item" onclick="switchPage('analysis-page', this)">🔍 AI分析</div>
-        <div class="tab-item" onclick="switchPage('gorin-page', this)">📖 五輪書</div>
+        <div class="tab-item" onclick="switchPage('gorin-page', this)">📖 心得</div>
     </div>
 
     <!-- メインコンテンツ -->
@@ -493,9 +493,6 @@
                     </div>
 
                     <button type="submit" class="btn-submit">記録を保存する</button>
-                    <button type="button" class="btn-advisor" onclick="triggerStrictGuidance()">
-                        🚨 不足箇所の厳格指導
-                    </button>
                 </form>
             </div>
         </div>
@@ -510,10 +507,10 @@
             </div>
         </div>
 
-        <!-- 4. AI分析画面（修正：日次・週次・月次・年次の切り替えタブを追加） -->
+        <!-- 4. AI分析画面（復活：期間別プロンプト生成・コピー機能） -->
         <div id="analysis-page" class="page-section">
             <div class="card">
-                <h2 class="card-title">稽古傾向分析</h2>
+                <h2 class="card-title">稽古傾向分析（プロンプト出力）</h2>
                 
                 <!-- 期間切り替えサブタブ -->
                 <div class="period-tabs">
@@ -523,25 +520,21 @@
                     <div class="period-tab" onclick="switchPeriod('yearly', this)">年次</div>
                 </div>
 
-                <!-- 選択された期間のタイトル表示 -->
-                <h3 id="analysis-period-title" style="font-size: 1rem; margin-bottom: 15px; color: #555;">対象期間のデータ</h3>
+                <div class="form-group">
+                    <label id="analysis-period-title">対象期間のプロンプト</label>
+                    <textarea id="ai-prompt-text" readonly placeholder="データ集計中..." onclick="this.select()"></textarea>
+                </div>
 
-                <!-- 棒グラフ表示エリア -->
-                <div id="analysis-chart-area">
-                    <!-- JavaScriptで動的にグラフを生成 -->
-                </div>
-                
-                <div style="background: #fff3cd; padding: 12px; border-radius: 8px; font-size: 0.9rem; color: #856404; border: 1px solid #ffeeba; margin-top: 20px;">
-                    <strong>内弟子アドバイザーの総評:</strong><br>
-                    <span id="ai-total-review">選択された期間のデータを分析中です。</span>
-                </div>
+                <button type="button" class="btn-copy" onclick="copyPrompt()">
+                    📋 AI分析用プロンプトをコピー
+                </button>
             </div>
         </div>
 
-        <!-- 5. 五輪書画面 -->
+        <!-- 5. 心得画面 -->
         <div id="gorin-page" class="page-section">
             <div class="card">
-                <h2 class="card-title">五輪書・内弟子心得</h2>
+                <h2 class="card-title">武道修練心得</h2>
                 <p style="font-size: 0.95rem; line-height: 1.6; color: #555;">
                     「それ武芸の道に於いて、朝鍛夕錬（ちょうたんせきれん）の心、片時も忘るることなかれ。」<br><br>
                     日々の地道な積み重ねこそが、確固たる技と体さばきを生み出します。自身の課題を常にメモに残し、次回の稽古へと繋げなさい。
@@ -560,11 +553,10 @@
     </div>
 
     <script>
-        // ベースとなる現在の日付情報（システム上2026年8月11日とする）
         const CURRENT_DATE_STR = "2026-08-11";
-        let currentPeriod = 'daily'; // 初期選択期間
+        let currentPeriod = 'daily';
 
-        // ご提示いただいた【全ログデータ】の初期化配列
+        // ログデータ初期化配列
         let rawLogs = [
             { date: "2026-08-11", menu: "補強：腕立て伏せ", count: 30, memo: "なし" },
             { date: "2026-08-11", menu: "形：五箇・水月", count: 10, memo: "なし" },
@@ -594,7 +586,6 @@
             renderData();
         });
 
-        // メインタブ切り替え
         function switchPage(pageId, tabElement) {
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -603,14 +594,12 @@
             tabElement.classList.add('active');
         }
 
-        // 分析サブタブ切り替え（日次・週次・月次・年次）
         function switchPeriod(period, tabElement) {
             currentPeriod = period;
             document.querySelectorAll('.period-tab').forEach(tab => tab.classList.remove('active'));
             tabElement.classList.add('active');
             
-            // 期間に応じて再集計
-            renderAnalysisChart();
+            generatePromptText();
         }
 
         function toggleCustomMenu() {
@@ -653,7 +642,7 @@
         }
 
         function renderData() {
-            // 1. 履歴一覧の生成
+            // 1. 履歴一覧
             const historyListEl = document.getElementById('history-list');
             historyListEl.innerHTML = '';
             rawLogs.forEach(log => {
@@ -667,7 +656,7 @@
                 historyListEl.appendChild(item);
             });
 
-            // 2. 目標実績画面用の全体集計
+            // 2. 目標実績の全体集計
             let totalCount = 0;
             let uniqueDays = new Set();
             rawLogs.forEach(log => {
@@ -679,94 +668,82 @@
             document.getElementById('target-days').innerText = uniqueDays.size + ' 日';
             document.getElementById('target-counts').innerText = totalCount + ' 本';
 
-            // 3. AI分析チャートの初期描画
-            renderAnalysisChart();
+            // 3. プロンプトの生成
+            generatePromptText();
         }
 
-        // 【新実装】期間フィルタリングとグラフ描画処理
-        function renderAnalysisChart() {
-            const chartArea = document.getElementById('analysis-chart-area');
+        // 期間ごとの集計テキスト（プロンプト用）を生成する処理
+        function generatePromptText() {
+            const promptArea = document.getElementById('ai-prompt-text');
             const periodTitle = document.getElementById('analysis-period-title');
-            const reviewEl = document.getElementById('ai-total-review');
-            chartArea.innerHTML = '';
-
             const baseDate = new Date(CURRENT_DATE_STR);
             let filteredLogs = [];
+            let labelStr = "";
 
-            // 期間フィルタリング条件の定義
             if (currentPeriod === 'daily') {
-                periodTitle.innerText = "対象日: 2026年8月11日（本日）";
+                labelStr = "日次分析プロンプト (2026-08-11分)";
                 filteredLogs = rawLogs.filter(log => log.date === "2026-08-11");
-                reviewEl.innerText = "本日の稽古は補強運動と形（水月）の集中修練が確認できます。体力が落ちてくる後半こそ運足を意識しなさい。";
             } else if (currentPeriod === 'weekly') {
-                periodTitle.innerText = "対象週: 8月第2週 (8/5 〜 8/11)";
-                // 直近7日以内
+                labelStr = "週次分析プロンプト (直近7日間)";
                 filteredLogs = rawLogs.filter(log => {
                     const logDate = new Date(log.date);
                     const diffTime = Math.abs(baseDate - logDate);
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     return diffDays <= 7;
                 });
-                reviewEl.innerText = "今週は10日・11日と連続して高強度の素振りと体さばきが行われています。横一文字の刃筋にブレがないか確認を。";
             } else if (currentPeriod === 'monthly') {
-                periodTitle.innerText = "対象月: 2026年8月期";
-                // 2026年8月のデータ
+                labelStr = "月次分析プロンプト (2026年8月期)";
                 filteredLogs = rawLogs.filter(log => log.date.startsWith("2026-08"));
-                reviewEl.innerText = "月次で見ると、補強運動のスクワット（計130回）と素振りの真向（50本）が際立ちます。基礎作りの段階としては順調です。";
             } else if (currentPeriod === 'yearly') {
-                periodTitle.innerText = "対象年: 2026年度";
-                // 2026年のデータ全て
+                labelStr = "年次分析プロンプト (2026年度)";
                 filteredLogs = rawLogs.filter(log => log.date.startsWith("2026"));
-                reviewEl.innerText = "年次データでは、現時点で登録されているすべての基礎修練・形稽古が網羅されています。後半期に向けて組太刀の比率を上げなさい。";
             }
 
+            periodTitle.innerText = labelStr;
+
             if (filteredLogs.length === 0) {
-                chartArea.innerHTML = '<div style="font-size:0.9rem; color:#888;">該当期間にデータがありません。</div>';
+                promptArea.value = "該当期間の稽古データが存在しません。";
                 return;
             }
 
-            // 種目ごとに本数・回数を集計
+            // 種目別に集計
             let aggregation = {};
-            let maxVal = 0;
-
+            let memoList = [];
             filteredLogs.forEach(log => {
                 if (!aggregation[log.menu]) aggregation[log.menu] = 0;
                 aggregation[log.menu] += log.count;
+                if (log.memo && log.memo !== "なし") {
+                    memoList.push(`・${log.date} [${log.menu}]: ${log.memo}`);
+                }
             });
 
-            // 最大値を取得（グラフの100%基準用）
-            for (let m in aggregation) {
-                if (aggregation[m] > maxVal) maxVal = aggregation[m];
-            }
-
-            // グラフ要素の生成
+            // プロンプトテンプレートの組み立て
+            let promptValue = `以下の武道稽古データ（${currentPeriod}）を分析し、傾向、優れている点、および今後の課題や改善に向けたアドバイスを提示してください。\n\n`;
+            promptValue += `【集計データ】\n`;
             for (let menuName in aggregation) {
-                const total = aggregation[menuName];
-                const percentage = maxVal > 0 ? (total / maxVal) * 100 : 0;
-
-                const chartContainer = document.createElement('div');
-                chartContainer.className = 'chart-container';
-                chartContainer.innerHTML = `
-                    <div class="chart-label">
-                        <span>${menuName}</span>
-                        <strong>${total} 本/回/分</strong>
-                    </div>
-                    <div class="chart-bar-bg">
-                        <div class="chart-bar-fill" style="width: ${percentage}%"></div>
-                    </div>
-                `;
-                chartArea.appendChild(chartContainer);
+                promptValue += `・${menuName}: 累計 ${aggregation[menuName]} 回/本/分\n`;
             }
+            
+            if (memoList.length > 0) {
+                promptValue += `\n【気づき・メモ】\n` + memoList.join('\n') + `\n`;
+            }
+
+            promptArea.value = promptValue;
         }
 
-        function triggerStrictGuidance() {
-            const selectEl = document.getElementById('menuSelect');
-            let category = selectEl.value === 'custom' ? document.getElementById('customMenuInput').value : selectEl.value;
-            if (!category) {
-                alert('種目を選択してください。');
-                return;
-            }
-            alert('【厳格指導】\n選択された「' + category + '」について、運足の乱れ、または初太刀の刃筋が狂っていないか内弟子としての自覚を持って見直しなさい。');
+        // コピー機能
+        function copyPrompt() {
+            const promptArea = document.getElementById('ai-prompt-text');
+            promptArea.select();
+            promptArea.setSelectionRange(0, 99999); // モバイル対応
+
+            navigator.clipboard.writeText(promptArea.value)
+                .then(() => {
+                    alert('分析用プロンプトをクリップボードにコピーしました！AIに貼り付けて分析を行ってください。');
+                })
+                .catch(err => {
+                    alert('コピーに失敗しました。手動でテキストエリアを選択してコピーしてください。');
+                });
         }
     </script>
 </body>
