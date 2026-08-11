@@ -642,6 +642,90 @@
             { date: "2026-08-10", menu: "基本：体さばき・運足", count: 20, memo: "軸がぶれないように意識" },
             { date: "2026-08-10", menu: "基本：素振り（横一文字）", count: 50, memo: "水平に振り切る感覚が良くなってきた" }
         ];
+        
+        
+                // --- 百足伝データ ---
+        const mukadeData = [
+            "一、心に物なき時は心広く体大なり",
+            "二、心に物ある時は心狭く体小なり",
+            "三、心をば一寸四方に小さくもて",
+            "四、心をば天地の間に広くもて",
+            "五、心に敵を持たざれば敵なし",
+            "六、心に敵を持てば天下皆敵なり",
+            "七、打つと思う心あれば打たれ",
+            "八、打たぬと思う心あれば打たる",
+            "九、勝ちて誇る心あれば負けの基なり",
+            "十、負けて悔やむ心あれば勝ちの基なり",
+            "十一、日々の稽古は戦場のごとく心得よ",
+            "十二、戦場の働きは日々の稽古のごとく心得よ"
+        ];
+
+        // --- 五輪書データ（全文・口語訳サンプル構造） ---
+        const gorinData = {
+            chi: {
+                title: "地の巻（ちのまき）",
+                text: `<strong>【原文】</strong><br>兵法の道、二天一流と号し、数年修練のところ、始めてその理を得んと欲し、九州肥後の国岩戸の弓攀（ゆみはづ）に上り、天を拝し、観音を頼み、仏前に向かって、寛永二十年十月上旬の比、生得の年月をかき、筆をとってその真実の心をあらわすものなり。その実、これまでの仏法世法の古き言（ことば）をかりず、軍記伝授の古き習いを用いず、我が流の知恵をめぐらし、実の理をあらわすところ、すなわち地の巻とし、これをしるす。<br><br>
+                       <strong>【口語訳】</strong><br>私の兵法の道を二天一流と名付け、長年修練を重ねてきたが、その真理を真に書き残そうと思い立ち、九州肥後の国の岩戸山にある霊厳洞にこもった。天を拝み観音像に向かい、寛永二十年十月上旬、これまでの生涯の集大成として筆を執る。本書は仏教や儒教の古い言葉を借りず、過去の軍記や他流派の伝承にも頼らない。我が流派がたどり着いた独自の知恵と実践的な真理をあらわすため、その基盤としてまずこの「地の巻」を記す。`
+            },
+            mizu: {
+                title: "水の巻（みずのまき）",
+                text: `<strong>【原文】</strong><br>二天一流の兵法、水を本（もと）として、心法を水になぞらえ、我が流の太刀の理をこの巻にあらわす。水を模範とすることは、水は四角な器にも随い、円き器にも形をかえ、一滴となりてはあつまり、広くなっては大海となる。その清きこと、深きところ、我が流の知恵を水にたとえて、これをしるすものなり。<br><br>
+                       <strong>【口語訳】</strong><br>二天一流の兵法において、水を手本として心構えや太刀の理合いを説明するのがこの「水の巻」である。水は四角い器にも丸い器にも柔軟に形を変え、一滴の雫にもなれば、集まって広大な海にもなる。その清らかさ、底知れぬ深さを見習い、柔軟で変幻自在な我が流派の知恵を水に例えてここに書き記す。`
+            },
+            hi: {
+                title: "火の巻（ひのまき）",
+                text: `<strong>【原文】</strong><br>二天一流の兵法、この巻を火とす。火の巻とは、合戦の事をしるす。火の心、大きくなり、小さくなること、その勢い激しきものなれば、戦いの理、これと同じ。一対一の戦いも、万人と万人との合戦も、その理に変わりなし。場を測り、敵の心を動かすこと、火の勢いのごとく迅速に行うべきことをしるす。<br><br>
+                       <strong>【口語訳】</strong><br>この巻では兵法を「火」に例え、具体的な合戦や勝負の出処進退について記す。火は大きくなったり小さくなったりし、その勢いは極めて激しい。これは戦闘の理合いそのものである。一対一の決闘も、大人数同士の合戦も本質は同じだ。戦況を見極め、敵の機先を制して火の如く一気に圧倒する出方をここに明かす。`
+            },
+            kaze: {
+                title: "風の巻（かぜのまき）",
+                text: `<strong>【原文】</strong><br>二天一流の兵法、この巻を風とす。風の巻とは、我が流のことにはあらず、世の中の他流の兵法のことをしるすものなり。風と云うことは、古い風、今の風、それぞれの家々の風あり。他流のやり方を知らずしては、我が流のすぐれたる所も分かりがたし。これによって他流のひずみをあらわすところ、すなわち風の巻なり。<br><br>
+                       <strong>【口語訳】</strong><br>この巻を「風」とする。風の巻で扱うのは我が二天一流のことではなく、世間にある他の流派の兵法についてである。「風」とは伝統や現在の気風、それぞれの流派の作風を意味する。他流派の戦い方や実態を知らなければ、我が流派の本当の長所を理解することはできない。他流の偏りや弱点を客観的に分析し、道を正すためにこの巻を記す。`
+            },
+            kuu: {
+                title: "空の巻（くうのまき）",
+                text: `<strong>【原文】</strong><br>二天一流の兵法、この巻を空とす。空の巻とは、自然の理を得て、物事にこだわらざる、究極の境地をしるすものなり。知恵の実の理を得て、兵法の道において迷う心なく、心をも常に空（くう）にして、広く、あるがままに敵に向かう。技を超え、理を超え、自然の道に一致するところ、これを空の巻として最後にとどむるものなり。<br><br>
+                       <strong>【口語訳】</strong><br>最後の巻を「空」とする。空の巻とは、すべての技や理合いを完全に体得した後に到達する、一切のこだわりや迷いがない自然体の究極の境地を指す。兵法の道を極め尽くした先には、心は常に澄み渡った「空」となり、広くあるがままに敵と対峙できる。意図的な技や理屈を超え、ただ自然の道理と一体化する境地をここに残す。`
+            }
+        };
+
+        // 心得画面の初期化処理（DOMContentLoadedイベント内などに追記）
+        window.addEventListener('DOMContentLoaded', () => {
+            // （既存の処理...）
+            initGorinPage();
+        });
+
+        function initGorinPage() {
+            // 1. 今日の百足伝（日めくり風に日替わり、またはランダムで1つ抽出）
+            const todayIndex = new Date().getDate() % mukadeData.length;
+            document.getElementById('daily-mukade-text').innerText = mukadeData[todayIndex];
+
+            // 2. 百足伝 全文挿入
+            const mukadeListEl = document.getElementById('mukade-all-list');
+            mukadeListEl.innerHTML = mukadeData.map(item => `<div style="margin-bottom:6px; border-bottom:1px dashed #eee; padding-bottom:4px;">${item}</div>`).join('');
+
+            // 3. 五輪書 初期表示（地の巻）
+            switchGorinBook('chi', document.querySelector('[data-book="chi"]'));
+        }
+
+        // 五輪書の巻切り替え制御
+        function switchGorinBook(bookKey, tabElement) {
+            // タブのactiveクラス切り替え
+            const parent = tabElement.parentElement;
+            parent.querySelectorAll('.period-tab').forEach(tab => tab.classList.remove('active'));
+            tabElement.classList.add('active');
+
+            // 本文の書き換え
+            const contentBox = document.getElementById('gorin-content-box');
+            const book = gorinData[bookKey];
+            contentBox.innerHTML = `
+                <h3 style="font-size:1rem; color:var(--secondary-color); margin-bottom:10px; font-weight:bold;">${book.title}</h3>
+                <div>${book.text}</div>
+            `;
+            // スクロールをトップに戻す
+            contentBox.scrollTop = 0;
+        }
+
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('training-date').value = CURRENT_DATE_STR;
