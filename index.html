@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>武道稽古記録 & アドバイザー</title>
+  <title>武道稽古記録 & 内弟子アドバイザー</title>
 
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js (グラフ描画用ライブラリ) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     :root {
@@ -45,6 +47,32 @@
     header h1 {
       font-size: 1.25rem;
       font-weight: 700;
+    }
+
+    /* 内弟子ステータスバー */
+    .uchidechi-status {
+      background: #fff3cd;
+      border-bottom: 1px solid #ffeeba;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #856404;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .progress-bar-container {
+      background: #e9ecef;
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .progress-bar {
+      background: #ffc107;
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s;
     }
 
     .nav-tabs {
@@ -213,6 +241,13 @@
       line-height: 1.6;
     }
 
+    .chart-container {
+      position: relative;
+      margin: 16px 0;
+      height: 260px;
+      width: 100%;
+    }
+
     .log-item {
       background: white;
       border-radius: 8px;
@@ -297,12 +332,23 @@
 <body>
 
   <header>
-    <h1>🥋 武道稽古記録 & アドバイザー</h1>
+    <h1>🥋 武道稽古記録 & 内弟子アドバイザー</h1>
   </header>
+
+  <!-- 内弟子目標ステータス -->
+  <div class="uchidechi-status">
+    <div style="display: flex; justify-content: space-between;">
+      <span>直近7日間の内弟子目標達成度 (目標: 計500本/分以上)</span>
+      <span id="uchidechiProgressText">0 / 500</span>
+    </div>
+    <div class="progress-bar-container">
+      <div id="uchidechiProgressBar" class="progress-bar"></div>
+    </div>
+  </div>
 
   <div class="nav-tabs">
     <button class="tab-btn active" onclick="switchTab('recordTab', this)">📝 記録</button>
-    <button class="tab-btn" onclick="switchTab('historyTab', this)">📋 履歴</button>
+    <button class="tab-btn" onclick="switchTab('historyTab', this)">📋 履歴・可視化</button>
     <button class="tab-btn" onclick="switchTab('dailyTab', this)">☀️ 日次分析</button>
     <button class="tab-btn" onclick="switchTab('weeklyTab', this)">📈 週次分析</button>
     <button class="tab-btn" onclick="switchTab('monthlyTab', this)">🗓️ 月次分析</button>
@@ -443,33 +489,45 @@
             <input type="number" id="count" placeholder="例: 10" required>
             <div class="chip-group">
               <button type="button" class="chip-btn" onclick="setCount(10)">10本/分</button>
-              <button type="button" class="chip-btn" onclick="setCount(20)">20本/分</button>
-              <button type="button" class="chip-btn" onclick="setCount(30)">30本/分</button>
               <button type="button" class="chip-btn" onclick="setCount(50)">50本/分</button>
               <button type="button" class="chip-btn" onclick="setCount(100)">100本/分</button>
+              <button type="button" class="chip-btn" onclick="setCount(200)">200本/分</button>
+              <button type="button" class="chip-btn" onclick="setCount(300)">300本/分</button>
             </div>
           </div>
 
           <div class="form-group">
             <label for="memo">メモ・気づき</label>
-            <textarea id="memo" placeholder="例: 刃筋と体の軸を意識。間合いの取り方に留意した"></textarea>
+            <textarea id="memo" placeholder="例: 刃筋と体の軸を意識。内弟子として妥協なき稽古量を意識した"></textarea>
           </div>
 
           <button type="submit" id="submitBtn" class="btn btn-primary">記録を保存する</button>
-          <button type="button" id="quickAdviceBtn" class="btn btn-ai">✨ 本日のワンポイント指導</button>
+          <button type="button" id="quickAdviceBtn" class="btn btn-ai">✨ 内弟子基準のワンポイント指導</button>
         </form>
 
         <div id="aiAdviceBox" class="ai-box">
-          <div class="ai-title">⚔️ アドバイザーからの言葉</div>
+          <div class="ai-title">⚔️ 内弟子アドバイザーからの指導</div>
           <div id="aiAdviceContent" class="ai-text"></div>
         </div>
       </div>
     </div>
 
-    <!-- 2. 履歴タブ -->
+    <!-- 2. 履歴・可視化タブ -->
     <div id="historyTab" class="tab-content">
       <div class="card">
-        <div class="card-title">稽古の記録一覧</div>
+        <div class="card-title">📊 稽古量の視覚化（直近の傾向）</div>
+        <div style="font-size: 0.85rem; margin-bottom: 10px; color: #475569;">
+          どの種目に注力できているか、また全体のバランスと稽古量が内弟子基準に達しているかを確認します。
+        </div>
+        <div class="chart-container">
+          <canvas id="menuChart"></canvas>
+        </div>
+        <div class="chart-container" style="margin-top: 20px;">
+          <canvas id="trendChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 稽古の記録一覧</div>
         <div id="logList">
           <div class="empty-state">データを読み込んでいます...</div>
         </div>
@@ -479,10 +537,11 @@
     <!-- 3. 日次分析タブ -->
     <div id="dailyTab" class="tab-content">
       <div class="card">
-        <div class="card-title">☀️ 日次分析プロンプトをコピー</div>
+        <div class="card-title">☀️ 日次分析プロンプト（内弟子用）</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          直近の稽古データをもとに、今日の調子や身体の運用についてフィードバックをもらうためのプロンプトをコピーします。
+          今日の稽古量を踏まえ、内弟子として足りているか、明日どこに注力すべきかを厳しくも的確にフィードバックしてもらうプロンプトです。
         </p>
+        <div class="chart-container" style="height: 180px;"><canvas id="dailyTabChart"></canvas></div>
         <button type="button" id="dailyAnalyzeBtn" class="btn btn-ai">📋 日次分析用プロンプトをコピー</button>
         <div id="dailyResultBox" class="ai-box">
           <div class="ai-title">📈 コピー状況</div>
@@ -494,10 +553,11 @@
     <!-- 4. 週次分析タブ -->
     <div id="weeklyTab" class="tab-content">
       <div class="card">
-        <div class="card-title">📈 週次分析プロンプトをコピー</div>
+        <div class="card-title">📈 週次分析プロンプト（内弟子用）</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          過去7日間の稽古の偏りやペース配分を振り返り、今週の総括と来週への指針を出力させるプロンプトです。
+          過去7日間の総稽古量と各種目のバランスを可視化し、内弟子としての修練基準を満たせているか検証するプロンプトです。
         </p>
+        <div class="chart-container" style="height: 180px;"><canvas id="weeklyTabChart"></canvas></div>
         <button type="button" id="weeklyAnalyzeBtn" class="btn btn-ai">📋 週次分析用プロンプトをコピー</button>
         <div id="weeklyResultBox" class="ai-box">
           <div class="ai-title">📈 コピー状況</div>
@@ -509,10 +569,11 @@
     <!-- 5. 月次分析タブ -->
     <div id="monthlyTab" class="tab-content">
       <div class="card">
-        <div class="card-title">🗓️ 月次分析プロンプトをコピー</div>
+        <div class="card-title">🗓️ 月次分析プロンプト（内弟子用）</div>
         <p style="font-size: 0.85rem; color: #475569; margin-bottom: 14px;">
-          過去1ヶ月の全ログを集計し、武道の理合や五輪書の精神に照らし合わせて今月の成長を評価してもらうプロンプトです。
+          この1ヶ月の全データを集計し、真に内弟子として相応しい圧倒的な稽古量・質の積み重ねができたかを大局的に評価させるプロンプトです。
         </p>
+        <div class="chart-container" style="height: 180px;"><canvas id="monthlyTabChart"></canvas></div>
         <button type="button" id="monthlyAnalyzeBtn" class="btn btn-ai">📋 月次分析用プロンプトをコピー</button>
         <div id="monthlyResultBox" class="ai-box">
           <div class="ai-title">📈 コピー状況</div>
@@ -551,6 +612,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let cachedLogs = [];
+    let charts = {};
 
     const gorinData = {
       chi: {
@@ -582,8 +644,8 @@
       document.getElementById(tabId).classList.add('active');
       if (btn) btn.classList.add('active');
 
-      if (tabId === 'historyTab') {
-        fetchLogs();
+      if (tabId === 'historyTab' || tabId === 'dailyTab' || tabId === 'weeklyTab' || tabId === 'monthlyTab') {
+        renderAllCharts();
       }
     }
 
@@ -620,6 +682,8 @@
       }
 
       cachedLogs = data || [];
+      updateUchidechiStatusBar();
+      renderAllCharts();
 
       if (cachedLogs.length === 0) {
         logList.innerHTML = '<div class="empty-state">まだ記録がありません</div>';
@@ -640,6 +704,95 @@
         `;
         logList.appendChild(div);
       });
+    }
+
+    // 内弟子ステータスバーの更新処理
+    function updateUchidechiStatusBar() {
+      const targetCount = 500;
+      let totalRecent = 0;
+
+      // 直近7日間の集計
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      cachedLogs.forEach(l => {
+        if (new Date(l.date) >= sevenDaysAgo) {
+          totalRecent += (l.count || 0);
+        }
+      });
+
+      document.getElementById('uchidechiProgressText').textContent = `${totalRecent} / ${targetCount}`;
+      const percentage = Math.min((totalRecent / targetCount) * 100, 100);
+      document.getElementById('uchidechiProgressBar').style.width = `${percentage}%`;
+    }
+
+    // Chart.jsによる各種グラフ描画処理
+    function renderAllCharts() {
+      if (cachedLogs.length === 0) return;
+
+      // データ集計: 種目別
+      const menuData = {};
+      // データ集計: 日付別 (時系列)
+      const dateData = {};
+
+      // 直近のデータを反転させて時系列順にする
+      const sortedLogs = [...cachedLogs].reverse();
+
+      sortedLogs.forEach(log => {
+        menuData[log.menu] = (menuData[log.menu] || 0) + log.count;
+        dateData[log.date] = (dateData[log.date] || 0) + log.count;
+      });
+
+      const menuLabels = Object.keys(menuData);
+      const menuValues = Object.values(menuData);
+
+      const dateLabels = Object.keys(dateData).slice(-10); // 直近10日分
+      const dateValues = Object.values(dateData).slice(-10);
+
+      // グラフの破棄と再生成ヘルパー
+      const createOrUpdateChart = (ctxId, config) => {
+        if (charts[ctxId]) charts[ctxId].destroy();
+        const ctx = document.getElementById(ctxId);
+        if (ctx) charts[ctxId] = new Chart(ctx, config);
+      };
+
+      // 1. 種目別割合 (円グラフ)
+      const pieConfig = {
+        type: 'pie',
+        data: {
+          labels: menuLabels,
+          datasets: [{
+            data: menuValues,
+            backgroundColor: ['#1b2a4a', '#2b5c8f', '#2c7a7b', '#c05621', '#4a5568', '#718096', '#cbd5e1']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      };
+
+      // 2. 稽古量の推移 (棒グラフ)
+      const barConfig = {
+        type: 'bar',
+        data: {
+          labels: dateLabels,
+          datasets: [{
+            label: '稽古総量 (本/分)',
+            data: dateValues,
+            backgroundColor: '#2b5c8f'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } }
+        }
+      };
+
+      // 各タブのキャンバスへ描画
+      createOrUpdateChart('menuChart', pieConfig);
+      createOrUpdateChart('trendChart', barConfig);
+      createOrUpdateChart('dailyTabChart', barConfig);
+      createOrUpdateChart('weeklyTabChart', pieConfig);
+      createOrUpdateChart('monthlyTabChart', pieConfig);
     }
 
     async function saveLogData() {
@@ -678,7 +831,7 @@
         document.getElementById('count').value = '';
         document.getElementById('memo').value = '';
         document.getElementById('aiAdviceBox').style.display = 'none';
-        fetchLogs();
+        await fetchLogs();
       }
       btn.disabled = false;
     });
@@ -688,25 +841,25 @@
       const content = document.getElementById('aiAdviceContent');
 
       box.style.display = 'block';
-      content.textContent = '内容を確認しています...';
+      content.textContent = '内弟子の基準に照らし合わせて分析中...';
 
       const log = await saveLogData();
       if (!log) return;
 
-      const advices = [
-        "本日の『" + log.menu + "』の記録を確認しました。形や数をこなすだけでなく、体の軸や呼吸のバランスを意識することが大切です。日々の積み重ねを大切にしていきましょう。",
-        "お疲れ様でした。丁寧な稽古ができていますね。一回一回の質を高めるために、フォームや力の抜き加減を振り返ってみてください。",
-        "安定した稽古の継続ですね。調子の良い時もそうでない時も、基本のフォームと中心軸を意識することで、確実なレベルアップにつながります。"
-      ];
-      const randomAdvice = advices[Math.floor(Math.random() * advices.length)];
+      let adviceText = "";
+      if (log.count < 100) {
+        adviceText = `本日の『${log.menu}』は${log.count}回です。一般の稽古としては十分ですが、道場を背負って立つ「内弟子」の稽古量としてはまだ物足りなさが残ります。一本一本の切れ味を極めるとともに、絶対的な分量・反復数をさらに引き上げていきましょう。`;
+      } else {
+        adviceText = `本日の『${log.menu}』は${log.count}回と、熱量の高い素晴らしい積み重ねです。内弟子に相応しい濃密な稽古量に達しています。この量をこなした時こそ、慢心せず身体の中心軸のブレや無駄な力みがなかったか徹底的に内省してください。`;
+      }
 
-      content.textContent = `【本日の稽古：${log.menu} (${log.count})】\n${randomAdvice}`;
+      content.textContent = `【本日の評価：${log.menu}】\n${adviceText}`;
       document.getElementById('count').value = '';
       document.getElementById('memo').value = '';
-      fetchLogs();
+      await fetchLogs();
     });
 
-    // 共通のコピー処理関数（通常のトーン）
+    // コピー処理関数（内弟子基準＆可視化ベースの指示）
     async function copyAnalysisPrompt(type, boxId, contentId) {
       const box = document.getElementById(boxId);
       const content = document.getElementById(contentId);
@@ -728,17 +881,21 @@
       let promptInstructions = "";
 
       if (type === 'daily') {
-        promptTitle = "【日次分析】";
-        promptInstructions = "直近の稽古内容とメモを分析し、今日の調子や身体の使い方のポイント、明日へのアドバイスを分かりやすくまとめてください。";
+        promptTitle = "【日次分析：内弟子修練目線】";
+        promptInstructions = "本日の稽古ログと可視化されたグラフの偏りをもとに、「道場の内弟子として十分な稽古量・質に達しているか」という極めて高い視座から分析してください。何ができていて何が足りないか、明日注力すべき点を明確に指摘してください。";
       } else if (type === 'weekly') {
-        promptTitle = "【週次分析】";
-        promptInstructions = "過去7日間の稽古データを集計し、今週の偏りやバランス、一週間の総括と来週への指針を提案してください。";
+        promptTitle = "【週次分析：内弟子修練目線】";
+        promptInstructions = "過去7日間の集計グラフとログを確認し、内弟子に相応しい圧倒的な稽古量が確保されているか、各種目のバランス（補強、基本素振り、形、組太刀など）が偏っていないかを検証してください。弱点の補強と次週の注力目標を具体的に提示してください。";
       } else if (type === 'monthly') {
-        promptTitle = "【月次分析】";
-        promptInstructions = "過去1ヶ月の全データを集計し、この一ヶ月間の修練の成果や成長の軌跡を詳しく評価してください。";
+        promptTitle = "【月次分析：内弟子修練目線】";
+        promptInstructions = "過去1ヶ月の全データを集計した結果から、内弟子としての覚悟と成長が数字に表れているかを大局的に評価してください。五輪書の精神（鍛錬の継続）に照らし合わせ、どの技に注力すべきか、次の1ヶ月の具体的な修練計画をアドバイスしてください。";
       }
 
       const fullPromptText = `以下の私の武道稽古ログデータを読み込んで、${promptTitle}を行ってください。
+
+【分析の重要前提】
+・一般的な愛好家のレベルではなく、「道場を牽引する内弟子として相応しいか」という厳しい目線でアドバイスをお願いします。
+・何ができていて何ができていないか、どこに最も注力すべきかが明確に伝わるように整理してください。
 
 ${promptInstructions}
 
@@ -748,7 +905,7 @@ ${textToCopy}`;
 
       try {
         await navigator.clipboard.writeText(fullPromptText);
-        content.textContent = `✅ ${promptTitle}プロンプトのコピーに成功しました。\n\n📋 このチャットの入力欄にペーストして送信してください。`;
+        content.textContent = `✅ ${promptTitle}プロンプトのコピーに成功しました。\n\n📋 このチャットの入力欄にペーストして送信してください。AIが内弟子目線での分析と注力ポイントのアドバイスを行います。`;
       } catch (err) {
         content.textContent = `📋 クリップボードへのコピーに失敗しました。ブラウザの設定をご確認ください。`;
       }
