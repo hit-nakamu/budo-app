@@ -564,16 +564,51 @@
             </div>
         </div>
 
-        <!-- 5. 心得画面 -->
+                <!-- 5. 心得画面 -->
         <div id="gorin-page" class="page-section">
+            <!-- 百足伝セクション -->
             <div class="card">
-                <h2 class="card-title">武道修練心得</h2>
-                <p style="font-size: 0.95rem; line-height: 1.6; color: #555;">
-                    「それ武芸の道に於いて、朝鍛夕錬（ちょうたんせきれん）の心、片時も忘るることなかれ。」<br><br>
-                    日々の地道な積み重ねこそが、確固たる技と体さばきを生み出します。自身の課題を常にメモに残し、次回の稽古へと繋げなさい。
-                </p>
+                <h2 class="card-title">新選組・天然理心流 鵬玉会「百足伝」</h2>
+                
+                <!-- 日めくり表示エリア -->
+                <div style="background: #fff8ee; border: 1px solid #f3d19e; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                    <div style="font-size: 0.8rem; color: #b37d14; font-weight: bold; margin-bottom: 5px;">📅 今日の百足伝</div>
+                    <div id="daily-mukade-text" style="font-size: 1.1rem; font-weight: bold; color: #8e5800; line-height: 1.5;">
+                        ※読み込み中...
+                    </div>
+                </div>
+
+                <!-- 全文表示エリア（折りたたみ・スクロール可） -->
+                <details style="border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: #fafafa;">
+                    <summary style="font-size: 0.9rem; font-weight: bold; cursor: pointer; color: var(--primary-color); outline: none;">
+                        📜 百足伝 全十二箇条を表示する
+                    </summary>
+                    <div id="mukade-all-list" style="margin-top: 10px; max-height: 250px; overflow-y: auto; font-size: 0.85rem; line-height: 1.6; text-align: left;">
+                        <!-- JSで全箇条が挿入されます -->
+                    </div>
+                </details>
+            </div>
+
+            <!-- 五輪書セクション -->
+            <div class="card">
+                <h2 class="card-title">宮本武蔵「五輪書」全文（口語訳付）</h2>
+                
+                <!-- 五輪書 巻切り替えサブタブ -->
+                <div class="period-tabs" style="background-color: #e2e8f0; margin-bottom: 15px;">
+                    <div class="period-tab active" data-book="chi" onclick="switchGorinBook('chi', this)">地の巻</div>
+                    <div class="period-tab" data-book="mizu" onclick="switchGorinBook('mizu', this)">水の巻</div>
+                    <div class="period-tab" data-book="hi" onclick="switchGorinBook('hi', this)">火の巻</div>
+                    <div class="period-tab" data-book="kaze" onclick="switchGorinBook('kaze', this)">風の巻</div>
+                    <div class="period-tab" data-book="kuu" onclick="switchGorinBook('kuu', this)">空の巻</div>
+                </div>
+
+                <!-- 本文表示エリア -->
+                <div id="gorin-content-box" style="max-height: 400px; overflow-y: auto; font-size: 0.9rem; line-height: 1.7; padding-right: 5px;">
+                    <!-- JSで選択された巻のテキストが挿入されます -->
+                </div>
             </div>
         </div>
+
 
     </div>
 
