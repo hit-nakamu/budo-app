@@ -62,7 +62,7 @@
 
     .tab-btn {
       flex: 1;
-      min-width: 75px;
+      min-width: 80px;
       padding: 12px 2px;
       background: none;
       border: none;
@@ -114,7 +114,6 @@
       padding-bottom: 8px;
     }
 
-    /* 目標・実績ダッシュボード用スタイル */
     .target-item {
       margin-bottom: 14px;
     }
@@ -226,6 +225,11 @@
     .gorin-chapter-title { font-weight: bold; color: var(--gorin-color); font-size: 1rem; margin-bottom: 10px; border-bottom: 1px solid #ffedd5; padding-bottom: 6px; }
     .gorin-body { font-size: 0.9rem; line-height: 1.8; white-space: pre-wrap; color: #292524; }
     .empty-state { text-align: center; color: #64748b; padding: 24px 0; font-size: 0.9rem; }
+    
+    .section-divider {
+      margin: 24px 0 16px 0;
+      border-top: 2px dashed var(--border-color);
+    }
   </style>
 </head>
 <body>
@@ -238,9 +242,7 @@
     <button class="tab-btn active" onclick="switchTab('dashboardTab', this)">📊 目標と実績</button>
     <button class="tab-btn" onclick="switchTab('recordTab', this)">📝 記録入力</button>
     <button class="tab-btn" onclick="switchTab('historyTab', this)">📋 履歴一覧</button>
-    <button class="tab-btn" onclick="switchTab('dailyTab', this)">☀️ 日次分析</button>
-    <button class="tab-btn" onclick="switchTab('weeklyTab', this)">📈 週次分析</button>
-    <button class="tab-btn" onclick="switchTab('monthlyTab', this)">🗓️ 月次分析</button>
+    <button class="tab-btn" onclick="switchTab('analysisTab', this)">🔍 AI分析</button>
     <button class="tab-btn" onclick="switchTab('gorinTab', this)">📖 五輪書</button>
   </div>
 
@@ -372,34 +374,43 @@
       </div>
     </div>
 
-    <!-- 4. 日次分析タブ -->
-    <div id="dailyTab" class="tab-content">
+    <!-- 4. 【統合】AI分析タブ -->
+    <div id="analysisTab" class="tab-content">
       <div class="card">
-        <div class="card-title">☀️ 日次分析プロンプト（不足点指摘用）</div>
-        <button type="button" id="dailyAnalyzeBtn" class="btn btn-ai">📋 プロンプトをコピー</button>
-        <div id="dailyResultBox" class="ai-box"><div id="dailyResultContent" class="ai-text"></div></div>
+        <div class="card-title">🔍 内弟子修練分析（プロンプト生成）</div>
+        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 20px;">
+          現在の稽古データを読み込み、内弟子としての基準に対して「何が圧倒的に不足しているか」を暴くプロンプトを出力します。ボタンを押してチャットへ貼り付けてください。
+        </p>
+
+        <!-- ① 日次分析セクション -->
+        <div>
+          <h3 style="font-size: 0.95rem; font-weight: bold; color: var(--accent-color); margin-bottom: 6px;">☀️ ① 日次分析（本日の不足点指摘）</h3>
+          <button type="button" id="dailyAnalyzeBtn" class="btn btn-ai" style="margin-top:0;">📋 日次プロンプトをコピー</button>
+          <div id="dailyResultBox" class="ai-box"><div id="dailyResultContent" class="ai-text"></div></div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- ② 週次分析セクション -->
+        <div>
+          <h3 style="font-size: 0.95rem; font-weight: bold; color: var(--accent-color); margin-bottom: 6px;">📈 ② 週次分析（今週の目標未達検証）</h3>
+          <button type="button" id="weeklyAnalyzeBtn" class="btn btn-ai" style="margin-top:0;">📋 週次プロンプトをコピー</button>
+          <div id="weeklyResultBox" class="ai-box"><div id="weeklyResultContent" class="ai-text"></div></div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- ③ 月次（長期）分析セクション -->
+        <div>
+          <h3 style="font-size: 0.95rem; font-weight: bold; color: var(--accent-color); margin-bottom: 6px;">🗓️ ③ 月次分析（長期的な不足・怠慢追及）</h3>
+          <button type="button" id="monthlyAnalyzeBtn" class="btn btn-ai" style="margin-top:0;">📋 月次プロンプトをコピー</button>
+          <div id="monthlyResultBox" class="ai-box"><div id="monthlyResultContent" class="ai-text"></div></div>
+        </div>
+
       </div>
     </div>
 
-    <!-- 5. 週次分析タブ -->
-    <div id="weeklyTab" class="tab-content">
-      <div class="card">
-        <div class="card-title">📈 週次分析プロンプト（目標未達検証用）</div>
-        <button type="button" id="weeklyAnalyzeBtn" class="btn btn-ai">📋 プロンプトをコピー</button>
-        <div id="weeklyResultBox" class="ai-box"><div id="weeklyResultContent" class="ai-text"></div></div>
-      </div>
-    </div>
-
-    <!-- 6. 月次分析タブ -->
-    <div id="monthlyTab" class="tab-content">
-      <div class="card">
-        <div class="card-title">🗓️ 月次分析プロンプト（長期不足追及用）</div>
-        <button type="button" id="monthlyAnalyzeBtn" class="btn btn-ai">📋 プロンプトをコピー</button>
-        <div id="monthlyResultBox" class="ai-box"><div id="monthlyResultContent" class="ai-text"></div></div>
-      </div>
-    </div>
-
-    <!-- 7. 五輪書タブ -->
+    <!-- 5. 五輪書タブ -->
     <div id="gorinTab" class="tab-content">
       <div class="card">
         <div class="card-title">📖 五輪書 現代語訳</div>
@@ -420,7 +431,6 @@
     let cachedLogs = [];
     let dashChart = null;
 
-    // 内弟子としての週間目標値
     const TARGETS = { suburi: 500, kata: 50, kumitachi: 30, hokyo: 200 };
 
     function switchTab(tabId, btn) {
@@ -456,7 +466,6 @@
       }
     }
 
-    // ダッシュボード（目標と実績）の計算と描画
     function updateDashboard() {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -479,7 +488,6 @@
         }
       });
 
-      // UI表示の更新関数
       const updateUI = (key, currentVal, targetVal) => {
         document.getElementById(`txt-${key}`).textContent = `${currentVal} / ${targetVal}`;
         const pct = Math.min((currentVal / targetVal) * 100, 100);
@@ -501,7 +509,6 @@
       updateUI('kumitachi', current.kumitachi, TARGETS.kumitachi);
       updateUI('hokyo', current.hokyo, TARGETS.hokyo);
 
-      // 円グラフの描写
       const ctx = document.getElementById('dashMenuChart');
       if (!ctx) return;
       if (dashChart) dashChart.destroy();
@@ -568,16 +575,32 @@
       const log = await saveLogData();
       if (!log) return;
 
-      // 即時アドバイスでも不足を指摘
       content.textContent = `【今回の稽古：${log.menu} (${log.count})】\n内弟子の週次目標（素振り500本・形50本等）に対して、現在のあなたのログにはまだ圧倒的な「反復の不足」が見られます。単発の稽古で満足せず、どのカテゴリーの数値が最も滞っているかをダッシュボードで確認し、明日はその不足分を埋める猛烈な稽古を行ってください。`;
       await fetchLogs();
     });
 
-    async function copyAnalysisPrompt(type) {
+    async function copyAnalysisPrompt(type, boxId, contentId) {
+      const box = document.getElementById(boxId);
+      const content = document.getElementById(contentId);
+      
+      box.style.display = 'block';
+      content.textContent = 'コピー用プロンプトを生成中...';
+
       if (cachedLogs.length === 0) await fetchLogs();
+      
+      if (cachedLogs.length === 0) {
+        content.textContent = '分析対象の稽古データがありません。まずは日々の記録を保存してください。';
+        return;
+      }
+
       const textToCopy = cachedLogs.map(l => `・[${l.date}] ${l.menu} (${l.count}) / メモ: ${l.memo || 'なし'}`).join('\n');
       
-      const fullPromptText = `以下の私の武道稽古ログデータを読み込んで分析を行ってください。
+      let typeTitle = "";
+      if (type === 'daily') typeTitle = "日次分析（本日の不足点指摘）";
+      if (type === 'weekly') typeTitle = "週次分析（今週の目標未達検証）";
+      if (type === 'monthly') typeTitle = "月次分析（長期的な不足・怠慢追及）";
+
+      const fullPromptText = `以下の私の武道稽古ログデータを読み込んで【${typeTitle}】を行ってください。
 
 【分析の絶対条件】
 1. 一般の愛好家向けではなく、「道場の内弟子」として相応しいかという非常に厳しい目線で査定してください。
@@ -588,13 +611,17 @@
 【全ログデータ】
 ${textToCopy}`;
 
-      await navigator.clipboard.writeText(fullPromptText);
-      alert('不足点指摘に特化した内弟子分析プロンプトをコピーしました！チャットにペーストしてください。');
+      try {
+        await navigator.clipboard.writeText(fullPromptText);
+        content.textContent = `✅ ${typeTitle}プロンプトのコピーに成功しました！\n\nこのチャットのメッセージ欄に貼り付け（ペースト）して送信してください。内弟子目線での厳しい不足点分析が始まります。`;
+      } catch (err) {
+        content.textContent = `❌ コピーに失敗しました。お使いのブラウザの権限をご確認ください。`;
+      }
     }
 
-    document.getElementById('dailyAnalyzeBtn').addEventListener('click', () => copyAnalysisPrompt('daily'));
-    document.getElementById('weeklyAnalyzeBtn').addEventListener('click', () => copyAnalysisPrompt('weekly'));
-    document.getElementById('monthlyAnalyzeBtn').addEventListener('click', () => copyAnalysisPrompt('monthly'));
+    document.getElementById('dailyAnalyzeBtn').addEventListener('click', () => copyAnalysisPrompt('daily', 'dailyResultBox', 'dailyResultContent'));
+    document.getElementById('weeklyAnalyzeBtn').addEventListener('click', () => copyAnalysisPrompt('weekly', 'weeklyResultBox', 'weeklyResultContent'));
+    document.getElementById('monthlyAnalyzeBtn').addEventListener('click', () => copyAnalysisPrompt('monthly', 'monthlyResultBox', 'monthlyResultContent'));
 
     function escapeHtml(str) {
       if (typeof str !== 'string') return str;
