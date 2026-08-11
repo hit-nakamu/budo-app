@@ -14,6 +14,11 @@
             --text-color: #333333;
             --border-color: #e0e0e0;
             --progress-bg: #e2e8f0;
+            /* 百足伝エリアのライトモード用カラー */
+            --mukade-bg: #fff8ee;
+            --mukade-border: #f3d19e;
+            --mukade-title: #b37d14;
+            --mukade-text: #8e5800;
         }
 
         /* ダークモード用カラー定義 */
@@ -26,6 +31,11 @@
             --text-color: #e0e0e0;
             --border-color: #333333;
             --progress-bg: #2d2d2d;
+            /* 百足伝エリアのダークモード用カラー（視認性向上） */
+            --mukade-bg: #2a2215;
+            --mukade-border: #5e4829;
+            --mukade-title: #e6b450;
+            --mukade-text: #f3d19e;
         }
 
         * {
@@ -214,6 +224,12 @@
             resize: vertical;
             height: 100px;
             font-size: 0.95rem;
+        }
+
+        /* コピー用プロンプトエリアのダークモード視認性修正 */
+        #ai-prompt-text {
+            background-color: var(--progress-bg);
+            color: var(--text-color);
         }
 
         .quick-buttons {
@@ -651,9 +667,9 @@
                 <h2 class="card-title">無外流 鵬玉会「百足伝」（全四十首）</h2>
                 
                 <!-- 日めくり表示エリア -->
-                <div style="background: #fff8ee; border: 1px solid #f3d19e; padding: 18px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
-                    <div id="daily-mukade-num" style="font-size: 0.8rem; color: #b37d14; font-weight: bold; margin-bottom: 5px;">📅 今日の百足伝</div>
-                    <div id="daily-mukade-text" style="font-size: 1.1rem; font-weight: bold; color: #8e5800; line-height: 1.6; white-space: pre-wrap; font-family: inherit;">
+                <div style="background: var(--mukade-bg); border: 1px solid var(--mukade-border); padding: 18px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                    <div id="daily-mukade-num" style="font-size: 0.8rem; color: var(--mukade-title); font-weight: bold; margin-bottom: 5px;">📅 今日の百足伝</div>
+                    <div id="daily-mukade-text" style="font-size: 1.1rem; font-weight: bold; color: var(--mukade-text); line-height: 1.6; white-space: pre-wrap; font-family: inherit;">
                         ※読み込み中...
                     </div>
                 </div>
@@ -741,7 +757,7 @@
             "15（じゅうご） 兵法（ひょうほう）の 奥義（おうぎ）はまつ毛の 如（ごと）くにて あまり近くて 迷いこそすれ",
             "16（じゅうろく)我流（わがりゅう）を つかはば常に 心還（また） 物云ふ迄（ものいうまで）も 修行ともなせ",
             "17（じゅうしち) 我流（わがりゅう）を 使ひて見れば 何もなく ただ心して 勝つ道を知れ",
-            "18（じゅうはち) 兵法（ひょうほう）の 先（せん）は早きと 心得て 勝を急（あせ）って危うかりけり",
+            "18（じゅうhち) 兵法（ひょうほう）の 先（せん）は早きと 心得て 勝を急（あせ）って危うかりけり",
             "19（じゅうく) 兵法（ひょうほう）は つよきを能き（よき）と 思（おもい）なば終（つい）には負けと 成ると知るべし",
             "20（にじゅう) 兵法（ひょうほう）の 強き内（うち）には つよみなし 強からずして負けぬものなり",
             "21（にじゅういち）立会はば 思慮分別（しりょふんべつ）に 離れつつ 有（あり）そ無（な）きぞと 思ふべからず",
@@ -852,7 +868,7 @@
                   <p style="margin-top: 8px;"><strong>■ 初心から達人への転変</strong><br>
                   技を全く知らない初心者の状態から、学べば学ぶほど様々な理屈や迷い（有）が生じる。しかし、それらを朝鍛夕錬して完全に身体に染み込ませたとき、意識して技を使うのではなく、身体が自然と最適に動くようになる（空）。</p>
                   <p style="margin-top: 8px; font-weight: bold; color: #8e5800;">「実の道を知って、道を失わざれば、自ら空の所へ入るなり」</p>
-                  <p style="margin-top: 4px;">知恵も理合も道も、すべてが存在した上で、最後にはそれらに囚われない境地。そこにこそ、兵法の究極の姿がある。</p>`
+                  <p style="margin-top: 4px;">知恵も理合も道も、すべてが存在した上で、最後にはそれらに囚われない境地. そこにこそ、兵法の究極の姿がある。</p>`
         };
 
         function switchGorinBook(bookKey, tabElement) {
@@ -902,13 +918,20 @@
                 return;
             }
             try {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rawLogs, null, 2));
+                // ダウンロード処理を安全な Blob URL 方式に修正
+                const dataStr = JSON.stringify(rawLogs, null, 2);
+                const blob = new Blob([dataStr], { type: "application/json;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                
                 const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("href", url);
                 downloadAnchor.setAttribute("download", `training_logs.json`);
                 document.body.appendChild(downloadAnchor);
                 downloadAnchor.click();
-                downloadAnchor.remove();
+                
+                // クリーンアップ
+                document.body.removeChild(downloadAnchor);
+                URL.revokeObjectURL(url);
             } catch (error) {
                 alert('データエクスポートの実行に失敗しました。');
             }
