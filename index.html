@@ -705,8 +705,39 @@
             // 3. 五輪書 初期表示（地の巻）
             switchGorinBook('chi', document.querySelector('[data-book="chi"]'));
         }
+        
+        // --- 宮本武蔵「五輪書」データと切り替え関数 ---
+        const gorinData = {
+            chi: `<strong>【地の巻】兵法の道をまっすぐに説明する巻</strong><br><br>
+                  武士としての心構えや、物事の基本、本質を見極めることの重要性を説いています。
+                  道具の特性を知り、状況に応じた最適な判断を行うための基礎がここにあります。<br>
+                  <span style="color:#666; font-size:0.85rem;">「朝鍛夕錬（ちょうたんせきれん）して、のちに千日の稽古を鍛とし、万日の稽古を錬とす」</span>`,
+            mizu: `<strong>【水の巻】二天一流の具体的な心の持ち方や太刀筋の巻</strong><br><br>
+                  水のように柔軟で、どんな器にも合わせられるように心を常に一定に保ち、澄んだ状態で敵に臨む姿勢を教えます。
+                  身体の使い方や太刀の振り方の根幹がここにあります。<br>
+                  <span style="color:#666; font-size:0.85rem;">「心は常に、広く、直にして、きつくひっぱらず、少しもたるまず、偏らぬように」</span>`,
+            hi: `<strong>【火の巻】戦いにおける勝負の仕掛け方や、状況の制し方の巻</strong><br><br>
+                  場所の利、敵の動揺を誘う戦術、機先を制するタイミングなど、実戦における躍動的な駆け引きについて解説しています。
+                  場の空気を支配する術です。`,
+            kaze: `<strong>【風の巻】他流派の兵法を研究し、自らの正しさを知る巻</strong><br><br>
+                  他を知ることで己の長所と短所をより深く理解し、偏った考えや狭い視野に囚われないようにすることの大切さを説きます。`,
+            kuu: `<strong>【空の巻】すべての技や理合を超えた、究極の境地を説く巻</strong><br><br>
+                  迷いや執着が一切なく、自然体でありながら最も的確に動くことができる「空（くう）」のあり方を示しています。<br>
+                  <span style="color:#666; font-size:0.85rem;">「実の道を知って、道を失わざれば、自ら空の所へ入るなり」</span>`
+        };
 
+        function switchGorinBook(bookKey, tabElement) {
+            // タブのactiveクラス切り替え
+            const tabs = tabElement.parentNode.querySelectorAll('.period-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabElement.classList.add('active');
 
+            // コンテンツの挿入
+            const contentBox = document.getElementById('gorin-content-box');
+            if (contentBox && gorinData[bookKey]) {
+                contentBox.innerHTML = gorinData[bookKey];
+            }
+        }
 
 
         window.addEventListener('DOMContentLoaded', () => {
