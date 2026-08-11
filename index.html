@@ -43,7 +43,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* タブナビゲーション */
+        /* メインタブナビゲーション */
         .nav-tabs {
             display: flex;
             background-color: white;
@@ -71,6 +71,35 @@
             color: var(--primary-color);
             border-bottom-color: var(--primary-color);
             font-weight: bold;
+        }
+
+        /* 分析画面用サブタブ（日次・週次・月次・年次） */
+        .period-tabs {
+            display: flex;
+            background-color: #eee;
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 20px;
+            gap: 4px;
+        }
+
+        .period-tab {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #555;
+            cursor: pointer;
+            border-radius: 6px;
+            background-color: transparent;
+            transition: all 0.2s;
+        }
+
+        .period-tab.active {
+            background-color: white;
+            color: var(--primary-color);
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         /* メインコンテンツ */
@@ -130,7 +159,6 @@
             font-size: 1rem;
             background-color: #fff;
             color: var(--text-color);
-            -webkit-appearance: none;
             appearance: none;
         }
 
@@ -233,6 +261,29 @@
             border-bottom: 1px dashed var(--border-color);
         }
 
+        /* 横棒グラフ表現 */
+        .chart-container {
+            margin-bottom: 15px;
+        }
+        .chart-label {
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .chart-bar-bg {
+            background-color: #e0e0e0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .chart-bar-fill {
+            background-color: var(--primary-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
         /* フッター・ナビゲーション */
         .footer-nav {
             position: fixed;
@@ -288,9 +339,9 @@
             <div class="card">
                 <h2 class="card-title">今月の稽古目標</h2>
                 <div class="stat-row"><span>目標稽古日数</span><span>20 日</span></div>
-                <div class="stat-row"><span>現在の消化日数</span><span id="target-days">2 日</span></div>
+                <div class="stat-row"><span>現在の消化日数</span><span id="target-days">0 日</span></div>
                 <div class="stat-row"><span>総素振り本数目標</span><span>1000 本</span></div>
-                <div class="stat-row"><span>現在の累計本数</span><span id="target-counts">170 本</span></div>
+                <div class="stat-row"><span>現在の累計本数</span><span id="target-counts">0 本</span></div>
             </div>
         </div>
 
@@ -459,16 +510,30 @@
             </div>
         </div>
 
-        <!-- 4. AI分析画面 -->
+        <!-- 4. AI分析画面（修正：日次・週次・月次・年次の切り替えタブを追加） -->
         <div id="analysis-page" class="page-section">
             <div class="card">
-                <h2 class="card-title">月次稽古傾向分析（2026年8月期）</h2>
-                <div id="analysis-stats" style="margin-bottom: 20px;">
-                    <!-- 種目別の集計データをここに表示 -->
+                <h2 class="card-title">稽古傾向分析</h2>
+                
+                <!-- 期間切り替えサブタブ -->
+                <div class="period-tabs">
+                    <div class="period-tab active" onclick="switchPeriod('daily', this)">日次</div>
+                    <div class="period-tab" onclick="switchPeriod('weekly', this)">週次</div>
+                    <div class="period-tab" onclick="switchPeriod('monthly', this)">月次</div>
+                    <div class="period-tab" onclick="switchPeriod('yearly', this)">年次</div>
                 </div>
-                <div style="background: #fff3cd; padding: 12px; border-radius: 8px; font-size: 0.9rem; color: #856404; border: 1px solid #ffeeba;">
+
+                <!-- 選択された期間のタイトル表示 -->
+                <h3 id="analysis-period-title" style="font-size: 1rem; margin-bottom: 15px; color: #555;">対象期間のデータ</h3>
+
+                <!-- 棒グラフ表示エリア -->
+                <div id="analysis-chart-area">
+                    <!-- JavaScriptで動的にグラフを生成 -->
+                </div>
+                
+                <div style="background: #fff3cd; padding: 12px; border-radius: 8px; font-size: 0.9rem; color: #856404; border: 1px solid #ffeeba; margin-top: 20px;">
                     <strong>内弟子アドバイザーの総評:</strong><br>
-                    直近では補強運動と基本さばき、素振りが中心となり、基礎体力の向上が見られます。形稽古においては「水月」「響き返し」の反復が確認できますが、組太刀類のデータが今月分はまだ不足しています。バランスの良い修練を心がけてください。
+                    <span id="ai-total-review">選択された期間のデータを分析中です。</span>
                 </div>
             </div>
         </div>
@@ -495,6 +560,10 @@
     </div>
 
     <script>
+        // ベースとなる現在の日付情報（システム上2026年8月11日とする）
+        const CURRENT_DATE_STR = "2026-08-11";
+        let currentPeriod = 'daily'; // 初期選択期間
+
         // ご提示いただいた【全ログデータ】の初期化配列
         let rawLogs = [
             { date: "2026-08-11", menu: "補強：腕立て伏せ", count: 30, memo: "なし" },
@@ -521,25 +590,29 @@
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
-            // 本日の日付を自動セット
-            document.getElementById('training-date').value = new Date().toISOString().split('T')[0];
-            // データを各画面にレンダリング
+            document.getElementById('training-date').value = CURRENT_DATE_STR;
             renderData();
         });
 
-        // タブ切り替えロジック
+        // メインタブ切り替え
         function switchPage(pageId, tabElement) {
-            // すべてのセクションを非表示に
             document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-            // 対象のセクションを表示
             document.getElementById(pageId).classList.add('active');
             
-            // タブの修飾を更新
             document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
             tabElement.classList.add('active');
         }
 
-        // カスタム入力欄の制御
+        // 分析サブタブ切り替え（日次・週次・月次・年次）
+        function switchPeriod(period, tabElement) {
+            currentPeriod = period;
+            document.querySelectorAll('.period-tab').forEach(tab => tab.classList.remove('active'));
+            tabElement.classList.add('active');
+            
+            // 期間に応じて再集計
+            renderAnalysisChart();
+        }
+
         function toggleCustomMenu() {
             const selectEl = document.getElementById('menuSelect');
             const customInputEl = document.getElementById('customMenuInput');
@@ -556,7 +629,6 @@
             document.getElementById('training-count').value = value;
         }
 
-        // フォームから新規データを保存
         function saveRecord(event) {
             event.preventDefault();
             const date = document.getElementById('training-date').value;
@@ -568,12 +640,10 @@
             const count = parseInt(document.getElementById('training-count').value, 10);
             const memo = document.getElementById('training-memo').value || "なし";
 
-            // 先頭に追加
             rawLogs.unshift({ date, menu, count, memo });
             
             alert('稽古記録をデータベースと連携し保存しました。');
             
-            // フォームのリセットと再描画
             document.getElementById('training-count').value = '';
             document.getElementById('training-memo').value = '';
             selectEl.value = selectEl.options[0].value;
@@ -582,7 +652,6 @@
             renderData();
         }
 
-        // データを解析して各画面に反映するメイン処理
         function renderData() {
             // 1. 履歴一覧の生成
             const historyListEl = document.getElementById('history-list');
@@ -592,47 +661,104 @@
                 item.className = 'log-item';
                 item.innerHTML = `
                     <div class="log-date">${log.date}</div>
-                    <div><span class="log-meta">${log.menu}</span> (${log.count} 本/分)</div>
+                    <div><span class="log-meta">${log.menu}</span> (${log.count} 本/分/回)</div>
                     ${log.memo !== 'なし' ? `<div class="log-memo">メモ: ${log.memo}</div>` : ''}
                 `;
                 historyListEl.appendChild(item);
             });
 
-            // 2. AI分析用の集計
-            const analysisStatsEl = document.getElementById('analysis-stats');
-            analysisStatsEl.innerHTML = '';
-            
-            let menuAggregation = {};
+            // 2. 目標実績画面用の全体集計
             let totalCount = 0;
             let uniqueDays = new Set();
-
             rawLogs.forEach(log => {
                 uniqueDays.add(log.date);
-                if (!menuAggregation[log.menu]) {
-                    menuAggregation[log.menu] = 0;
-                }
-                menuAggregation[log.menu] += log.count;
-                
-                // 素振りや補強など「本数」ベースのものを加算
                 if (log.menu.includes('素振り') || log.menu.includes('補強')) {
                     totalCount += log.count;
                 }
             });
-
-            // 集計結果を画面に出力
-            for (let menuName in menuAggregation) {
-                const row = document.createElement('div');
-                row.className = 'stat-row';
-                row.innerHTML = `<span>${menuName}</span><strong>${menuAggregation[menuName]} 回/分/本</strong>`;
-                analysisStatsEl.appendChild(row);
-            }
-
-            // 目標実績画面への反映
             document.getElementById('target-days').innerText = uniqueDays.size + ' 日';
             document.getElementById('target-counts').innerText = totalCount + ' 本';
+
+            // 3. AI分析チャートの初期描画
+            renderAnalysisChart();
         }
 
-        // 厳格指導ボタン
+        // 【新実装】期間フィルタリングとグラフ描画処理
+        function renderAnalysisChart() {
+            const chartArea = document.getElementById('analysis-chart-area');
+            const periodTitle = document.getElementById('analysis-period-title');
+            const reviewEl = document.getElementById('ai-total-review');
+            chartArea.innerHTML = '';
+
+            const baseDate = new Date(CURRENT_DATE_STR);
+            let filteredLogs = [];
+
+            // 期間フィルタリング条件の定義
+            if (currentPeriod === 'daily') {
+                periodTitle.innerText = "対象日: 2026年8月11日（本日）";
+                filteredLogs = rawLogs.filter(log => log.date === "2026-08-11");
+                reviewEl.innerText = "本日の稽古は補強運動と形（水月）の集中修練が確認できます。体力が落ちてくる後半こそ運足を意識しなさい。";
+            } else if (currentPeriod === 'weekly') {
+                periodTitle.innerText = "対象週: 8月第2週 (8/5 〜 8/11)";
+                // 直近7日以内
+                filteredLogs = rawLogs.filter(log => {
+                    const logDate = new Date(log.date);
+                    const diffTime = Math.abs(baseDate - logDate);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    return diffDays <= 7;
+                });
+                reviewEl.innerText = "今週は10日・11日と連続して高強度の素振りと体さばきが行われています。横一文字の刃筋にブレがないか確認を。";
+            } else if (currentPeriod === 'monthly') {
+                periodTitle.innerText = "対象月: 2026年8月期";
+                // 2026年8月のデータ
+                filteredLogs = rawLogs.filter(log => log.date.startsWith("2026-08"));
+                reviewEl.innerText = "月次で見ると、補強運動のスクワット（計130回）と素振りの真向（50本）が際立ちます。基礎作りの段階としては順調です。";
+            } else if (currentPeriod === 'yearly') {
+                periodTitle.innerText = "対象年: 2026年度";
+                // 2026年のデータ全て
+                filteredLogs = rawLogs.filter(log => log.date.startsWith("2026"));
+                reviewEl.innerText = "年次データでは、現時点で登録されているすべての基礎修練・形稽古が網羅されています。後半期に向けて組太刀の比率を上げなさい。";
+            }
+
+            if (filteredLogs.length === 0) {
+                chartArea.innerHTML = '<div style="font-size:0.9rem; color:#888;">該当期間にデータがありません。</div>';
+                return;
+            }
+
+            // 種目ごとに本数・回数を集計
+            let aggregation = {};
+            let maxVal = 0;
+
+            filteredLogs.forEach(log => {
+                if (!aggregation[log.menu]) aggregation[log.menu] = 0;
+                aggregation[log.menu] += log.count;
+            });
+
+            // 最大値を取得（グラフの100%基準用）
+            for (let m in aggregation) {
+                if (aggregation[m] > maxVal) maxVal = aggregation[m];
+            }
+
+            // グラフ要素の生成
+            for (let menuName in aggregation) {
+                const total = aggregation[menuName];
+                const percentage = maxVal > 0 ? (total / maxVal) * 100 : 0;
+
+                const chartContainer = document.createElement('div');
+                chartContainer.className = 'chart-container';
+                chartContainer.innerHTML = `
+                    <div class="chart-label">
+                        <span>${menuName}</span>
+                        <strong>${total} 本/回/分</strong>
+                    </div>
+                    <div class="chart-bar-bg">
+                        <div class="chart-bar-fill" style="width: ${percentage}%"></div>
+                    </div>
+                `;
+                chartArea.appendChild(chartContainer);
+            }
+        }
+
         function triggerStrictGuidance() {
             const selectEl = document.getElementById('menuSelect');
             let category = selectEl.value === 'custom' ? document.getElementById('customMenuInput').value : selectEl.value;
