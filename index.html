@@ -13,6 +13,19 @@
             --card-bg: #ffffff;
             --text-color: #333333;
             --border-color: #e0e0e0;
+            --progress-bg: #e2e8f0;
+        }
+
+        /* ダークモード用カラー定義 */
+        body.dark-mode {
+            --primary-color: #5c8ae6;
+            --secondary-color: #a3bffa;
+            --accent-color: #2bbfae;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --border-color: #333333;
+            --progress-bg: #2d2d2d;
         }
 
         * {
@@ -26,11 +39,12 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             padding-bottom: 80px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         /* ヘッダー */
         .header {
-            background-color: var(--secondary-color);
+            background-color: #1e467a; /* ヘッダー背景は一貫して深い色を維持 */
             color: white;
             padding: 15px;
             text-align: center;
@@ -41,12 +55,32 @@
             justify-content: center;
             gap: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* ダークモードスイッチ */
+        .theme-toggle-btn {
+            position: absolute;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         /* メインタブナビゲーション */
         .nav-tabs {
             display: flex;
-            background-color: white;
+            background-color: var(--card-bg);
             border-bottom: 1px solid var(--border-color);
             overflow-x: auto;
             white-space: nowrap;
@@ -57,7 +91,8 @@
             padding: 12px 10px;
             text-align: center;
             font-size: 0.85rem;
-            color: #666;
+            color: var(--text-color);
+            opacity: 0.7;
             text-decoration: none;
             border-bottom: 3px solid transparent;
             display: flex;
@@ -71,12 +106,13 @@
             color: var(--primary-color);
             border-bottom-color: var(--primary-color);
             font-weight: bold;
+            opacity: 1;
         }
 
         /* 分析画面用サブタブ */
         .period-tabs {
             display: flex;
-            background-color: #eee;
+            background-color: var(--progress-bg);
             border-radius: 8px;
             padding: 4px;
             margin-bottom: 20px;
@@ -88,7 +124,8 @@
             padding: 8px;
             text-align: center;
             font-size: 0.85rem;
-            color: #555;
+            color: var(--text-color);
+            opacity: 0.8;
             cursor: pointer;
             border-radius: 6px;
             background-color: transparent;
@@ -96,10 +133,11 @@
         }
 
         .period-tab.active {
-            background-color: white;
+            background-color: var(--card-bg);
             color: var(--primary-color);
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            opacity: 1;
         }
 
         /* メインコンテンツ */
@@ -122,7 +160,7 @@
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
             margin-bottom: 20px;
         }
 
@@ -145,7 +183,8 @@
             font-size: 0.9rem;
             font-weight: bold;
             margin-bottom: 8px;
-            color: #444;
+            color: var(--text-color);
+            opacity: 0.9;
         }
 
         input[type="date"],
@@ -158,13 +197,13 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 1rem;
-            background-color: #fff;
+            background-color: var(--card-bg);
             color: var(--text-color);
             appearance: none;
         }
 
         select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/http://www.w3.org/2000/svg' viewBox='0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 16px;
@@ -184,7 +223,7 @@
         }
 
         .btn-quick {
-            background-color: #e8edf5;
+            background-color: var(--progress-bg);
             border: none;
             padding: 8px 16px;
             border-radius: 20px;
@@ -197,7 +236,7 @@
         .btn-submit {
             display: block;
             width: 100%;
-            background-color: var(--primary-color);
+            background-color: #2b5797;
             color: white;
             border: none;
             padding: 14px;
@@ -228,7 +267,7 @@
 
         /* アプリ内分析表示エリア */
         .app-analysis-box {
-            background-color: #f8fafc;
+            background-color: var(--progress-bg);
             border-left: 4px solid var(--primary-color);
             padding: 15px;
             border-radius: 0 8px 8px 0;
@@ -260,14 +299,18 @@
             color: #777;
             margin-bottom: 4px;
         }
+        body.dark-mode .log-date {
+            color: #aaa;
+        }
         .log-meta {
             font-weight: bold;
             color: var(--secondary-color);
         }
         .log-memo {
             font-size: 0.85rem;
-            color: #555;
-            background: #f9f9f9;
+            color: var(--text-color);
+            opacity: 0.9;
+            background: var(--progress-bg);
             padding: 6px;
             border-radius: 4px;
             margin-top: 4px;
@@ -276,8 +319,26 @@
         .stat-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dashed var(--border-color);
+            padding: 8px 0 4px 0;
+        }
+
+        /* プログレスバー用カスタムスタイル */
+        .progress-container {
+            margin-bottom: 15px;
+        }
+        .progress-bar-wrapper {
+            width: 100%;
+            background-color: var(--progress-bg);
+            border-radius: 6px;
+            overflow: hidden;
+            height: 10px;
+            margin-top: 4px;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+            width: 0%;
+            transition: width 0.4s ease;
         }
 
         /* 下部ナビゲーション */
@@ -286,7 +347,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background-color: white;
+            background-color: var(--card-bg);
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-around;
@@ -297,7 +358,8 @@
         }
 
         .footer-nav-item {
-            color: #666;
+            color: var(--text-color);
+            opacity: 0.8;
             text-decoration: none;
             display: flex;
             flex-direction: column;
@@ -320,7 +382,7 @@
             bottom: -100%;
             left: 0;
             right: 0;
-            background: white;
+            background: var(--card-bg);
             border-radius: 16px 16px 0 0;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
             z-index: 200;
@@ -342,6 +404,7 @@
             border-bottom: 1px solid var(--border-color);
             font-size: 1rem;
             cursor: pointer;
+            color: var(--text-color);
         }
         .menu-item:last-child { border-bottom: none; }
     </style>
@@ -351,6 +414,7 @@
     <!-- ヘッダー -->
     <div class="header">
         <span>🥋</span> 武道稽古記録 & アドバイザー
+        <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙 夜間モード</button>
     </div>
 
     <!-- タブナビゲーション -->
@@ -369,10 +433,26 @@
         <div id="target-page" class="page-section">
             <div class="card">
                 <h2 class="card-title">今月の稽古目標</h2>
-                <div class="stat-row"><span>目標稽古日数</span><span>20 日</span></div>
-                <div class="stat-row"><span>現在の消化日数</span><span id="target-days">0 日</span></div>
-                <div class="stat-row"><span>総素振り本数目標</span><span>1000 本</span></div>
-                <div class="stat-row"><span>現在の累計本数</span><span id="target-counts">0 日</span></div>
+                
+                <div class="progress-container">
+                    <div class="stat-row"><span>目標稽古日数</span><span>20 日</span></div>
+                    <div style="text-align: right; font-size: 0.8rem; font-weight: bold; color: var(--primary-color);">
+                        現在: <span id="target-days">0 日</span> (<span id="progress-days-percent">0</span>%)
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div id="progress-days-bar" class="progress-bar-fill"></div>
+                    </div>
+                </div>
+
+                <div class="progress-container" style="margin-top: 10px;">
+                    <div class="stat-row"><span>総素振り本数目標</span><span>1000 本</span></div>
+                    <div style="text-align: right; font-size: 0.8rem; font-weight: bold; color: var(--primary-color);">
+                        現在: <span id="target-counts">0 本</span> (<span id="progress-counts-percent">0</span>%)
+                    </div>
+                    <div class="progress-bar-wrapper">
+                        <div id="progress-counts-bar" class="progress-bar-fill"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -573,13 +653,13 @@
                 <!-- 日めくり表示エリア -->
                 <div style="background: #fff8ee; border: 1px solid #f3d19e; padding: 18px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
                     <div id="daily-mukade-num" style="font-size: 0.8rem; color: #b37d14; font-weight: bold; margin-bottom: 5px;">📅 今日の百足伝</div>
-                    <div id="daily-mukade-text" style="font-size: 1.1rem; font-weight: bold; color: #8e5800; line-height: 1.6; white-space: pre-wrap;">
+                    <div id="daily-mukade-text" style="font-size: 1.1rem; font-weight: bold; color: #8e5800; line-height: 1.6; white-space: pre-wrap; font-family: inherit;">
                         ※読み込み中...
                     </div>
                 </div>
 
                 <!-- 全文表示エリア -->
-                <details style="border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: #fafafa;">
+                <details style="border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--progress-bg);">
                     <summary style="font-size: 0.9rem; font-weight: bold; cursor: pointer; color: var(--primary-color); outline: none;">
                         📜 百足伝 四十首すべてを表示する
                     </summary>
@@ -593,7 +673,7 @@
             <div class="card">
                 <h2 class="card-title">宮本武蔵「五輪書」全文（口語訳付）</h2>
                 
-                <div class="period-tabs" style="background-color: #e2e8f0; margin-bottom: 15px;">
+                <div class="period-tabs" style="background-color: var(--progress-bg); margin-bottom: 15px;">
                     <div class="period-tab active" data-book="chi" onclick="switchGorinBook('chi', this)">地の巻</div>
                     <div class="period-tab" data-book="mizu" onclick="switchGorinBook('mizu', this)">水の巻</div>
                     <div class="period-tab" data-book="hi" onclick="switchGorinBook('hi', this)">火の巻</div>
@@ -621,9 +701,9 @@
     <!-- メニューモーダル -->
     <div class="menu-modal-overlay" id="menuOverlay" onclick="toggleMenuModal(false)"></div>
     <div class="menu-modal" id="menuModal">
-        <h3 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:8px;">設定・メニュー</h3>
+        <h3 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:8px; color: var(--text-color);">設定・メニュー</h3>
         <div class="menu-item" onclick="alert('プロフィール設定（実装予定）'); toggleMenuModal(false);">👤 ユーザー設定</div>
-        <div class="menu-item" onclick="alert('データのエクスポート（実装予定）'); toggleMenuModal(false);">💾 稽古データ出力</div>
+        <div class="menu-item" onclick="exportData(); toggleMenuModal(false);">💾 稽古データ出力</div>
         <div class="menu-item" onclick="alert('アプリバージョン: v1.2.0'); toggleMenuModal(false);">ℹ️ アプリ情報</div>
         <div class="menu-item" style="color:red; text-align:center; font-weight:bold; margin-top:10px;" onclick="toggleMenuModal(false)">閉じる</div>
     </div>
@@ -646,7 +726,7 @@
         const mukadeData = [
             "1 (いち） 稽古には清水（しみず）の末の細々と絶えず流るる心こそよき",
             "2（に） 夕立の せきとめかたき やり水は やがて雫（しずく）も なきものぞかし",
-            "3（さん） うつるとも 月も思わず うつすとも 水も思わぬ 猿澤(さるさわ）の池",
+            "3（さん） うつるととも 月も思わず うつすとも 水も思わぬ 猿澤(さるさわ）の池",
             "4（し） 幾千度（いくちたび） 闇路（やみじ）をたどる 小車（おぐるま）の 乗得（のりえ）てみれば 輪（わ）のあらばこそ",
             "5（ご） 稽古には 山澤河原（やまさわかわら） 崖や淵（ふち） 飢えも寒暑（かんしょ）も 身は無きものにして",
             "6（ろく) 吹けば行く 吹かねば行かぬ 浮き雲の 風に任（まか）する 身こそやすけれ",
@@ -687,17 +767,16 @@
         ];
 
         function initGorinPage() {
-            // 1. 今日の百足伝（日付の「日」に基づいて1首を表示、40首でループ）
-            const today = new Date().getDate();
-            const todayIndex = (today - 1) % mukadeData.length;
+            // 1. 今日の百足伝（四十首の中から完全にランダムで1首を選択）
+            const randomIndex = Math.floor(Math.random() * mukadeData.length);
             
-            document.getElementById('daily-mukade-num').innerText = `📅 今日の百足伝（第${todayIndex + 1}首）`;
-            document.getElementById('daily-mukade-text').innerText = mukadeData[todayIndex];
+            document.getElementById('daily-mukade-num').innerText = `📅 今日の百足伝（第${randomIndex + 1}首）`;
+            document.getElementById('daily-mukade-text').innerText = mukadeData[randomIndex];
 
-            // 2. 百足伝 全文挿入（40首すべてをリスト化）
+            // 2. 百足伝 全文挿入
             const mukadeListEl = document.getElementById('mukade-all-list');
             mukadeListEl.innerHTML = mukadeData.map((item, idx) => {
-                return `<div style="margin-bottom:8px; border-bottom:1px dashed #eee; padding-bottom:6px; text-align:left;">
+                return `<div style="margin-bottom:8px; border-bottom:1px dashed var(--border-color); padding-bottom:6px; text-align:left;">
                             <strong>【${idx + 1}】</strong> ${item}
                         </div>`;
             }).join('');
@@ -706,33 +785,81 @@
             switchGorinBook('chi', document.querySelector('[data-book="chi"]'));
         }
         
-        // --- 宮本武蔵「五輪書」データと切り替え関数 ---
+        // --- 宮本武蔵「五輪書」データ（詳細差し替え版） ---
         const gorinData = {
-            chi: `<strong>【地の巻】兵法の道をまっすぐに説明する巻</strong><br><br>
-                  武士としての心構えや、物事の基本、本質を見極めることの重要性を説いています。
-                  道具の特性を知り、状況に応じた最適な判断を行うための基礎がここにあります。<br>
-                  <span style="color:#666; font-size:0.85rem;">「朝鍛夕錬（ちょうたんせきれん）して、のちに千日の稽古を鍛とし、万日の稽古を錬とす」</span>`,
-            mizu: `<strong>【水の巻】二天一流の具体的な心の持ち方や太刀筋の巻</strong><br><br>
-                  水のように柔軟で、どんな器にも合わせられるように心を常に一定に保ち、澄んだ状態で敵に臨む姿勢を教えます。
-                  身体の使い方や太刀の振り方の根幹がここにあります。<br>
-                  <span style="color:#666; font-size:0.85rem;">「心は常に、広く、直にして、きつくひっぱらず、少しもたるまず、偏らぬように」</span>`,
-            hi: `<strong>【火の巻】戦いにおける勝負の仕掛け方や、状況の制し方の巻</strong><br><br>
-                  場所の利、敵の動揺を誘う戦術、機先を制するタイミングなど、実戦における躍動的な駆け引きについて解説しています。
-                  場の空気を支配する術です。`,
-            kaze: `<strong>【風の巻】他流派の兵法を研究し、自らの正しさを知る巻</strong><br><br>
-                  他を知ることで己の長所と短所をより深く理解し、偏った考えや狭い視野に囚われないようにすることの大切さを説きます。`,
-            kuu: `<strong>【空の巻】すべての技や理合を超えた、究極の境地を説く巻</strong><br><br>
-                  迷いや執着が一切なく、自然体でありながら最も的確に動くことができる「空（くう）」のあり方を示しています。<br>
-                  <span style="color:#666; font-size:0.85rem;">「実の道を知って、道を失わざれば、自ら空の所へ入るなり」</span>`
+            chi: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">
+                    【地の巻】兵法の道、二天一流の理念
+                  </div>
+                  <p><strong>■ 兵法を大工の道にたとえる</strong><br>
+                  大工の棟梁は全体の計画を立て、材木の性質（直木、歪んだ木、弱い木）を見極めて適材適所に配置し、道具を巧みに管理する。兵法も同様に、地形、敵味方の能力、武器の特性を知り尽くし、効率よく人員と技を配置せねばならない。</p>
+                  <p style="margin-top: 8px;"><strong>■ 二刀一流（二天一流）の利</strong><br>
+                  武士たるもの、すべての武器（太刀、脇差、弓、鉄砲、槍、薙刀）の特性を知り、状況に応じて使いこなすべきである。実戦の乱戦や狭い場所において片手で太刀を自在に振るうため、日頃から二刀を持って修練し、片手での操作に慣れる必要がある。</p>
+                  <p style="margin-top: 8px;"><strong>■ 兵法の拍子（タイミング）</strong><br>
+                  あらゆる物事（歌、舞、管弦、あるいは世世の職道）には拍子がある。武芸においては「合う拍子」「間（ま）の拍子」「背く拍子（敵の予期せぬタイミング）」を知り、敵の拍子を外して勝つことが肝要である。</p>
+                  <p style="margin-top: 10px; font-weight: bold; color: #1b6d63;">💡 兵法を学ぶ九つの原則（書中より）：</p>
+                  <ul style="margin-left: 20px; font-size: 0.85rem; line-height: 1.6;">
+                    <li>一、邪悪な心を起こさないこと（よこしまになき心）。</li>
+                    <li>二、二天一流の道を実践的に鍛錬すること。</li>
+                    <li>三、あらゆる芸事に触れ、視野を広げること。</li>
+                    <li>四、様々な職道の道理を知ること。</li>
+                    <li>五、物事の損得を正しく見極めること。</li>
+                    <li>六、あらゆる事柄について、直感を養うこと。</li>
+                    <li>七、目に見えない部分（本質）に気づくこと。</li>
+                    <li>八、わずかな兆候からも状況を察知すること。</li>
+                    <li>九、役に立たない無駄なことをしないこと。</li>
+                  </ul>
+                  <p style="margin-top: 8px; font-style: italic; color: #555; font-size: 0.85rem;">「朝鍛夕錬して、のちに千日の稽古を鍛とし、万日の稽古を錬とす」</p>`,
+                  
+            mizu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">
+                    【水の巻】二天一流の心法、身体の構え、太刀筋
+                  </div>
+                  <p><strong>■ 心の持ち方（平常心）</strong><br>
+                  戦いの時であっても、日常の心と変わってはならない。広く直ぐな心を持ち、張り詰めすぎず、緩みすぎず、偏りのない「水の如き柔軟で澄んだ心」で敵に向き合うこと。心が居着く（一つのことに囚われる）のを最も忌む。</p>
+                  <p style="margin-top: 8px;"><strong>■ 身の構えと目付け（観の目・見の目）</strong><br>
+                  顔はうつむかず、仰のかず、首を真っ直ぐに立てて背筋を伸ばす。目は、敵の顔を見ながらも全体の動きを広く捉える「観（広く本質を見る）」の目を強くし、「見（表面の動きを追う）」の目を弱くする。近くを見ながらも遠くを見、遠くを見ながらも近くを見る。</p>
+                  <p style="margin-top: 8px;"><strong>■ 五つの構えと太刀の道</strong><br>
+                  上段・中段・下段・左・右の五つの構えがある。これらはすべて「敵を斬る」という一点に通じる。構えに囚われるのではなく、斬るために太刀を動かす。中段を「構えの王」とする。</p>
+                  <p style="margin-top: 8px;"><strong>■ 有構無構（構えあって構えなし）</strong><br>
+                  型通りの構えに執着してはならない。刀がどこにあろうとも、敵の出方や状況に応じて自然に変化し、相手を討てる状態でなければならない。「構え」があると思う心がすでに隙となる。</p>`,
+                  
+            hi: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">
+                    【火の巻】合戦および個人の戦いにおける勝負の仕掛け
+                  </div>
+                  <p><strong>■ 機先を制する（三つの先）</strong><br>
+                  一、自分から果敢に仕掛ける「懸かる先」<br>
+                  二、敵の攻撃を待って合わせる「待つ先」<br>
+                  三、互いに同時に踏み込み、競り勝つ「対々の先」<br>
+                  どの局面においても、常に主導権（先）を握る意思を持つことが勝利の根底である。</p>
+                  <p style="margin-top: 8px;"><strong>■ 実戦の戦術と心理戦</strong><br>
+                  ・<strong>枕を押さえる：</strong> 敵が技を出そうとするその微小な「起こり（兆候）」を察知し、出鼻を挫いて何もさせない。<br>
+                  ・<strong>陰影を動かす：</strong> 敵の出方が読めない時、一度偽の攻撃や揺さぶりを仕掛け、相手の動揺や構えの変化から本心を看破する。<br>
+                  ・<strong>鼠の首と牛の体：</strong> 局所的な細かい競り合い（鼠の首）に囚われていると感じたら、ふと視野を広げて戦い全体の状況（牛の体）へと思考を切り替える。</p>`,
+                  
+            kaze: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">
+                    【風の巻】他流派の傾向と二天一流の批判적対比
+                  </div>
+                  <p><strong>■ 太刀の長短に対する偏りへの批判</strong><br>
+                  長い刀を誇り遠くから勝とうとする流派や、短い刀で懐に入ろうとする者がいる。しかし、刀の長短だけに頼る心自体が偏りであり、狭い場所や予期せぬ実戦では命取りになる。道具に依存せず、いかなる長さの刀でも自在に扱えねばならない。</p>
+                  <p style="margin-top: 8px;"><strong>■ 派手な技と形式化（型への執着）への批判</strong><br>
+                  見栄えのする派手な太刀の振り方や、複雑な型を多く教える流派があるが、これらは実戦では役に立たない「売り物（商売）」の剣術である。二天一流は、ただ「まっすぐに効率よく敵を討つ」という極めて実戦的で無駄のない理を追求する。</p>
+                  <p style="margin-top: 8px; font-style: italic; color: #555;">※他者の偏ったこだわり（風）を知ることで、初めて自身の進むべき真っ直ぐな道（正道）が明確になることを説く巻です。</p>`,
+                  
+            kuu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">
+                    【空の巻】理合を超えた究極の境地
+                  </div>
+                  <p><strong>■ 空（くう）とは何か</strong><br>
+                  物事の道理を極め尽くし、あらゆる技を完全に習得したその先にたどり着く、迷いや執着が一切ない「自然体」の境地である。何も知らない無知の「無」とは異なる。</p>
+                  <p style="margin-top: 8px;"><strong>■ 初心から達人への転変</strong><br>
+                  技を全く知らない初心者の状態から、学べば学ぶほど様々な理屈や迷い（有）が生じる。しかし、それらを朝鍛夕錬して完全に身体に染み込ませたとき、意識して技を使うのではなく、身体が自然と最適に動くようになる（空）。</p>
+                  <p style="margin-top: 8px; font-weight: bold; color: #8e5800;">「実の道を知って、道を失わざれば、自ら空の所へ入るなり」</p>
+                  <p style="margin-top: 4px;">知恵も理合も道も、すべてが存在した上で、最後にはそれらに囚われない境地。そこにこそ、兵法の究極の姿がある。</p>`
         };
 
         function switchGorinBook(bookKey, tabElement) {
-            // タブのactiveクラス切り替え
             const tabs = tabElement.parentNode.querySelectorAll('.period-tab');
             tabs.forEach(tab => tab.classList.remove('active'));
             tabElement.classList.add('active');
 
-            // コンテンツの挿入
             const contentBox = document.getElementById('gorin-content-box');
             if (contentBox && gorinData[bookKey]) {
                 contentBox.innerHTML = gorinData[bookKey];
@@ -742,9 +869,50 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('training-date').value = CURRENT_DATE_STR;
+            
+            // ダークモードの初期判定設定
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeBtn').innerText = '☀️ ライトモード';
+            }
+            
             renderData();
             initGorinPage();
         });
+
+        // テーマ切り替え関数（localStorage連動）
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('themeBtn');
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                btn.innerText = '☀️ ライトモード';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                btn.innerText = '🌙 夜間モード';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // 稽古データJSONエクスポート保存関数
+        function exportData() {
+            if (rawLogs.length === 0) {
+                alert('出力する稽古履歴データがありません。');
+                return;
+            }
+            try {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(rawLogs, null, 2));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", `training_logs.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+            } catch (error) {
+                alert('データエクスポートの実行に失敗しました。');
+            }
+        }
 
         function switchPage(pageId) {
             const currentActive = document.querySelector('.page-section.active');
@@ -856,8 +1024,21 @@
                     totalCount += log.count;
                 }
             });
+
+            // 目標実績とパーセンテージ表示の更新
+            const targetDaysGoal = 20;
+            const targetCountsGoal = 1000;
+            
+            const daysPercent = Math.min(Math.round((uniqueDays.size / targetDaysGoal) * 100), 100);
+            const countsPercent = Math.min(Math.round((totalCount / targetCountsGoal) * 100), 100);
+
             document.getElementById('target-days').innerText = uniqueDays.size + ' 日';
+            document.getElementById('progress-days-percent').innerText = daysPercent;
+            document.getElementById('progress-days-bar').style.width = daysPercent + '%';
+
             document.getElementById('target-counts').innerText = totalCount + ' 本';
+            document.getElementById('progress-counts-percent').innerText = countsPercent;
+            document.getElementById('progress-counts-bar').style.width = countsPercent + '%';
 
             generatePromptText();
         }
