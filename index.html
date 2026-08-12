@@ -1367,30 +1367,7 @@
         }
 
 
-            let uniqueDays = new Set();
-            let totalCount = 0;
-            filteredLogs.forEach(log => {
-                uniqueDays.add(log.date);
-                if (log.menu.includes('素振り') || log.menu.includes('補強')) {
-                    totalCount += log.count;
-                }
-            });
 
-            const daysPercent = Math.min(Math.round((uniqueDays.size / daysGoal) * 100), 100);
-            const countsPercent = Math.min(Math.round((totalCount / countGoal) * 100), 100);
-
-            document.getElementById('target-days-label').innerText = `目標稽古日数（${periodLabel}）`;
-            document.getElementById('target-days-goal').innerText = daysGoal + ' 日';
-            document.getElementById('target-days').innerText = uniqueDays.size + ' 日';
-            document.getElementById('progress-days-percent').innerText = daysPercent;
-            document.getElementById('progress-days-bar').style.width = daysPercent + '%';
-
-            document.getElementById('target-counts-label').innerText = `目標素振り・補強本数（${periodLabel}）`;
-            document.getElementById('target-counts-goal').innerText = countGoal + ' 本';
-            document.getElementById('target-counts').innerText = totalCount + ' 本';
-            document.getElementById('progress-counts-percent').innerText = countsPercent;
-            document.getElementById('progress-counts-bar').style.width = countsPercent + '%';
-        }
 
         function renderData() {
             const historyListEl = document.getElementById('history-list');
