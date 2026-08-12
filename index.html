@@ -1068,24 +1068,7 @@
             document.getElementById('training-count').value = value;
         }
 
-        function saveRecord(event) {
-            event.preventDefault();
-            const date = document.getElementById('training-date').value;
-            const selectEl = document.getElementById('menuSelect');
-            let menu = selectEl.value;
-            if (menu === 'custom') {
-                menu = document.getElementById('customMenuInput').value;
-            }
-            const count = parseInt(document.getElementById('training-count').value, 10);
-            const memo = document.getElementById('training-memo').value || "なし";
 
-            rawLogs.unshift({ date, menu, count, memo });
-            alert('稽古記録を保存しました。');
-            
-            document.getElementById('training-count').value = '';
-            document.getElementById('training-memo').value = '';
-            renderData();
-        }
 
         function renderData() {
             const historyListEl = document.getElementById('history-list');
