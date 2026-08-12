@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>武道稽古記録 & アドバイザー</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-color: #2b5797;
@@ -740,14 +741,114 @@
         const CURRENT_DATE_STR = "2026-08-11";
         let currentPeriod = 'daily';
         let pageHistory = ['input-page'];
+        
+        // Supabase設定
+        let supabase = null;
+        const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
+        
+        // 初期化（DOMContentLoaded内などで実行）
+        window.addEventListener('DOMContentLoaded', () => {
+            try {
+                if (window.supabase) {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    fetchLogs(); // 起動時にデータを取得
+                } else {
+                    console.error("Supabase SDKが読み込まれていません。");
+                }
+            } catch (e) {
+                console.error("Supabase初期化エラー:", e);
+            }
+        });
 
-        let rawLogs = [
-            { date: "2026-08-11", menu: "補強：腕立て伏せ", count: 30, memo: "なし" },
-            { date: "2026-08-11", menu: "形：五箇・水月", count: 10, memo: "初太刀の横一文字の軌道注意" },
-            { date: "2026-08-11", menu: "補強：スクワット", count: 30, memo: "なし" },
-            { date: "2026-08-10", menu: "基本：体さばき・運足", count: 20, memo: "軸がぶれないように意識" },
-            { date: "2026-08-10", menu: "基本：素振り（横一文字）", count: 50, memo: "水平に振り切る感覚が良くなってきた" }
-        ];
+        async function fetchLogs() {
+            if (!supabase) return;
+        
+            const historyListEl = document.getElementById('history-list');
+            if (historyListEl) {
+                historyListEl.innerHTML = '<div style="text-align:center; padding: 20px;">データを読み込み中...</div>';
+            }
+        
+            try {
+                const { data, error } = await supabase
+                    .from('keiko_logs')
+                    .select('*')
+                    .order('date', { ascending: false })
+                    .order('created_at', { ascending: false });
+        
+                if (error) throw error;
+                
+                rawLogs = data || [];
+                if (typeof renderData === 'function') {
+                    renderData(); // 既存の描画・集計関数を呼び出し
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                if (historyListEl) {
+                    historyListEl.innerHTML = '<div style="color:red; text-align:center;">データの取得に失敗しました。</div>';
+                }
+            }
+        }
+
+        async function saveRecord(event) {
+            if (event && typeof event.preventDefault === 'function') {
+                event.preventDefault();
+            }
+            
+            if (!supabase) {
+                alert("データベースに接続されていません。");
+                return;
+            }
+        
+            const submitBtn = document.getElementById('submitBtn');
+            let originalText = "";
+            if (submitBtn) {
+                originalText = submitBtn.innerText;
+                submitBtn.innerText = "保存中...";
+                submitBtn.disabled = true;
+            }
+        
+            // 画面上の入力値を取得するセレクタ部分は既存の構造に合わせて調整してください
+            const date = document.getElementById('training-date').value;
+            const selectEl = document.getElementById('menuSelect');
+            let menu = selectEl.value;
+            if (menu === 'custom') {
+                menu = document.getElementById('customMenuInput').value;
+            }
+            const count = parseInt(document.getElementById('training-count').value, 10);
+            const memo = document.getElementById('training-memo').value || "なし";
+        
+            try {
+                const { error } = await supabase
+                    .from('keiko_logs')
+                    .insert([{ date: date, menu: menu, count: count, memo: memo }]);
+        
+                if (error) throw error;
+        
+                alert('稽古記録を保存しました。');
+                
+                // 入力フォームのクリア
+                document.getElementById('training-count').value = '';
+                document.getElementById('training-memo').value = '';
+                if (selectEl.value === 'custom' && document.getElementById('customMenuInput')) {
+                    document.getElementById('customMenuInput').value = '';
+                }
+                
+                // データを再取得して画面を更新
+                await fetchLogs();
+            } catch (error) {
+                console.error('Error inserting data:', error);
+                alert('保存に失敗しました: ' + error.message);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.innerText = originalText;
+                    submitBtn.disabled = false;
+                }
+            }
+        }
+
+
+        let rawLogs = [];
         
         const mukadeData = [
             "1 (いち） 稽古には清水（しみず）の末の細々と絶えず流るる心こそよき",
@@ -1101,6 +1202,9 @@
                 .then(() => alert('分析用プロンプトをクリップボードにコピーしました！'))
                 .catch(() => alert('コピーに失敗しました。'));
         }
+        
+        
+        
     </script>
 </body>
 </html>
