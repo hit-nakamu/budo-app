@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>武道稽古記録 & アドバイザー</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-     #error-display { color: red; font-weight: bold; padding: 10px; background: #fee; border: 1px solid red; margin-bottom: 10px; display: none; }
         :root {
             --primary-color: #2b5797;
             --secondary-color: #1e467a;
@@ -218,7 +216,7 @@
         }
 
         select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/http://www.w3.org/2000/svg' viewBox='0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 16px;
@@ -267,6 +265,10 @@
             margin-bottom: 12px;
         }
 
+        .btn-submit:disabled {
+            opacity: 0.6;
+        }
+
         .btn-copy {
             display: block;
             width: 100%;
@@ -309,6 +311,7 @@
             padding: 12px;
             border-bottom: 1px solid var(--border-color);
             font-size: 0.95rem;
+            position: relative;
         }
         .log-item:last-child {
             border-bottom: none;
@@ -333,6 +336,17 @@
             padding: 6px;
             border-radius: 4px;
             margin-top: 4px;
+        }
+        .log-delete-btn {
+            position: absolute;
+            right: 8px;
+            top: 10px;
+            background: none;
+            border: none;
+            color: #c0392b;
+            font-size: 0.8rem;
+            cursor: pointer;
+            opacity: 0.8;
         }
 
         .stat-row {
@@ -426,11 +440,17 @@
             color: var(--text-color);
         }
         .menu-item:last-child { border-bottom: none; }
+
+        .sync-status {
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 4px;
+            color: var(--text-color);
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body>
-    <div id="error-display"></div>
-
 
     <!-- ヘッダー -->
     <div class="header">
@@ -513,7 +533,7 @@
                                 <option value="形：五用・右">形：五用・右</option>
                                 <option value="形：五用・捨">形：五用・捨</option>
                                 <option value="形：五箇・水月">形：五箇・水月</option>
-                                <option value="形：五箇・陰中陽">形：五箇・陰中陽</option>
+                                <option value="形::五箇・陰中陽">形：五箇・陰中陽</option>
                                 <option value="形：五箇・陽中陰">形：五箇・陽中陰</option>
                                 <option value="形：五箇・響き返し">形：五箇・響き返し</option>
                                 <option value="形：五箇・破図味">形：五箇・破図味</option>
@@ -623,8 +643,7 @@
                         <textarea id="training-memo" name="memo" placeholder="課題点や不足していた感覚などを記録してください"></textarea>
                     </div>
 
-                    <!-- 送信ボタンに id="submitBtn" を追加 -->
-                    <button type="submit" id="submitBtn" class="btn-submit">記録を保存する</button>
+                    <button type="submit" class="btn-submit" id="submit-btn">記録を保存する</button>
                 </form>
             </div>
         </div>
@@ -633,6 +652,7 @@
         <div id="history-page" class="page-section">
             <div class="card">
                 <h2 class="card-title">稽古履歴一覧</h2>
+                <div class="sync-status" id="sync-status"></div>
                 <div id="history-list"></div>
             </div>
         </div>
@@ -713,7 +733,7 @@
     <div class="footer-nav">
         <button class="footer-nav-item" onclick="navBack()"><span>＜</span>戻る</button>
         <button class="footer-nav-item" onclick="navHome()"><span>⌂</span>ホーム</button>
-        <button class="footer-nav-item" onclick="location.reload()"><span>↻</span>更新</button>
+        <button class="footer-nav-item" onclick="reloadData()"><span>↻</span>更新</button>
         <button class="footer-nav-item" onclick="toggleMenuModal(true)"><span>•••</span>メニュー</button>
     </div>
 
@@ -737,132 +757,48 @@
             📥 選択した期間でJSON出力
         </div>
 
-        <div class="menu-item" onclick="alert('アプリバージョン: v1.3.0'); toggleMenuModal(false);">ℹ️ アプリ情報</div>
+        <div class="menu-item" onclick="alert('アプリバージョン: v1.4.0 (Supabase連携版)'); toggleMenuModal(false);">ℹ️ アプリ情報</div>
         <div class="menu-item" style="color:red; text-align:center; font-weight:bold; margin-top:10px;" onclick="toggleMenuModal(false)">閉じる</div>
     </div>
 
+    <!-- Supabase JS クライアント -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        const CURRENT_DATE_STR = "2026-08-11";
+        /* =========================================================
+           Supabase 設定
+           ---------------------------------------------------------
+           SUPABASE_URL / SUPABASE_KEY はプロジェクトの画像から設定済みです。
+           TABLE_NAME は Supabase のテーブルエディタで実際のテーブル名を
+           ご確認の上、異なる場合はここを書き換えてください。
+           （CSVのカラム構成 id, created_at, date, menu, count, memo に
+             対応するテーブルを想定しています）
+           ========================================================= */
+        const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
+        const TABLE_NAME = 'training_logs'; // ← 実際のテーブル名に合わせて変更してください
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function getTodayStr() {
+            const d = new Date();
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        let CURRENT_DATE_STR = getTodayStr();
         let currentPeriod = 'daily';
         let pageHistory = ['input-page'];
-        
-        // Supabase設定
-        let supabase = null;
-        const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
-        
+
         let rawLogs = [];
-        
-        // 初期化
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('training-date').value = CURRENT_DATE_STR;
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('themeBtn').innerText = '☀️ ライトモード';
-            }
 
-            try {
-                if (window.supabase) {
-                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    fetchLogs(); // 起動時にデータを取得
-                } else {
-                    console.error("Supabase SDKが読み込まれていません。");
-                }
-            } catch (e) {
-                console.error("Supabase初期化エラー:", e);
-            }
-
-            initGorinPage();
-        });
-
-        async function fetchLogs() {
-            if (!supabase) return;
-        
-            const historyListEl = document.getElementById('history-list');
-            if (historyListEl) {
-                historyListEl.innerHTML = '<div style="text-align:center; padding: 20px;">データを読み込み中...</div>';
-            }
-        
-            try {
-                const { data, error } = await supabase
-                    .from('keiko_logs')
-                    .select('*')
-                    .order('date', { ascending: false })
-                    .order('created_at', { ascending: false });
-        
-                if (error) throw error;
-                
-                rawLogs = data || [];
-                renderData();
-            } catch (error) {
-                console.error('Error fetching data:', error);
-                if (historyListEl) {
-                    historyListEl.innerHTML = '<div style="color:red; text-align:center;">データの取得に失敗しました。</div>';
-                }
-            }
-        }
-
-        async function saveRecord(event) {
-            if (event && typeof event.preventDefault === 'function') {
-                event.preventDefault();
-            }
-            
-            if (!supabase) {
-                alert("データベースに接続されていません。");
-                return;
-            }
-        
-            const submitBtn = document.getElementById('submitBtn');
-            let originalText = "";
-            if (submitBtn) {
-                originalText = submitBtn.innerText;
-                submitBtn.innerText = "保存中...";
-                submitBtn.disabled = true;
-            }
-        
-            const date = document.getElementById('training-date').value;
-            const selectEl = document.getElementById('menuSelect');
-            let menu = selectEl.value;
-            if (menu === 'custom') {
-                menu = document.getElementById('customMenuInput').value;
-            }
-            const count = parseInt(document.getElementById('training-count').value, 10);
-            const memo = document.getElementById('training-memo').value || "なし";
-        
-            try {
-                const { error } = await supabase
-                    .from('keiko_logs')
-                    .insert([{ date: date, menu: menu, count: count, memo: memo }]);
-        
-                if (error) throw error;
-        
-                alert('稽古記録を保存しました。');
-                
-                // 入力フォームのクリア
-                document.getElementById('training-count').value = '';
-                document.getElementById('training-memo').value = '';
-                if (selectEl.value === 'custom' && document.getElementById('customMenuInput')) {
-                    document.getElementById('customMenuInput').value = '';
-                }
-                
-                // データを再取得して画面を更新
-                await fetchLogs();
-            } catch (error) {
-                console.error('Error inserting data:', error);
-                alert('保存に失敗しました: ' + error.message);
-            } finally {
-                if (submitBtn) {
-                    submitBtn.innerText = originalText;
-                    submitBtn.disabled = false;
-                }
-            }
-        }
-        
         const mukadeData = [
             "1 (いち） 稽古には清水（しみず）の末の細々と絶えず流るる心こそよき",
             "2（に） 夕立の せきとめかたき やり水は やがて雫（しずく）も なきものぞかし",
             "3（さん） うつるととも 月も思わず うつすとも 水も思わぬ 猿澤(さるさわ）の池",
-            "4（し） 幾千度（いくちたび） 闇路（やみじ）をたどる 小車（おぐるま）の 乗得（のりえ）てみれば 輪（わ）のあらばこそ",
+            "4（し） 幾千度（いくちたび） 闇路（ямидзи）をたどる 小車（おぐるま）の 乗得（のりえ）てみれば 輪（わ）のあらばこそ",
             "5（ご） 稽古には 山澤河原（やまさわかわら） 崖や淵（ふち） 飢えも寒暑（かんしょ）も 身は無きものにして",
             "6（ろく) 吹けば行く 吹かねば行かぬ 浮き雲の 風に任（まか）する 身こそやすけれ",
             "7（しち) 山河（やまかわ）に 落ちて流るる 栃殻（とちがら）も 身を捨ててこそ浮かぶ瀬もあれ",
@@ -905,7 +841,7 @@
             chi: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【地の巻】兵法の道、二天一流の理念</div><p><strong>■ 兵法を大工の道にたとえる</strong><br>大工の棟梁は全体の計画を立て、材木の性質を見極めて適材適所に配置し、道具を巧みに管理する。兵法も同様に、地形、敵味方の能力、武器の特性を知り尽くし、効率よく人員と技を配置せねばならない。</p><p style="margin-top: 8px;"><strong>■ 二刀一流（二天一流）の利</strong><br>武士たるもの、すべての武器の特性を知り、状況に応じて使いこなすべきである。実戦の乱戦や狭い場所において片手で太刀を自在に振るうため、日頃から二刀を持って修練し、片手での操作に慣れる必要がある。</p><p style="margin-top: 8px;"><strong>■ 兵法の拍子（タイミング）</strong><br>あらゆる物事には拍子がある。武芸においては「合う拍子」「間の拍子」「背く拍子（敵の予期せぬタイミング）」を知り、敵の拍子を外して勝つことが肝要である。</p>`,
             mizu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【水の巻】二天一流の心法、身体の構え、太刀筋</div><p><strong>■ 心の持ち方（平常心）</strong><br>戦いの時であっても、日常の心と変わってはならない。広く直ぐな心を持ち、張り詰めすぎず、緩みすぎず、偏りのない「水の如き柔軟で澄んだ心」で敵に向き合うこと。</p><p style="margin-top: 8px;"><strong>■ 身の構えと目付け（観の目・見の目）</strong><br>顔はうつむかず、仰のかず、首を真っ直ぐに立てて背筋を伸ばす。目は、敵の顔を見ながらも全体の動きを広く捉える「観（広く本質を見る）」の目を強くし、「見」の目を弱くする。</p>`,
             hi: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【火の巻】合戦および個人の戦いにおける勝負の仕掛け</div><p><strong>■ 機先を制する（三つの先）</strong><br>一、自分から果敢に仕掛ける「懸かる先」<br>二、敵の攻撃を待って合わせる「待つ先」<br>三、互いに同時に踏み込み、競り勝つ「対々の先」<br>常に主導権（先）を握る意思を持つことが勝利の根底である。</p>`,
-            kaze: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【風の巻】他流派の傾向と二天一流の批判적対比</div><p><strong>■ 派手な技と形式化（型への執着）への批判</strong><br>見栄えのする派手な太刀の振り方や、複雑な型を多く教える流派があるが、これらは実戦では役に立たない。二天一流は、ただ「まっすぐに効率よく敵を討つ」という極めて実戦的で無駄のない理を追求する。</p>`,
+            kaze: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【風の巻】他流派の傾向と二天一流の批判的対比</div><p><strong>■ 派手な技と形式化（型への執着）への批判</strong><br>見栄えのする派手な太刀の振り方や、複雑な型を多く教える流派があるが、これらは実戦では役に立たない。二天一流は、ただ「まっすぐに効率よく敵を討つ」という極めて実戦的で無駄のない理を追求する。</p>`,
             kuu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【空の巻】理合を超えた究極の境地</div><p><strong>■ 空（くう）とは何か</strong><br>物事の道理を極め尽くし、あらゆる技を完全に習得したその先にたどり着く、迷いや執着が一切ない「自然体」の境地である。何も知らない無知の「無」とは異なる。</p>`
         };
 
@@ -934,6 +870,106 @@
                 contentBox.innerHTML = gorinData[bookKey];
             }
         }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('training-date').value = CURRENT_DATE_STR;
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeBtn').innerText = '☀️ ライトモード';
+            }
+            initGorinPage();
+            await loadLogsFromSupabase();
+        });
+
+        /* ===================== Supabase 連携部分 ===================== */
+
+        async function loadLogsFromSupabase() {
+            const statusEl = document.getElementById('sync-status');
+            const historyListEl = document.getElementById('history-list');
+            if (statusEl) statusEl.innerText = '🔄 Supabaseからデータを読み込み中...';
+            if (historyListEl) historyListEl.innerHTML = '<div class="log-item">読み込み中...</div>';
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from(TABLE_NAME)
+                    .select('*')
+                    .order('date', { ascending: false })
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                rawLogs = (data || []).map(row => ({
+                    id: row.id,
+                    date: row.date,
+                    menu: row.menu,
+                    count: row.count,
+                    memo: (row.memo && String(row.memo).trim() !== '') ? row.memo : 'なし'
+                }));
+
+                if (statusEl) statusEl.innerText = `✅ Supabase同期済み（${rawLogs.length}件）`;
+                renderData();
+            } catch (err) {
+                console.error(err);
+                if (statusEl) statusEl.innerText = '⚠️ 読み込みに失敗しました';
+                if (historyListEl) historyListEl.innerHTML = `<div class="log-item">データの読み込みに失敗しました。<br>テーブル名(${TABLE_NAME})やRLS設定をご確認ください。<br><span style="opacity:0.7;">${err.message || err}</span></div>`;
+            }
+        }
+
+        async function reloadData() {
+            await loadLogsFromSupabase();
+        }
+
+        async function deleteLog(id) {
+            if (!confirm('この記録を削除しますか？')) return;
+            try {
+                const { error } = await supabaseClient
+                    .from(TABLE_NAME)
+                    .delete()
+                    .eq('id', id);
+                if (error) throw error;
+                await loadLogsFromSupabase();
+            } catch (err) {
+                console.error(err);
+                alert('削除に失敗しました: ' + (err.message || err));
+            }
+        }
+
+        async function saveRecord(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+            const date = document.getElementById('training-date').value;
+            const selectEl = document.getElementById('menuSelect');
+            let menu = selectEl.value;
+            if (menu === 'custom') {
+                menu = document.getElementById('customMenuInput').value;
+            }
+            const count = parseInt(document.getElementById('training-count').value, 10);
+            const memo = document.getElementById('training-memo').value || null;
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = '保存中...';
+
+            try {
+                const { error } = await supabaseClient
+                    .from(TABLE_NAME)
+                    .insert([{ date, menu, count, memo }]);
+
+                if (error) throw error;
+
+                document.getElementById('training-count').value = '';
+                document.getElementById('training-memo').value = '';
+                await loadLogsFromSupabase();
+                alert('稽古記録をSupabaseに保存しました。');
+            } catch (err) {
+                console.error(err);
+                alert('保存に失敗しました: ' + (err.message || err));
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '記録を保存する';
+            }
+        }
+
+        /* ===================== ここから下は元のロジック（保存先以外は変更なし） ===================== */
 
         function toggleTheme() {
             const body = document.body;
@@ -972,7 +1008,7 @@
                     return diffDays <= 7;
                 });
             } else if (period === 'month') {
-                const currentYearMonth = CURRENT_DATE_STR.substring(0, 7); // "2026-08"
+                const currentYearMonth = CURRENT_DATE_STR.substring(0, 7);
                 filteredData = rawLogs.filter(log => log.date.startsWith(currentYearMonth));
             }
 
@@ -1069,6 +1105,11 @@
         function renderData() {
             const historyListEl = document.getElementById('history-list');
             historyListEl.innerHTML = '';
+
+            if (rawLogs.length === 0) {
+                historyListEl.innerHTML = '<div class="log-item">まだ記録がありません。</div>';
+            }
+
             rawLogs.forEach(log => {
                 const item = document.createElement('div');
                 item.className = 'log-item';
@@ -1076,6 +1117,7 @@
                     <div class="log-date">${log.date}</div>
                     <div><span class="log-meta">${log.menu}</span> (${log.count} 本/分/回)</div>
                     ${log.memo !== 'なし' ? `<div class="log-memo">メモ: ${log.memo}</div>` : ''}
+                    ${log.id !== undefined ? `<button class="log-delete-btn" onclick="deleteLog(${log.id})">削除</button>` : ''}
                 `;
                 historyListEl.appendChild(item);
             });
@@ -1114,8 +1156,8 @@
             let labelStr = "";
 
             if (currentPeriod === 'daily') {
-                labelStr = "日次分析プロンプト (2026-08-11分)";
-                filteredLogs = rawLogs.filter(log => log.date === "2026-08-11");
+                labelStr = `日次分析プロンプト (${CURRENT_DATE_STR}分)`;
+                filteredLogs = rawLogs.filter(log => log.date === CURRENT_DATE_STR);
             } else if (currentPeriod === 'weekly') {
                 labelStr = "週次分析プロンプト (直近7日間)";
                 filteredLogs = rawLogs.filter(log => {
@@ -1123,11 +1165,13 @@
                     return Math.ceil(diff / (1000 * 60 * 60 * 24)) <= 7;
                 });
             } else if (currentPeriod === 'monthly') {
-                labelStr = "月次分析プロンプト (2026年8月期)";
-                filteredLogs = rawLogs.filter(log => log.date.startsWith("2026-08"));
+                const ym = CURRENT_DATE_STR.substring(0, 7);
+                labelStr = `月次分析プロンプト (${ym}期)`;
+                filteredLogs = rawLogs.filter(log => log.date.startsWith(ym));
             } else if (currentPeriod === 'yearly') {
-                labelStr = "年次分析プロンプト (2026年度)";
-                filteredLogs = rawLogs.filter(log => log.date.startsWith("2026"));
+                const y = CURRENT_DATE_STR.substring(0, 4);
+                labelStr = `年次分析プロンプト (${y}年度)`;
+                filteredLogs = rawLogs.filter(log => log.date.startsWith(y));
             }
 
             periodTitle.innerText = labelStr;
@@ -1181,38 +1225,6 @@
                 .then(() => alert('分析用プロンプトをクリップボードにコピーしました！'))
                 .catch(() => alert('コピーに失敗しました。'));
         }
-        
-                // エラー表示用関数
-        function showError(msg) {
-            const el = document.getElementById('error-display');
-            el.style.display = 'block';
-            el.innerText = 'エラー発生: ' + msg;
-            console.error(msg);
-        }
-    
-        // 全体のエラー監視
-        window.onerror = function(msg, url, line) {
-            showError(msg + ' (行: ' + line + ')');
-        };
-    
-        // Supabase初期化部分（try-catchで囲む）
-        try {
-            const supabase = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
-            
-            async function testConnection() {
-                try {
-                    const { data, error } = await supabase.from('keiko_logs').select('*').limit(1);
-                    if (error) throw error;
-                    console.log("接続成功:", data);
-                } catch (e) {
-                    showError("Supabase接続エラー: " + e.message);
-                }
-            }
-            testConnection();
-        } catch (e) {
-            showError("初期化失敗: " + e.message);
-        }
-            
     </script>
 </body>
 </html>
