@@ -217,7 +217,7 @@
         }
 
         select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/http://www.w3.org/2000/svg' viewBox='0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 12px center;
             background-size: 16px;
@@ -510,7 +510,7 @@
                                 <option value="形：五用・右">形：五用・右</option>
                                 <option value="形：五用・捨">形：五用・捨</option>
                                 <option value="形：五箇・水月">形：五箇・水月</option>
-                                <option value="形::五箇・陰中陽">形：五箇・陰中陽</option>
+                                <option value="形：五箇・陰中陽">形：五箇・陰中陽</option>
                                 <option value="形：五箇・陽中陰">形：五箇・陽中陰</option>
                                 <option value="形：五箇・響き返し">形：五箇・響き返し</option>
                                 <option value="形：五箇・破図味">形：五箇・破図味</option>
@@ -620,7 +620,8 @@
                         <textarea id="training-memo" name="memo" placeholder="課題点や不足していた感覚などを記録してください"></textarea>
                     </div>
 
-                    <button type="submit" class="btn-submit">記録を保存する</button>
+                    <!-- 送信ボタンに id="submitBtn" を追加 -->
+                    <button type="submit" id="submitBtn" class="btn-submit">記録を保存する</button>
                 </form>
             </div>
         </div>
@@ -747,8 +748,16 @@
         const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
         
-        // 初期化（DOMContentLoaded内などで実行）
+        let rawLogs = [];
+        
+        // 初期化
         window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('training-date').value = CURRENT_DATE_STR;
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeBtn').innerText = '☀️ ライトモード';
+            }
+
             try {
                 if (window.supabase) {
                     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -759,6 +768,8 @@
             } catch (e) {
                 console.error("Supabase初期化エラー:", e);
             }
+
+            initGorinPage();
         });
 
         async function fetchLogs() {
@@ -779,9 +790,7 @@
                 if (error) throw error;
                 
                 rawLogs = data || [];
-                if (typeof renderData === 'function') {
-                    renderData(); // 既存の描画・集計関数を呼び出し
-                }
+                renderData();
             } catch (error) {
                 console.error('Error fetching data:', error);
                 if (historyListEl) {
@@ -808,7 +817,6 @@
                 submitBtn.disabled = true;
             }
         
-            // 画面上の入力値を取得するセレクタ部分は既存の構造に合わせて調整してください
             const date = document.getElementById('training-date').value;
             const selectEl = document.getElementById('menuSelect');
             let menu = selectEl.value;
@@ -846,15 +854,12 @@
                 }
             }
         }
-
-
-        let rawLogs = [];
         
         const mukadeData = [
             "1 (いち） 稽古には清水（しみず）の末の細々と絶えず流るる心こそよき",
             "2（に） 夕立の せきとめかたき やり水は やがて雫（しずく）も なきものぞかし",
             "3（さん） うつるととも 月も思わず うつすとも 水も思わぬ 猿澤(さるさわ）の池",
-            "4（し） 幾千度（いくちたび） 闇路（ямидзи）をたどる 小車（おぐるま）の 乗得（のりえ）てみれば 輪（わ）のあらばこそ",
+            "4（し） 幾千度（いくちたび） 闇路（やみじ）をたどる 小車（おぐるま）の 乗得（のりえ）てみれば 輪（わ）のあらばこそ",
             "5（ご） 稽古には 山澤河原（やまさわかわら） 崖や淵（ふち） 飢えも寒暑（かんしょ）も 身は無きものにして",
             "6（ろく) 吹けば行く 吹かねば行かぬ 浮き雲の 風に任（まか）する 身こそやすけれ",
             "7（しち) 山河（やまかわ）に 落ちて流るる 栃殻（とちがら）も 身を捨ててこそ浮かぶ瀬もあれ",
@@ -897,7 +902,7 @@
             chi: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【地の巻】兵法の道、二天一流の理念</div><p><strong>■ 兵法を大工の道にたとえる</strong><br>大工の棟梁は全体の計画を立て、材木の性質を見極めて適材適所に配置し、道具を巧みに管理する。兵法も同様に、地形、敵味方の能力、武器の特性を知り尽くし、効率よく人員と技を配置せねばならない。</p><p style="margin-top: 8px;"><strong>■ 二刀一流（二天一流）の利</strong><br>武士たるもの、すべての武器の特性を知り、状況に応じて使いこなすべきである。実戦の乱戦や狭い場所において片手で太刀を自在に振るうため、日頃から二刀を持って修練し、片手での操作に慣れる必要がある。</p><p style="margin-top: 8px;"><strong>■ 兵法の拍子（タイミング）</strong><br>あらゆる物事には拍子がある。武芸においては「合う拍子」「間の拍子」「背く拍子（敵の予期せぬタイミング）」を知り、敵の拍子を外して勝つことが肝要である。</p>`,
             mizu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【水の巻】二天一流の心法、身体の構え、太刀筋</div><p><strong>■ 心の持ち方（平常心）</strong><br>戦いの時であっても、日常の心と変わってはならない。広く直ぐな心を持ち、張り詰めすぎず、緩みすぎず、偏りのない「水の如き柔軟で澄んだ心」で敵に向き合うこと。</p><p style="margin-top: 8px;"><strong>■ 身の構えと目付け（観の目・見の目）</strong><br>顔はうつむかず、仰のかず、首を真っ直ぐに立てて背筋を伸ばす。目は、敵の顔を見ながらも全体の動きを広く捉える「観（広く本質を見る）」の目を強くし、「見」の目を弱くする。</p>`,
             hi: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【火の巻】合戦および個人の戦いにおける勝負の仕掛け</div><p><strong>■ 機先を制する（三つの先）</strong><br>一、自分から果敢に仕掛ける「懸かる先」<br>二、敵の攻撃を待って合わせる「待つ先」<br>三、互いに同時に踏み込み、競り勝つ「対々の先」<br>常に主導権（先）を握る意思を持つことが勝利の根底である。</p>`,
-            kaze: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【風の巻】他流派の傾向と二天一流の批判的対比</div><p><strong>■ 派手な技と形式化（型への執着）への批判</strong><br>見栄えのする派手な太刀の振り方や、複雑な型を多く教える流派があるが、これらは実戦では役に立たない。二天一流は、ただ「まっすぐに効率よく敵を討つ」という極めて実戦的で無駄のない理を追求する。</p>`,
+            kaze: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【風の巻】他流派の傾向と二天一流の批判적対比</div><p><strong>■ 派手な技と形式化（型への執着）への批判</strong><br>見栄えのする派手な太刀の振り方や、複雑な型を多く教える流派があるが、これらは実戦では役に立たない。二天一流は、ただ「まっすぐに効率よく敵を討つ」という極めて実戦的で無駄のない理を追求する。</p>`,
             kuu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【空の巻】理合を超えた究極の境地</div><p><strong>■ 空（くう）とは何か</strong><br>物事の道理を極め尽くし、あらゆる技を完全に習得したその先にたどり着く、迷いや執着が一切ない「自然体」の境地である。何も知らない無知の「無」とは異なる。</p>`
         };
 
@@ -926,16 +931,6 @@
                 contentBox.innerHTML = gorinData[bookKey];
             }
         }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('training-date').value = CURRENT_DATE_STR;
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('themeBtn').innerText = '☀️ ライトモード';
-            }
-            renderData();
-            initGorinPage();
-        });
 
         function toggleTheme() {
             const body = document.body;
@@ -1068,8 +1063,6 @@
             document.getElementById('training-count').value = value;
         }
 
-
-
         function renderData() {
             const historyListEl = document.getElementById('history-list');
             historyListEl.innerHTML = '';
@@ -1185,9 +1178,6 @@
                 .then(() => alert('分析用プロンプトをクリップボードにコピーしました！'))
                 .catch(() => alert('コピーに失敗しました。'));
         }
-        
-        
-        
     </script>
 </body>
 </html>
