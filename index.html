@@ -3,971 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>武道稽古記録 & アドバイザー</title>
-    <!-- Supabase JS ライブラリの読み込み -->
+    <title>稽古記録アプリ</title>
+    <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary-color: #2b5797;
-            --secondary-color: #1e467a;
-            --accent-color: #1b6d63;
-            --bg-color: #f4f7fc;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --border-color: #e0e0e0;
-            --progress-bg: #e2e8f0;
-            --mukade-bg: #fff8ee;
-            --mukade-border: #f3d19e;
-            --mukade-title: #b37d14;
-            --mukade-text: #8e5800;
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --background-color: #f5f6fa;
+            --button-color: #e74c3c;
+            --button-hover: #c0392b;
         }
-
-        body.dark-mode {
-            --primary-color: #5c8ae6;
-            --secondary-color: #a3bffa;
-            --accent-color: #2bbfae;
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #e0e0e0;
-            --border-color: #333333;
-            --progress-bg: #2d2d2d;
-            --mukade-bg: #2a2215;
-            --mukade-border: #5e4829;
-            --mukade-title: #e6b450;
-            --mukade-text: #f3d19e;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
-        }
-
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding-bottom: 80px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .header {
-            background-color: #1e467a;
-            color: white;
-            padding: 15px 120px 15px 15px;
-            font-size: 1.05rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-            min-height: 54px;
-        }
-
-        .theme-toggle-btn {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            white-space: nowrap;
-        }
-        .theme-toggle-btn:hover { background: rgba(255, 255, 255, 0.3); }
-
-        .nav-tabs {
-            display: flex;
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            overflow-x: auto;
-            white-space: nowrap;
-        }
-
-        .tab-item {
-            flex: 1;
-            padding: 12px 10px;
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-color);
-            opacity: 0.7;
-            text-decoration: none;
-            border-bottom: 3px solid transparent;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-        }
-
-        .tab-item.active {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-            font-weight: bold;
-            opacity: 1;
-        }
-
-        .period-tabs {
-            display: flex;
-            background-color: var(--progress-bg);
-            border-radius: 8px;
-            padding: 4px;
-            margin-bottom: 20px;
-            gap: 4px;
-        }
-
-        .period-tab {
-            flex: 1;
-            padding: 8px;
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-color);
-            opacity: 0.8;
-            cursor: pointer;
-            border-radius: 6px;
-            background-color: transparent;
-            transition: all 0.2s;
-        }
-
-        .period-tab.active {
-            background-color: var(--card-bg);
-            color: var(--primary-color);
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            opacity: 1;
-        }
-
-        .container {
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 0 15px;
-        }
-
-        .page-section { display: none; }
-        .page-section.active { display: block; }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        .card-title {
-            font-size: 1.15rem;
-            margin-bottom: 20px;
-            font-weight: bold;
-            color: var(--secondary-color);
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 8px;
-        }
-
-        .form-group { margin-bottom: 20px; }
-
-        label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: var(--text-color);
-            opacity: 0.9;
-        }
-
-        input[type="date"], select, input[type="number"], textarea, input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 1rem;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            appearance: none;
-        }
-
-        select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 16px;
-            padding-right: 40px;
-        }
-
-        textarea {
-            resize: vertical;
-            height: 100px;
-            font-size: 0.95rem;
-        }
-
-        #ai-prompt-text {
-            background-color: var(--progress-bg);
-            color: var(--text-color);
-        }
-
-        .quick-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .btn-quick {
-            background-color: var(--progress-bg);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            color: var(--primary-color);
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .btn-submit {
-            display: block;
-            width: 100%;
-            background-color: #2b5797;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 12px;
-        }
-
-        .btn-copy {
-            display: block;
-            width: 100%;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 10px;
-        }
-
-        .app-analysis-box {
-            background-color: var(--progress-bg);
-            border-left: 4px solid var(--primary-color);
-            padding: 15px;
-            border-radius: 0 8px 8px 0;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-top: 15px;
-        }
-
-        .app-analysis-title {
-            font-weight: bold;
-            color: var(--secondary-color);
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .log-item {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 0.95rem;
-        }
-        .log-item:last-child { border-bottom: none; }
-        .log-date {
-            font-size: 0.8rem;
-            color: #777;
-            margin-bottom: 4px;
-        }
-        body.dark-mode .log-date { color: #aaa; }
-        .log-meta { font-weight: bold; color: var(--secondary-color); }
-        .log-memo {
-            font-size: 0.85rem;
-            color: var(--text-color);
-            opacity: 0.9;
-            background: var(--progress-bg);
-            padding: 6px;
-            border-radius: 4px;
-            margin-top: 4px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0 4px 0;
-        }
-
-        .progress-container { margin-bottom: 15px; }
-        .progress-bar-wrapper {
-            width: 100%;
-            background-color: var(--progress-bg);
-            border-radius: 6px;
-            overflow: hidden;
-            height: 10px;
-            margin-top: 4px;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background-color: var(--accent-color);
-            width: 0%;
-            transition: width 0.4s ease;
-        }
-
-        .footer-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: var(--card-bg);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            font-size: 0.75rem;
-            z-index: 100;
-        }
-
-        .footer-nav-item {
-            color: var(--text-color);
-            opacity: 0.8;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            flex: 1;
-            background: none;
-            border: none;
-        }
-        .footer-nav-item span {
-            font-size: 1.3rem;
-            font-weight: bold;
-        }
-
-        .menu-modal {
-            position: fixed;
-            bottom: -100%;
-            left: 0;
-            right: 0;
-            background: var(--card-bg);
-            border-radius: 16px 16px 0 0;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-            z-index: 200;
-            transition: bottom 0.3s ease;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: var(--background-color);
+            color: #333;
+            margin: 0;
             padding: 20px;
         }
-        .menu-modal.open { bottom: 0; }
-        .menu-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4);
-            z-index: 199;
-            display: none;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .menu-item {
-            padding: 14px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 1rem;
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--secondary-color);
+        }
+        input[type="date"],
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--button-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
-            color: var(--text-color);
+            transition: background-color 0.3s;
         }
-        .menu-item:last-child { border-bottom: none; }
+        button:hover {
+            background-color: var(--button-hover);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        #message {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: green;
+        }
+        .error-message {
+            color: red;
+        }
     </style>
 </head>
 <body>
 
-    <!-- ヘッダー -->
-    <div class="header">
-        <span>🥋</span> 武道稽古記録 & アドバイザー
-        <button class="theme-toggle-btn" onclick="toggleTheme()" id="themeBtn">🌙 夜間モード</button>
-    </div>
+<div class="container">
+    <h1>稽古記録</h1>
 
-    <!-- タブナビゲーション -->
-    <div class="nav-tabs" id="main-nav-tabs">
-        <div class="tab-item" data-target="target-page" onclick="switchPage('target-page')">📊 目標と実績</div>
-        <div class="tab-item active" data-target="input-page" onclick="switchPage('input-page')">📝 記録入力</div>
-        <div class="tab-item" data-target="history-page" onclick="switchPage('history-page')">📋 履歴一覧</div>
-        <div class="tab-item" data-target="analysis-page" onclick="switchPage('analysis-page')">🔍 AI分析</div>
-        <div class="tab-item" data-target="gorin-page" onclick="switchPage('gorin-page')">📖 心得</div>
-    </div>
-
-    <!-- メインコンテンツ -->
-    <div class="container">
-        <!-- 1. 目標と実績画面 -->
-        <div id="target-page" class="page-section">
-            <div class="card">
-                <h2 class="card-title">今月の稽古目標</h2>
-                <div class="progress-container">
-                    <div class="stat-row"><span>目標稽古日数</span><span>20 日</span></div>
-                    <div style="text-align: right; font-size: 0.8rem; font-weight: bold; color: var(--primary-color);">
-                        現在: <span id="target-days">0 日</span> (<span id="progress-days-percent">0</span>%)
-                    </div>
-                    <div class="progress-bar-wrapper">
-                        <div id="progress-days-bar" class="progress-bar-fill"></div>
-                    </div>
-                </div>
-                <div class="progress-container" style="margin-top: 10px;">
-                    <div class="stat-row"><span>総素振り本数目標</span><span>1000 本</span></div>
-                    <div style="text-align: right; font-size: 0.8rem; font-weight: bold; color: var(--primary-color);">
-                        現在: <span id="target-counts">0 本</span> (<span id="progress-counts-percent">0</span>%)
-                    </div>
-                    <div class="progress-bar-wrapper">
-                        <div id="progress-counts-bar" class="progress-bar-fill"></div>
-                    </div>
-                </div>
-            </div>
+    <!-- 入力フォーム -->
+    <form id="keiko-form">
+        <div class="form-group">
+            <label for="date">日付</label>
+            <input type="date" id="date" required>
         </div>
-
-        <!-- 2. 記録入力画面 -->
-        <div id="input-page" class="page-section active">
-            <div class="card">
-                <h2 class="card-title">本日の稽古を記録</h2>
-                <form id="training-form" onsubmit="saveRecord(event)">
-                    <div class="form-group">
-                        <label for="training-date">稽古日</label>
-                        <input type="date" id="training-date" name="date" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="menuSelect">種目を選択</label>
-                        <select id="menuSelect" onchange="toggleCustomMenu()" required>
-                            <optgroup label="補強・基本・体さばき">
-                                <option value="補強：腕立て伏せ">補強：腕立て伏せ</option>
-                                <option value="補強：腹筋">補強：腹筋</option>
-                                <option value="補強：背筋">補強：背筋</option>
-                                <option value="補強：スクワット">補強：スクワット</option>
-                                <option value="基本：素振り（真向）">基本：素振り（真向）</option>
-                                <option value="基本：素振り（左右袈裟）">基本：素振り（左右袈裟）</option>
-                                <option value="基本：素振り（左右逆袈裟）">基本：素振り（左右逆袈裟）</option>
-                                <option value="基本：素振り（横一文字）">基本：素振り（横一文字）</option>
-                                <option value="基本：体さばき・運足">基本：体さばき・運足</option>
-                            </optgroup>
-                            <optgroup label="形（居合形）">
-                                <option value="形：基本一">形：基本一</option>
-                                <option value="形：基本二">形：基本二</option>
-                                <option value="形：基本三">形：基本三</option>
-                                <option value="形：五用・真">形：五用・真</option>
-                                <option value="形：五用・連">形：五用・連</option>
-                                <option value="形：五用・左">形：五用・左</option>
-                                <option value="形：五用・右">形：五用・右</option>
-                                <option value="形：五用・捨">形：五用・捨</option>
-                                <option value="形：五箇・水月">形：五箇・水月</option>
-                                <option value="形：五箇・陰中陽">形：五箇・陰中陽</option>
-                                <option value="形：五箇・陽中陰">形：五箇・陽中陰</option>
-                                <option value="形：五箇・響き返し">形：五箇・響き返し</option>
-                                <option value="形：五箇・破図味">形：五箇・破図味</option>
-                                <option value="形：五応・胸尽し">形：五応・胸尽し</option>
-                                <option value="形：五応・円要">形：五応・円要</option>
-                                <option value="形：五応・両車">形：五応・両車</option>
-                                <option value="形：五応・野送り">形：五応・野送り</option>
-                                <option value="形：五応・玉光">形：五応・玉光</option>
-                                <option value="形：走り懸り・前腰">形：走り懸り・前腰</option>
-                                <option value="形：走り懸り・夢想返し">形：走り懸り・夢想返し</option>
-                                <option value="形：走り懸り・廻り懸り">形：走り懸り・廻り懸り</option>
-                                <option value="形：走り懸り・右の敵">形：走り懸り・右の敵</option>
-                                <option value="形：走り懸り・四方">形：走り懸り・四方</option>
-                            </optgroup>
-                            <option value="custom">その他（直接入力）</option>
-                        </select>
-                        <input type="text" id="customMenuInput" placeholder="種目名を入力" style="display:none; margin-top:8px;">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="training-count">回数・時間 (本 / 分)</label>
-                        <input type="number" id="training-count" name="count" placeholder="例: 10" required>
-                        <div class="quick-buttons">
-                            <button type="button" class="btn-quick" onclick="setCount(10)">10</button>
-                            <button type="button" class="btn-quick" onclick="setCount(50)">50</button>
-                            <button type="button" class="btn-quick" onclick="setCount(100)">100</button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="training-memo">メモ・気づき</label>
-                        <textarea id="training-memo" name="memo" placeholder="課題点や不足していた感覚などを記録してください"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn-submit" id="submitBtn">記録を保存する</button>
-                </form>
-            </div>
+        <div class="form-group">
+            <label for="menu">稽古メニュー</label>
+            <input type="text" id="menu" list="menu-options" placeholder="メニューを入力または選択" required>
+            <datalist id="menu-options">
+                <option value="基本：素振り（真向）"></option>
+                <option value="基本：素振り（左右袈裟）"></option>
+                <option value="基本：素振り（左右逆袈裟）"></option>
+                <option value="基本：素振り（横一文字）"></option>
+                <option value="基本：体さばき・運足"></option>
+                <option value="形：基本一"></option>
+                <option value="形：五用・真"></option>
+                <option value="形：五用・左"></option>
+                <option value="形：五箇・水月"></option>
+                <option value="形：五箇・響き返し"></option>
+                <option value="自由組太刀：基本サバキ（一番〜七番）"></option>
+                <option value="補強：腕立て伏せ"></option>
+                <option value="補強：スクワット"></option>
+                <option value="補強：腹筋"></option>
+            </datalist>
         </div>
-
-        <!-- 3. 履歴一覧画面 -->
-        <div id="history-page" class="page-section">
-            <div class="card">
-                <h2 class="card-title">稽古履歴一覧</h2>
-                <div id="history-list">データを読み込み中...</div>
-            </div>
+        <div class="form-group">
+            <label for="count">回数</label>
+            <input type="number" id="count" min="1" placeholder="例: 20" required>
         </div>
-
-        <!-- 4. AI分析画面 -->
-        <div id="analysis-page" class="page-section">
-            <div class="card">
-                <h2 class="card-title">稽古傾向分析</h2>
-                <div class="period-tabs">
-                    <div class="period-tab active" onclick="switchPeriod('daily', this)">日次</div>
-                    <div class="period-tab" onclick="switchPeriod('weekly', this)">週次</div>
-                    <div class="period-tab" onclick="switchPeriod('monthly', this)">月次</div>
-                    <div class="period-tab" onclick="switchPeriod('yearly', this)">年次</div>
-                </div>
-                <div class="app-analysis-box">
-                    <div class="app-analysis-title">✨ アプリ内自動診断レポート</div>
-                    <div id="app-analysis-result">データ読み込み中...</div>
-                </div>
-                <div class="form-group" style="margin-top:20px;">
-                    <label id="analysis-period-title">外部AI用コピー用プロンプト</label>
-                    <textarea id="ai-prompt-text" readonly placeholder="データ集計中..." onclick="this.select()"></textarea>
-                </div>
-                <button type="button" class="btn-copy" onclick="copyPrompt()">
-                    📋 AI分析用プロンプトをコピー
-                </button>
-            </div>
+        <div class="form-group">
+            <label for="memo">メモ（任意）</label>
+            <input type="text" id="memo" placeholder="気づきや反省点など">
         </div>
+        <button type="submit">記録を保存</button>
+        <div id="message"></div>
+    </form>
 
-        <!-- 5. 心得画面 -->
-        <div id="gorin-page" class="page-section">
-            <!-- 百足伝セクション -->
-            <div class="card">
-                <h2 class="card-title">無外流 鵬玉会「百足伝」（全四十首）</h2>
-                <div style="background: var(--mukade-bg); border: 1px solid var(--mukade-border); padding: 18px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
-                    <div id="daily-mukade-num" style="font-size: 0.8rem; color: var(--mukade-title); font-weight: bold; margin-bottom: 5px;">📅 今日の百足伝</div>
-                    <div id="daily-mukade-text" style="font-size: 1.1rem; font-weight: bold; color: var(--mukade-text); line-height: 1.6; white-space: pre-wrap; font-family: inherit;">
-                        ※読み込み中...
-                    </div>
-                </div>
-                <details style="border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: var(--progress-bg);">
-                    <summary style="font-size: 0.9rem; font-weight: bold; cursor: pointer; color: var(--primary-color); outline: none;">
-                        📜 百足伝 四十首すべてを表示する
-                    </summary>
-                    <div id="mukade-all-list" style="margin-top: 10px; max-height: 300px; overflow-y: auto; font-size: 0.85rem; line-height: 1.7; text-align: left; padding-right: 5px;">
-                    </div>
-                </details>
-            </div>
-            <!-- 五輪書セクション -->
-            <div class="card">
-                <h2 class="card-title">宮本武蔵「五輪書」全文（口語訳付）</h2>
-                <div class="period-tabs" style="background-color: var(--progress-bg); margin-bottom: 15px;">
-                    <div class="period-tab active" data-book="chi" onclick="switchGorinBook('chi', this)">地の巻</div>
-                    <div class="period-tab" data-book="mizu" onclick="switchGorinBook('mizu', this)">水の巻</div>
-                    <div class="period-tab" data-book="hi" onclick="switchGorinBook('hi', this)">火の巻</div>
-                    <div class="period-tab" data-book="kaze" onclick="switchGorinBook('kaze', this)">風の巻</div>
-                    <div class="period-tab" data-book="kuu" onclick="switchGorinBook('kuu', this)">空の巻</div>
-                </div>
-                <div id="gorin-content-box" style="max-height: 400px; overflow-y: auto; font-size: 0.9rem; line-height: 1.7; padding-right: 5px;">
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- 記録表示テーブル -->
+    <table id="logs-table">
+        <thead>
+            <tr>
+                <th>日付</th>
+                <th>メニュー</th>
+                <th>回数</th>
+                <th>メモ</th>
+            </tr>
+        </thead>
+        <tbody id="logs-body">
+            <!-- JavaScriptでデータが挿入されます -->
+        </tbody>
+    </table>
+</div>
 
-    <!-- 下部ナビゲーションバー -->
-    <div class="footer-nav">
-        <button class="footer-nav-item" onclick="navBack()"><span>＜</span>戻る</button>
-        <button class="footer-nav-item" onclick="navHome()"><span>⌂</span>ホーム</button>
-        <button class="footer-nav-item" onclick="location.reload()"><span>↻</span>更新</button>
-        <button class="footer-nav-item" onclick="toggleMenuModal(true)"><span>•••</span>メニュー</button>
-    </div>
+<script>
+    // ==========================================
+    // Supabaseの接続情報
+    // ==========================================
+    const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
 
-    <!-- メニューモーダル -->
-    <div class="menu-modal-overlay" id="menuOverlay" onclick="toggleMenuModal(false)"></div>
-    <div class="menu-modal" id="menuModal">
-        <h3 style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:8px; color: var(--text-color);">設定・メニュー</h3>
-        <div class="menu-item" onclick="alert('プロフィール設定（実装予定）'); toggleMenuModal(false);">👤 ユーザー設定</div>
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 今日の日付をデフォルトでセット
+    document.getElementById('date').valueAsDate = new Date();
+
+    // フォーム送信時の処理（データ追加）
+    document.getElementById('keiko-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        <div class="menu-item" style="display: flex; align-items: center; justify-content: space-between; cursor: default;">
-            <span style="font-weight: bold;">💾 データ出力期間:</span>
-            <select id="exportPeriodSelect" style="width: auto; padding: 6px 12px; font-size: 0.9rem; margin-left: 10px;">
-                <option value="all">全期間</option>
-                <option value="today">本日分</option>
-                <option value="week">今週分 (直近7日)</option>
-                <option value="month">今月分 (当月)</option>
-            </select>
-        </div>
-        <div class="menu-item" onclick="exportData(); toggleMenuModal(false);" style="text-align: center; background-color: var(--primary-color); color: white; border-radius: 6px; font-weight: bold; margin: 5px 0;">
-            📥 選択した期間でJSON出力
-        </div>
+        const date = document.getElementById('date').value;
+        const menu = document.getElementById('menu').value;
+        const count = parseInt(document.getElementById('count').value, 10);
+        const memo = document.getElementById('memo').value;
+        const messageEl = document.getElementById('message');
 
-        <div class="menu-item" onclick="alert('アプリバージョン: v1.4.0 (Supabase版)'); toggleMenuModal(false);">ℹ️ アプリ情報</div>
-        <div class="menu-item" style="color:red; text-align:center; font-weight:bold; margin-top:10px;" onclick="toggleMenuModal(false)">閉じる</div>
-    </div>
+        messageEl.textContent = '保存中...';
+        messageEl.className = '';
 
-    <script>
-        // ★ 正しいSupabase設定を反映済み ★
-        const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const { data, error } = await supabase
+            .from('keiko_logs')
+            .insert([{ date: date, menu: menu, count: count, memo: memo }]);
 
-        // 現在の日付を自動取得（YYYY-MM-DD形式）
-        const CURRENT_DATE_STR = new Date().toISOString().split('T')[0];
-        let currentPeriod = 'daily';
-        let pageHistory = ['input-page'];
-        
-        let rawLogs = [];
-        
-        const mukadeData = [
-            "1 (いち） 稽古には清水（しみず）の末の細々と絶えず流るる心こそよき",
-            "2（に） 夕立の せきとめかたき やり水は やがて雫（しずく）も なきものぞかし",
-            "3（さん） うつるととも 月も思わず うつすとも 水も思わぬ 猿澤(さるさわ）の池"
-        ];
+        if (error) {
+            console.error('Error inserting data:', error);
+            messageEl.textContent = 'エラーが発生しました: ' + error.message;
+            messageEl.className = 'error-message';
+        } else {
+            messageEl.textContent = '記録を保存しました！';
+            messageEl.style.color = 'green';
+            document.getElementById('memo').value = ''; // メモだけクリア（連続入力を想定）
+            
+            // データを再取得して表示を更新
+            fetchLogs();
+            
+            // 3秒後にメッセージを消す
+            setTimeout(() => { messageEl.textContent = ''; }, 3000);
+        }
+    });
 
-        const gorinData = {
-            chi: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【地の巻】兵法の道、二天一流の理念</div><p><strong>■ 兵法を大工の道にたとえる</strong><br>大工の棟梁は全体の計画を立て、材木の性質を見極めて適材適所に配置し、道具を巧みに管理する。</p>`,
-            mizu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【水の巻】二天一流の心法、身体の構え、太刀筋</div><p><strong>■ 心の持ち方（平常心）</strong><br>戦いの時であっても、日常の心と変わってはならない。</p>`,
-            hi: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【火の巻】合戦および個人の戦いにおける勝負の仕掛け</div><p><strong>■ 機先を制する（三つの先）</strong><br>常に主導権（先）を握る意思を持つことが勝利の根底である。</p>`,
-            kaze: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【風の巻】他流派の傾向と二天一流の批判的対比</div><p><strong>■ 派手な技と形式化（型への執着）への批判</strong><br>二天一流は、ただ「まっすぐに効率よく敵を討つ」という極めて実戦的で無駄のない理を追求する。</p>`,
-            kuu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【空の巻】理合を超えた究極の境地</div><p><strong>■ 空（くう）とは何か</strong><br>物事の道理を極め尽くし、あらゆる技を完全に習得したその先にたどり着く、迷いや執着が一切ない「自然体」の境地である。</p>`
-        };
+    // データを取得してテーブルに表示する関数
+    async function fetchLogs() {
+        const { data, error } = await supabase
+            .from('keiko_logs')
+            .select('*')
+            .order('date', { ascending: false })
+            .order('created_at', { ascending: false })
+            .limit(50); // 最新50件を表示
 
-        function initGorinPage() {
-            const randomIndex = Math.floor(Math.random() * mukadeData.length);
-            document.getElementById('daily-mukade-num').innerText = `📅 今日の百足伝（第${randomIndex + 1}首）`;
-            document.getElementById('daily-mukade-text').innerText = mukadeData[randomIndex];
-
-            const mukadeListEl = document.getElementById('mukade-all-list');
-            mukadeListEl.innerHTML = mukadeData.map((item, idx) => {
-                return `<div style="margin-bottom:8px; border-bottom:1px dashed var(--border-color); padding-bottom:6px; text-align:left;">
-                            <strong>【${idx + 1}】</strong> ${item}
-                        </div>`;
-            }).join('');
-
-            switchGorinBook('chi', document.querySelector('[data-book="chi"]'));
+        if (error) {
+            console.error('Error fetching data:', error);
+            return;
         }
 
-        function switchGorinBook(bookKey, tabElement) {
-            const tabs = tabElement.parentNode.querySelectorAll('.period-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            tabElement.classList.add('active');
-            const contentBox = document.getElementById('gorin-content-box');
-            if (contentBox && gorinData[bookKey]) {
-                contentBox.innerHTML = gorinData[bookKey];
-            }
-        }
+        const tbody = document.getElementById('logs-body');
+        tbody.innerHTML = ''; // テーブルをクリア
 
-        async function fetchLogs() {
-            try {
-                const { data, error } = await supabase
-                    .from('training_logs')
-                    .select('*')
-                    .order('date', { ascending: false })
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-                
-                rawLogs = data || [];
-                renderData();
-            } catch (err) {
-                console.error("データ取得エラー:", err.message);
-                document.getElementById('history-list').innerHTML = '<div style="color:red;">データの読み込みに失敗しました。SQLテーブル（training_logs）が正しく作成されているかご確認ください。</div>';
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', async () => {
-            document.getElementById('training-date').value = CURRENT_DATE_STR;
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('themeBtn').innerText = '☀️ ライトモード';
-            }
-            initGorinPage();
-            await fetchLogs();
+        data.forEach(log => {
+            const tr = document.createElement('tr');
+            
+            // 日付のフォーマットをシンプルにする（YYYY-MM-DD）
+            const dateStr = log.date ? log.date.split('T')[0] : '';
+            
+            tr.innerHTML = `
+                <td>${dateStr}</td>
+                <td>${log.menu || ''}</td>
+                <td>${log.count || 0}</td>
+                <td>${log.memo || ''}</td>
+            `;
+            tbody.appendChild(tr);
         });
+    }
 
-        function toggleTheme() {
-            const body = document.body;
-            const btn = document.getElementById('themeBtn');
-            body.classList.toggle('dark-mode');
-            if (body.classList.contains('dark-mode')) {
-                btn.innerText = '☀️ ライトモード';
-                localStorage.setItem('theme', 'dark');
-            } else {
-                btn.innerText = '🌙 夜間モード';
-                localStorage.setItem('theme', 'light');
-            }
-        }
+    // ページ読み込み時にデータを取得
+    window.onload = fetchLogs;
+</script>
 
-        function exportData() {
-            if (rawLogs.length === 0) {
-                alert('出力する稽古履歴データがありません。');
-                return;
-            }
-            const period = document.getElementById('exportPeriodSelect').value;
-            let filteredData = [];
-            const targetDate = new Date(CURRENT_DATE_STR);
-
-            if (period === 'all') {
-                filteredData = [...rawLogs];
-            } else if (period === 'today') {
-                filteredData = rawLogs.filter(log => log.date === CURRENT_DATE_STR);
-            } else if (period === 'week') {
-                filteredData = rawLogs.filter(log => {
-                    const logDate = new Date(log.date);
-                    const diffTime = Math.abs(targetDate - logDate);
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    return diffDays <= 7;
-                });
-            } else if (period === 'month') {
-                const currentYearMonth = CURRENT_DATE_STR.substring(0, 7);
-                filteredData = rawLogs.filter(log => log.date.startsWith(currentYearMonth));
-            }
-
-            if (filteredData.length === 0) {
-                alert('選択された期間内に該当するデータがありません。');
-                return;
-            }
-            try {
-                const dataStr = JSON.stringify(filteredData, null, 2);
-                const blob = new Blob([dataStr], { type: "application/json;charset=utf-8;" });
-                const url = URL.createObjectURL(blob);
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", url);
-                downloadAnchor.setAttribute("download", `training_logs_${period}.json`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                document.body.removeChild(downloadAnchor);
-                URL.revokeObjectURL(url);
-            } catch (error) {
-                alert('データエクスポートの実行に失敗しました。');
-            }
-        }
-
-        function switchPage(pageId) {
-            const currentActive = document.querySelector('.page-section.active');
-            if (currentActive && currentActive.id !== pageId) {
-                pageHistory.push(currentActive.id);
-            }
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(pageId).classList.add('active');
-            document.querySelectorAll('.tab-item').forEach(tab => {
-                tab.classList.remove('active');
-                if(tab.getAttribute('data-target') === pageId) tab.classList.add('active');
-            });
-        }
-
-        function navHome() { switchPage('input-page'); }
-        function navBack() {
-            if (pageHistory.length > 0) {
-                const prevPage = pageHistory.pop();
-                document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-                document.getElementById(prevPage).classList.add('active');
-                document.querySelectorAll('.tab-item').forEach(tab => {
-                    tab.classList.remove('active');
-                    if(tab.getAttribute('data-target') === prevPage) tab.classList.add('active');
-                });
-            } else {
-                switchPage('input-page');
-            }
-        }
-
-        function toggleMenuModal(show) {
-            const modal = document.getElementById('menuModal');
-            const overlay = document.getElementById('menuOverlay');
-            if(show) {
-                modal.classList.add('open');
-                overlay.style.display = 'block';
-            } else {
-                modal.classList.remove('open');
-                overlay.style.display = 'none';
-            }
-        }
-
-        function switchPeriod(period, tabElement) {
-            currentPeriod = period;
-            document.querySelectorAll('.period-tab').forEach(tab => tab.classList.remove('active'));
-            tabElement.classList.add('active');
-            generatePromptText();
-        }
-
-        function toggleCustomMenu() {
-            const selectEl = document.getElementById('menuSelect');
-            const customInputEl = document.getElementById('customMenuInput');
-            if (selectEl.value === 'custom') {
-                customInputEl.style.display = 'block';
-                customInputEl.required = true;
-            } else {
-                customInputEl.style.display = 'none';
-                customInputEl.required = false;
-            }
-        }
-
-        function setCount(value) {
-            document.getElementById('training-count').value = value;
-        }
-
-        async function saveRecord(event) {
-            event.preventDefault();
-            
-            const btn = document.getElementById('submitBtn');
-            btn.innerText = '保存中...';
-            btn.disabled = true;
-
-            const date = document.getElementById('training-date').value;
-            const selectEl = document.getElementById('menuSelect');
-            let menu = selectEl.value;
-            if (menu === 'custom') {
-                menu = document.getElementById('customMenuInput').value;
-            }
-            const count = parseInt(document.getElementById('training-count').value, 10);
-            const memo = document.getElementById('training-memo').value || "なし";
-
-            const newRecord = { date, menu, count, memo };
-
-            try {
-                const { data, error } = await supabase
-                    .from('training_logs')
-                    .insert([newRecord]);
-
-                if (error) throw error;
-
-                alert('稽古記録を保存しました。');
-                document.getElementById('training-count').value = '';
-                document.getElementById('training-memo').value = '';
-                
-                await fetchLogs();
-
-            } catch (err) {
-                console.error("保存エラー:", err.message);
-                alert("データの保存に失敗しました。");
-            } finally {
-                btn.innerText = '記録を保存する';
-                btn.disabled = false;
-            }
-        }
-
-        function renderData() {
-            const historyListEl = document.getElementById('history-list');
-            historyListEl.innerHTML = '';
-            
-            if (rawLogs.length === 0) {
-                historyListEl.innerHTML = '<div style="padding:15px; color:#666;">まだ記録がありません。</div>';
-            }
-
-            rawLogs.forEach(log => {
-                const item = document.createElement('div');
-                item.className = 'log-item';
-                item.innerHTML = `
-                    <div class="log-date">${log.date}</div>
-                    <div><span class="log-meta">${log.menu}</span> (${log.count} 本/分/回)</div>
-                    ${log.memo !== 'なし' ? `<div class="log-memo">メモ: ${log.memo}</div>` : ''}
-                `;
-                historyListEl.appendChild(item);
-            });
-
-            let totalCount = 0;
-            let uniqueDays = new Set();
-            rawLogs.forEach(log => {
-                uniqueDays.add(log.date);
-                if (log.menu.includes('素振り') || log.menu.includes('補強')) {
-                    totalCount += log.count;
-                }
-            });
-
-            const targetDaysGoal = 20;
-            const targetCountsGoal = 1000;
-            
-            const daysPercent = Math.min(Math.round((uniqueDays.size / targetDaysGoal) * 100), 100);
-            const countsPercent = Math.min(Math.round((totalCount / targetCountsGoal) * 100), 100);
-
-            document.getElementById('target-days').innerText = uniqueDays.size + ' 日';
-            document.getElementById('progress-days-percent').innerText = daysPercent;
-            document.getElementById('progress-days-bar').style.width = daysPercent + '%';
-
-            document.getElementById('target-counts').innerText = totalCount + ' 本';
-            document.getElementById('progress-counts-percent').innerText = countsPercent;
-            document.getElementById('progress-counts-bar').style.width = countsPercent + '%';
-
-            generatePromptText();
-        }
-
-        function generatePromptText() {
-            const promptArea = document.getElementById('ai-prompt-text');
-            const periodTitle = document.getElementById('analysis-period-title');
-            const analysisResultEl = document.getElementById('app-analysis-result');
-            let filteredLogs = [];
-            let labelStr = "";
-
-            if (currentPeriod === 'daily') {
-                labelStr = `日次分析プロンプト (${CURRENT_DATE_STR}分)`;
-                filteredLogs = rawLogs.filter(log => log.date === CURRENT_DATE_STR);
-            } else if (currentPeriod === 'weekly') {
-                labelStr = "週次分析プロンプト (直近7日間)";
-                filteredLogs = rawLogs.filter(log => {
-                    const diff = Math.abs(new Date(CURRENT_DATE_STR) - new Date(log.date));
-                    return Math.ceil(diff / (1000 * 60 * 60 * 24)) <= 7;
-                });
-            } else if (currentPeriod === 'monthly') {
-                const currentMonth = CURRENT_DATE_STR.substring(0, 7);
-                labelStr = `月次分析プロンプト (${currentMonth}期)`;
-                filteredLogs = rawLogs.filter(log => log.date.startsWith(currentMonth));
-            } else if (currentPeriod === 'yearly') {
-                const currentYear = CURRENT_DATE_STR.substring(0, 4);
-                labelStr = `年次分析プロンプト (${currentYear}年度)`;
-                filteredLogs = rawLogs.filter(log => log.date.startsWith(currentYear));
-            }
-
-            periodTitle.innerText = labelStr;
-
-            if (filteredLogs.length === 0) {
-                promptArea.value = "該当期間の稽古データが存在しません。";
-                analysisResultEl.innerHTML = "データが不足しているため、自動診断レポートを生成できません。";
-                return;
-            }
-
-            let aggregation = {};
-            let totalMenuCount = 0;
-            let memoList = [];
-            
-            filteredLogs.forEach(log => {
-                if (!aggregation[log.menu]) aggregation[log.menu] = 0;
-                aggregation[log.menu] += log.count;
-                totalMenuCount += log.count;
-                if (log.memo && log.memo !== "なし") {
-                    memoList.push(log.memo);
-                }
-            });
-
-            let promptValue = `以下の武道稽古データ（${currentPeriod}）を分析し、傾向、優れている点、および今後の課題や改善に向けたアドバイスを提示してください。\n\n`;
-            promptValue += `【集計データ】\n`;
-            for (let menuName in aggregation) {
-                promptValue += `・${menuName}: 累計 ${aggregation[menuName]} 回/本/分\n`;
-            }
-            if (memoList.length > 0) {
-                promptValue += `\n【気づき・メモ】\n` + memoList.map(m => `・${m}`).join('\n') + `\n`;
-            }
-            promptArea.value = promptValue;
-
-            let reportHtml = `現在の期間で <strong>${Object.keys(aggregation).length} 種目</strong>、合計 <strong>${totalMenuCount} 回/本/分</strong> の修練が記録されています。<br><br>`;
-            if (aggregation['補強：腕立て伏せ'] || aggregation['補強：スクワット']) {
-                reportHtml += `● <strong>身体作り（補強運動）:</strong> 基礎体力の向上が意識されています。形の安定性に直結するため継続しましょう。<br>`;
-            }
-            if (aggregation['形：五箇・水月']) {
-                reportHtml += `● <strong>形修練（五箇）:</strong> 高度な技の軌道や力加減を模索している跡が見られます。<br>`;
-            }
-            if (memoList.length > 0) {
-                reportHtml += `<br>🎯 <strong>現在の課題意識:</strong><br><span style="color:#c0392b;">「${memoList[0]}」</span> など、自身の動きを客観的に観察できています。`;
-            }
-            analysisResultEl.innerHTML = reportHtml;
-        }
-
-        function copyPrompt() {
-            const promptArea = document.getElementById('ai-prompt-text');
-            promptArea.select();
-            navigator.clipboard.writeText(promptArea.value)
-                .then(() => alert('分析用プロンプトをクリップボードにコピーしました！'))
-                .catch(() => alert('コピーに失敗しました。'));
-        }
-    </script>
 </body>
 </html>
