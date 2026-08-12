@@ -6,6 +6,7 @@
     <title>武道稽古記録 & アドバイザー</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
+     #error-display { color: red; font-weight: bold; padding: 10px; background: #fee; border: 1px solid red; margin-bottom: 10px; display: none; }
         :root {
             --primary-color: #2b5797;
             --secondary-color: #1e467a;
@@ -428,6 +429,8 @@
     </style>
 </head>
 <body>
+    <div id="error-display"></div>
+
 
     <!-- ヘッダー -->
     <div class="header">
@@ -1178,6 +1181,38 @@
                 .then(() => alert('分析用プロンプトをクリップボードにコピーしました！'))
                 .catch(() => alert('コピーに失敗しました。'));
         }
+        
+                // エラー表示用関数
+        function showError(msg) {
+            const el = document.getElementById('error-display');
+            el.style.display = 'block';
+            el.innerText = 'エラー発生: ' + msg;
+            console.error(msg);
+        }
+    
+        // 全体のエラー監視
+        window.onerror = function(msg, url, line) {
+            showError(msg + ' (行: ' + line + ')');
+        };
+    
+        // Supabase初期化部分（try-catchで囲む）
+        try {
+            const supabase = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
+            
+            async function testConnection() {
+                try {
+                    const { data, error } = await supabase.from('keiko_logs').select('*').limit(1);
+                    if (error) throw error;
+                    console.log("接続成功:", data);
+                } catch (e) {
+                    showError("Supabase接続エラー: " + e.message);
+                }
+            }
+            testConnection();
+        } catch (e) {
+            showError("初期化失敗: " + e.message);
+        }
+            
     </script>
 </body>
 </html>
