@@ -448,6 +448,21 @@
             color: var(--text-color);
             opacity: 0.6;
         }
+
+        .tips-block {
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .tips-block:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .tips-block-title {
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 4px;
+        }
     </style>
 </head>
 <body>
@@ -460,8 +475,8 @@
 
     <!-- タブナビゲーション -->
     <div class="nav-tabs" id="main-nav-tabs">
-        <div class="tab-item" data-target="target-page" onclick="switchPage('target-page')">📊 目標と実績</div>
-        <div class="tab-item active" data-target="input-page" onclick="switchPage('input-page')">📝 記録入力</div>
+        <div class="tab-item active" data-target="target-page" onclick="switchPage('target-page')">📊 目標と実績</div>
+        <div class="tab-item" data-target="input-page" onclick="switchPage('input-page')">📝 記録入力</div>
         <div class="tab-item" data-target="history-page" onclick="switchPage('history-page')">📋 履歴一覧</div>
         <div class="tab-item" data-target="analysis-page" onclick="switchPage('analysis-page')">🔍 AI分析</div>
         <div class="tab-item" data-target="gorin-page" onclick="switchPage('gorin-page')">📖 心得</div>
@@ -471,12 +486,19 @@
     <div class="container">
 
         <!-- 1. 目標と実績画面 -->
-        <div id="target-page" class="page-section">
+        <div id="target-page" class="page-section active">
             <div class="card">
-                <h2 class="card-title">今月の稽古目標</h2>
-                
+                <h2 class="card-title">稽古目標と実績</h2>
+
+                <div class="period-tabs" id="target-period-tabs">
+                    <div class="period-tab active" data-target-period="daily" onclick="switchTargetPeriod('daily', this)">今日</div>
+                    <div class="period-tab" data-target-period="weekly" onclick="switchTargetPeriod('weekly', this)">今週</div>
+                    <div class="period-tab" data-target-period="monthly" onclick="switchTargetPeriod('monthly', this)">今月</div>
+                    <div class="period-tab" data-target-period="yearly" onclick="switchTargetPeriod('yearly', this)">今年</div>
+                </div>
+
                 <div class="progress-container">
-                    <div class="stat-row"><span>目標稽古日数</span><span>20 日</span></div>
+                    <div class="stat-row"><span id="target-days-label">目標稽古日数（今日）</span><span id="target-days-goal">1 日</span></div>
                     <div style="text-align: right; font-size: 0.8rem; font-weight: bold; color: var(--primary-color);">
                         現在: <span id="target-days">0 日</span> (<span id="progress-days-percent">0</span>%)
                     </div>
@@ -486,7 +508,7 @@
                 </div>
 
                 <div class="progress-container" style="margin-top: 10px;">
-                    <div class="stat-row"><span>総素振り本数目標</span><span>1000 本</span></div>
+                    <div class="stat-row"><span id="target-counts-label">目標素振り・補強本数（今日）</span><span id="target-counts-goal">33 本</span></div>
                     <div style="text-align: right; font-size: 0.8rem; font-weight: bold; color: var(--primary-color);">
                         現在: <span id="target-counts">0 本</span> (<span id="progress-counts-percent">0</span>%)
                     </div>
@@ -494,11 +516,15 @@
                         <div id="progress-counts-bar" class="progress-bar-fill"></div>
                     </div>
                 </div>
+
+                <div style="font-size: 0.75rem; opacity: 0.6; margin-top: 10px;">
+                    ※「今月」の目標（稽古日数20日・素振り/補強1000本）を基準に、今日・今週・今年の目標を日割り・週割り・年換算で自動算出しています。
+                </div>
             </div>
         </div>
 
         <!-- 2. 記録入力画面 -->
-        <div id="input-page" class="page-section active">
+        <div id="input-page" class="page-section">
             <div class="card">
                 <h2 class="card-title">本日の稽古を記録</h2>
                 
@@ -725,6 +751,21 @@
                 <div id="gorin-content-box" style="max-height: 400px; overflow-y: auto; font-size: 0.9rem; line-height: 1.7; padding-right: 5px;">
                 </div>
             </div>
+
+            <!-- 武道家の心得セクション -->
+            <div class="card">
+                <h2 class="card-title">武道家として知っておきたいこと</h2>
+
+                <div class="period-tabs" style="background-color: var(--progress-bg); margin-bottom: 15px;">
+                    <div class="period-tab active" data-tip="reihou" onclick="switchBudokaTip('reihou', this)">礼儀作法</div>
+                    <div class="period-tab" data-tip="shinshin" onclick="switchBudokaTip('shinshin', this)">心と身体</div>
+                    <div class="period-tab" data-tip="anzen" onclick="switchBudokaTip('anzen', this)">安全稽古</div>
+                    <div class="period-tab" data-tip="keizoku" onclick="switchBudokaTip('keizoku', this)">継続の心構え</div>
+                </div>
+
+                <div id="budoka-tips-content-box" style="font-size: 0.9rem; line-height: 1.7; padding-right: 5px;">
+                </div>
+            </div>
         </div>
 
     </div>
@@ -757,7 +798,7 @@
             📥 選択した期間でJSON出力
         </div>
 
-        <div class="menu-item" onclick="alert('アプリバージョン: v1.4.0 (Supabase連携版)'); toggleMenuModal(false);">ℹ️ アプリ情報</div>
+        <div class="menu-item" onclick="alert('アプリバージョン: v1.5.0 (目標実績・心得拡充版)'); toggleMenuModal(false);">ℹ️ アプリ情報</div>
         <div class="menu-item" style="color:red; text-align:center; font-weight:bold; margin-top:10px;" onclick="toggleMenuModal(false)">閉じる</div>
     </div>
 
@@ -767,16 +808,10 @@
     <script>
         /* =========================================================
            Supabase 設定
-           ---------------------------------------------------------
-           SUPABASE_URL / SUPABASE_KEY はプロジェクトの画像から設定済みです。
-           TABLE_NAME は Supabase のテーブルエディタで実際のテーブル名を
-           ご確認の上、異なる場合はここを書き換えてください。
-           （CSVのカラム構成 id, created_at, date, menu, count, memo に
-             対応するテーブルを想定しています）
            ========================================================= */
         const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
-        const TABLE_NAME = 'keiko_logs'; // ← 実際のテーブル名に合わせて変更してください
+        const TABLE_NAME = 'keiko_logs';
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -790,7 +825,8 @@
 
         let CURRENT_DATE_STR = getTodayStr();
         let currentPeriod = 'daily';
-        let pageHistory = ['input-page'];
+        let targetPeriod = 'daily';
+        let pageHistory = [];
 
         let rawLogs = [];
 
@@ -798,7 +834,7 @@
             "1 (いち） 稽古には清水（しみず）の末の細々と絶えず流るる心こそよき",
             "2（に） 夕立の せきとめかたき やり水は やがて雫（しずく）も なきものぞかし",
             "3（さん） うつるととも 月も思わず うつすとも 水も思わぬ 猿澤(さるさわ）の池",
-            "4（し） 幾千度（いくちたび） 闇路（ямидзи）をたどる 小車（おぐるま）の 乗得（のりえ）てみれば 輪（わ）のあらばこそ",
+            "4（し） 幾千度（いくちたび） 闇路（やみじ）をたどる 小車（おぐるま）の 乗得（のりえ）てみれば 輪（わ）のあらばこそ",
             "5（ご） 稽古には 山澤河原（やまさわかわら） 崖や淵（ふち） 飢えも寒暑（かんしょ）も 身は無きものにして",
             "6（ろく) 吹けば行く 吹かねば行かぬ 浮き雲の 風に任（まか）する 身こそやすけれ",
             "7（しち) 山河（やまかわ）に 落ちて流るる 栃殻（とちがら）も 身を捨ててこそ浮かぶ瀬もあれ",
@@ -812,7 +848,7 @@
             "15（じゅうご） 兵法（ひょうほう）の 奥義（おうぎ）はまつ毛の 如（ごと）くにて あまり近くて 迷いこそすれ",
             "16（じゅうろく)我流（わがりゅう）を つかはば常に 心還（また） 物云ふ迄（ものいうまで）も 修行ともなせ",
             "17（じゅうしち) 我流（わがりゅう）を 使ひて見れば 何もなく ただ心して 勝つ道を知れ",
-            "18（じゅうhち) 兵法（ひょうほう）の 先（せん）は早きと 心得て 勝を急（あせ）って危うかりけり",
+            "18（じゅうはち) 兵法（ひょうほう）の 先（せん）は早きと 心得て 勝を急（あせ）って危うかりけり",
             "19（じゅうく) 兵法（ひょうほう）は つよきを能き（よき）と 思（おもい）なば終（つい）には負けと 成ると知るべし",
             "20（にじゅう) 兵法（ひょうほう）の 強き内（うち）には つよみなし 強からずして負けぬものなり",
             "21（にじゅういち）立会はば 思慮分別（しりょふんべつ）に 離れつつ 有（あり）そ無（な）きぞと 思ふべからず",
@@ -845,6 +881,77 @@
             kuu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【空の巻】理合を超えた究極の境地</div><p><strong>■ 空（くう）とは何か</strong><br>物事の道理を極め尽くし、あらゆる技を完全に習得したその先にたどり着く、迷いや執着が一切ない「自然体」の境地である。何も知らない無知の「無」とは異なる。</p>`
         };
 
+        const budokaTipsData = {
+            reihou: `
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 礼に始まり礼に終わる</div>
+                    道場への入退室、稽古の開始・終了時の礼は、相手・道具・場を敬う気持ちの表れです。形だけでなく、なぜ礼をするのかという意識を持つことが大切です。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 刀（模擬刀・真剣）の扱い</div>
+                    刃筋を人に向けない、跨がない、置くときは刃を自分側に向けるなど、基本的な取り扱いを徹底しましょう。道具への丁寧な扱いは、稽古への姿勢そのものです。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 時間と場の整え</div>
+                    時間厳守や道場の清掃も稽古の一部と考えられています。場を整えることは、自分の心を整えることにもつながります。
+                </div>
+            `,
+            shinshin: `
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 残心（ざんしん）</div>
+                    技を終えた後も油断せず、次の変化に備える心構えです。一本を終えた瞬間の気の抜けが、最も隙になりやすいと言われます。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 目付け（めつけ）</div>
+                    相手の一点だけを見るのではなく、全体をぼんやりと広く捉える見方です。一点に囚われないことで、相手の動きの変化に早く気づけます。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 丹田を意識した呼吸</div>
+                    へその下あたり（丹田）を意識した深い呼吸は、体幹を安定させ、動作にぶれの少ない軸を作ります。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 平常心</div>
+                    緊張する場面でも、普段の稽古と変わらない心持ちでいることが理想とされます。特別な状態を作ろうとせず、いつも通りを積み重ねることが平常心につながります。
+                </div>
+            `,
+            anzen: `
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 準備運動と整理運動</div>
+                    稽古前後のストレッチや軽い運動は、怪我の予防と疲労回復の両方に役立ちます。特に肩・手首・股関節は入念に。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 本数より軌道の正しさ</div>
+                    素振りなどは本数をこなすことよりも、正しい軌道・姿勢を優先しましょう。崩れたフォームでの反復は悪い癖の定着につながります。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 体調管理と水分補給</div>
+                    こまめな水分補給と、体調が優れない日は無理をしない判断も稽古の一部です。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 違和感を我慢しない</div>
+                    痛みや違和感がある時に無理を続けず、早めに休む・専門家に相談する勇気を持つことが、長く稽古を続ける秘訣です。
+                </div>
+            `,
+            keizoku: `
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 完璧を求めすぎない</div>
+                    毎日大きな成果を求めるのではなく、「今日も1本振れた」という小さな積み重ねを大切にしましょう。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 記録をつける意味</div>
+                    稽古日誌をつけることで、自分では気づきにくい変化や課題の傾向が見えてきます。このアプリの履歴・AI分析機能もそのために活用できます。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 仲間との稽古</div>
+                    一人稽古とは違う気づきが、仲間との稽古には多くあります。互いに指摘し合える関係を大切にしましょう。
+                </div>
+                <div class="tips-block">
+                    <div class="tips-block-title">■ 停滞期こそ基本へ</div>
+                    上達を感じられない時期こそ、基本の素振りや構えに立ち返ることで、見えていなかった課題に気づけることがあります。
+                </div>
+            `
+        };
+
         function initGorinPage() {
             const randomIndex = Math.floor(Math.random() * mukadeData.length);
             document.getElementById('daily-mukade-num').innerText = `📅 今日の百足伝（第${randomIndex + 1}首）`;
@@ -858,6 +965,7 @@
             }).join('');
 
             switchGorinBook('chi', document.querySelector('[data-book="chi"]'));
+            switchBudokaTip('reihou', document.querySelector('[data-tip="reihou"]'));
         }
 
         function switchGorinBook(bookKey, tabElement) {
@@ -868,6 +976,17 @@
             const contentBox = document.getElementById('gorin-content-box');
             if (contentBox && gorinData[bookKey]) {
                 contentBox.innerHTML = gorinData[bookKey];
+            }
+        }
+
+        function switchBudokaTip(tipKey, tabElement) {
+            const tabs = tabElement.parentNode.querySelectorAll('.period-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabElement.classList.add('active');
+
+            const contentBox = document.getElementById('budoka-tips-content-box');
+            if (contentBox && budokaTipsData[tipKey]) {
+                contentBox.innerHTML = budokaTipsData[tipKey];
             }
         }
 
@@ -969,7 +1088,7 @@
             }
         }
 
-        /* ===================== ここから下は元のロジック（保存先以外は変更なし） ===================== */
+        /* ===================== ここから下は既存ロジック（目標実績部分は今回拡張） ===================== */
 
         function toggleTheme() {
             const body = document.body;
@@ -1050,7 +1169,7 @@
             });
         }
 
-        function navHome() { switchPage('input-page'); }
+        function navHome() { switchPage('target-page'); }
 
         function navBack() {
             if (pageHistory.length > 0) {
@@ -1063,7 +1182,7 @@
                     if(tab.getAttribute('data-target') === prevPage) tab.classList.add('active');
                 });
             } else {
-                switchPage('input-page');
+                switchPage('target-page');
             }
         }
 
@@ -1081,9 +1200,16 @@
 
         function switchPeriod(period, tabElement) {
             currentPeriod = period;
-            document.querySelectorAll('.period-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('#analysis-page .period-tab').forEach(tab => tab.classList.remove('active'));
             tabElement.classList.add('active');
             generatePromptText();
+        }
+
+        function switchTargetPeriod(period, tabElement) {
+            targetPeriod = period;
+            document.querySelectorAll('#target-period-tabs .period-tab').forEach(tab => tab.classList.remove('active'));
+            tabElement.classList.add('active');
+            renderTargetStats();
         }
 
         function toggleCustomMenu() {
@@ -1100,6 +1226,66 @@
 
         function setCount(value) {
             document.getElementById('training-count').value = value;
+        }
+
+        // 「今月」目標（稽古日数・素振り/補強本数）を基準に、他期間の目標を換算
+        const MONTHLY_DAYS_GOAL = 20;
+        const MONTHLY_COUNT_GOAL = 1000;
+
+        function renderTargetStats() {
+            let filteredLogs = [];
+            let daysGoal, countGoal, periodLabel;
+
+            if (targetPeriod === 'daily') {
+                filteredLogs = rawLogs.filter(log => log.date === CURRENT_DATE_STR);
+                daysGoal = Math.max(1, Math.round(MONTHLY_DAYS_GOAL / 30));
+                countGoal = Math.max(1, Math.round(MONTHLY_COUNT_GOAL / 30));
+                periodLabel = '今日';
+            } else if (targetPeriod === 'weekly') {
+                filteredLogs = rawLogs.filter(log => {
+                    const diff = Math.abs(new Date(CURRENT_DATE_STR) - new Date(log.date));
+                    return Math.ceil(diff / (1000 * 60 * 60 * 24)) <= 7;
+                });
+                daysGoal = Math.max(1, Math.round(MONTHLY_DAYS_GOAL / 4.345));
+                countGoal = Math.max(1, Math.round(MONTHLY_COUNT_GOAL / 4.345));
+                periodLabel = '今週';
+            } else if (targetPeriod === 'monthly') {
+                const ym = CURRENT_DATE_STR.substring(0, 7);
+                filteredLogs = rawLogs.filter(log => log.date.startsWith(ym));
+                daysGoal = MONTHLY_DAYS_GOAL;
+                countGoal = MONTHLY_COUNT_GOAL;
+                periodLabel = '今月';
+            } else if (targetPeriod === 'yearly') {
+                const y = CURRENT_DATE_STR.substring(0, 4);
+                filteredLogs = rawLogs.filter(log => log.date.startsWith(y));
+                daysGoal = MONTHLY_DAYS_GOAL * 12;
+                countGoal = MONTHLY_COUNT_GOAL * 12;
+                periodLabel = '今年';
+            }
+
+            let uniqueDays = new Set();
+            let totalCount = 0;
+            filteredLogs.forEach(log => {
+                uniqueDays.add(log.date);
+                if (log.menu.includes('素振り') || log.menu.includes('補強')) {
+                    totalCount += log.count;
+                }
+            });
+
+            const daysPercent = Math.min(Math.round((uniqueDays.size / daysGoal) * 100), 100);
+            const countsPercent = Math.min(Math.round((totalCount / countGoal) * 100), 100);
+
+            document.getElementById('target-days-label').innerText = `目標稽古日数（${periodLabel}）`;
+            document.getElementById('target-days-goal').innerText = daysGoal + ' 日';
+            document.getElementById('target-days').innerText = uniqueDays.size + ' 日';
+            document.getElementById('progress-days-percent').innerText = daysPercent;
+            document.getElementById('progress-days-bar').style.width = daysPercent + '%';
+
+            document.getElementById('target-counts-label').innerText = `目標素振り・補強本数（${periodLabel}）`;
+            document.getElementById('target-counts-goal').innerText = countGoal + ' 本';
+            document.getElementById('target-counts').innerText = totalCount + ' 本';
+            document.getElementById('progress-counts-percent').innerText = countsPercent;
+            document.getElementById('progress-counts-bar').style.width = countsPercent + '%';
         }
 
         function renderData() {
@@ -1122,29 +1308,7 @@
                 historyListEl.appendChild(item);
             });
 
-            let totalCount = 0;
-            let uniqueDays = new Set();
-            rawLogs.forEach(log => {
-                uniqueDays.add(log.date);
-                if (log.menu.includes('素振り') || log.menu.includes('補強')) {
-                    totalCount += log.count;
-                }
-            });
-
-            const targetDaysGoal = 20;
-            const targetCountsGoal = 1000;
-            
-            const daysPercent = Math.min(Math.round((uniqueDays.size / targetDaysGoal) * 100), 100);
-            const countsPercent = Math.min(Math.round((totalCount / targetCountsGoal) * 100), 100);
-
-            document.getElementById('target-days').innerText = uniqueDays.size + ' 日';
-            document.getElementById('progress-days-percent').innerText = daysPercent;
-            document.getElementById('progress-days-bar').style.width = daysPercent + '%';
-
-            document.getElementById('target-counts').innerText = totalCount + ' 本';
-            document.getElementById('progress-counts-percent').innerText = countsPercent;
-            document.getElementById('progress-counts-bar').style.width = countsPercent + '%';
-
+            renderTargetStats();
             generatePromptText();
         }
 
