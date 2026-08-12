@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>武道稽古記録 & アドバイザー</title>
+    <!-- Supabase JS CDN を追加 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-color: #2b5797;
@@ -737,17 +739,29 @@
     </div>
 
     <script>
-        const CURRENT_DATE_STR = "2026-08-11";
+        // --- Supabase 設定設定エリア ---
+        const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co"; // ご自身のURLに差し替えてください
+        const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";                 // ご自身のAnon Keyに差し替えてください
+        
+        const supabase = royaltyModeCheck();
+        function royaltyModeCheck() {
+            if (typeof supabaseJS !== 'undefined' || window.supabase) {
+                return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            // CDN読み込み後の初期化用
+            return null;
+        }
+
+        // 動的な今日の日付取得に変更
+        const getTodayString = () => {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        };
+        const CURRENT_DATE_STR = getTodayString();
+        
         let currentPeriod = 'daily';
         let pageHistory = ['input-page'];
-
-        let rawLogs = [
-            { date: "2026-08-11", menu: "補強：腕立て伏せ", count: 30, memo: "なし" },
-            { date: "2026-08-11", menu: "形：五箇・水月", count: 10, memo: "初太刀の横一文字の軌道注意" },
-            { date: "2026-08-11", menu: "補強：スクワット", count: 30, memo: "なし" },
-            { date: "2026-08-10", menu: "基本：体さばき・運足", count: 20, memo: "軸がぶれないように意識" },
-            { date: "2026-08-10", menu: "基本：素振り（横一文字）", count: 50, memo: "水平に振り切る感覚が良くなってきた" }
-        ];
+        let rawLogs = []; // Supabaseからロードするため初期値は空にします
         
         const mukadeData = [
             "1 (いち） 稽古には清水（しみず）の末の細々と絶えず流るる心こそよき",
@@ -826,13 +840,37 @@
             }
         }
 
+        // --- Supabaseからデータを読込・反映する非同期関数 ---
+        async function fetchLogsFromSupabase() {
+            try {
+                const client = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+                if (!client) return;
+
+                // 日付が新しい順(desc)で全件取得
+                const { data, error } = await client
+                    .from('keiko_logs')
+                    .select('*')
+                    .order('date', { ascending: false });
+
+                if (error) throw error;
+
+                rawLogs = data || [];
+                renderData();
+            } catch (err) {
+                console.error("データ読み込み失敗:", err);
+                // 読み込みエラー時のフォールバック表示
+                document.getElementById('history-list').innerHTML = `<div style="color:red; padding:10px;">データの読み込みに失敗しました。URLとキーの設定を確認してください。</div>`;
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('training-date').value = CURRENT_DATE_STR;
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
                 document.getElementById('themeBtn').innerText = '☀️ ライトモード';
             }
-            renderData();
+            // 初回データ読み込み起動
+            fetchLogsFromSupabase();
             initGorinPage();
         });
 
@@ -849,7 +887,6 @@
             }
         }
 
-        // 期間選択フィルター付きのJSONエクスポート関数
         function exportData() {
             if (rawLogs.length === 0) {
                 alert('出力する稽古履歴データがありません。');
@@ -860,7 +897,6 @@
             let filteredData = [];
             const targetDate = new Date(CURRENT_DATE_STR);
 
-            // 選択された期間でフィルタリング
             if (period === 'all') {
                 filteredData = [...rawLogs];
             } else if (period === 'today') {
@@ -873,7 +909,7 @@
                     return diffDays <= 7;
                 });
             } else if (period === 'month') {
-                const currentYearMonth = CURRENT_DATE_STR.substring(0, 7); // "2026-08"
+                const currentYearMonth = CURRENT_DATE_STR.substring(0, 7);
                 filteredData = rawLogs.filter(log => log.date.startsWith(currentYearMonth));
             }
 
@@ -913,6 +949,11 @@
                 tab.classList.remove('active');
                 if(tab.getAttribute('data-target') === pageId) tab.classList.add('active');
             });
+            
+            // 履歴画面や分析画面に切り替わったタイミングでSupabaseから再読込して最新にする
+            if(pageId === 'history-page' || pageId === 'analysis-page' || pageId === 'target-page') {
+                fetchLogsFromSupabase();
+            }
         }
 
         function navHome() { switchPage('input-page'); }
@@ -967,8 +1008,15 @@
             document.getElementById('training-count').value = value;
         }
 
-        function saveRecord(event) {
+        // --- 記録保存処理：SupabaseへのINSERTに変更 ---
+        async function saveRecord(event) {
             event.preventDefault();
+            const client = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+            if(!client) {
+                alert("Supabaseが初期化されていません。URLとキーを設定してください。");
+                return;
+            }
+
             const date = document.getElementById('training-date').value;
             const selectEl = document.getElementById('menuSelect');
             let menu = selectEl.value;
@@ -978,24 +1026,59 @@
             const count = parseInt(document.getElementById('training-count').value, 10);
             const memo = document.getElementById('training-memo').value || "なし";
 
-            rawLogs.unshift({ date, menu, count, memo });
-            alert('稽古記録を保存しました。');
-            
-            document.getElementById('training-count').value = '';
-            document.getElementById('training-memo').value = '';
-            renderData();
+            // 保存ボタンの連打防止
+            const submitBtn = event.target.querySelector('.btn-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "保存中...";
+
+            try {
+                // Supabaseへデータを挿入
+                const { error } = await client
+                    .from('keiko_logs')
+                    .insert([{ date, menu, count, memo }]);
+
+                if (error) throw error;
+
+                alert('稽古記録をSupabaseに保存しました。');
+                
+                // フォームのクリア
+                document.getElementById('training-count').value = '';
+                document.getElementById('training-memo').value = '';
+                if(selectEl.value === 'custom') {
+                    document.getElementById('customMenuInput').value = '';
+                    document.getElementById('customMenuInput').style.display = 'none';
+                    selectEl.value = '補強：腕立て伏せ';
+                }
+
+                // ローカルの表示を最新状態に更新
+                await fetchLogsFromSupabase();
+
+            } catch (err) {
+                console.error("保存失敗:", err);
+                alert("データの保存に失敗しました: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "記録を保存する";
+            }
         }
 
         function renderData() {
             const historyListEl = document.getElementById('history-list');
+            if(!historyListEl) return;
+            
             historyListEl.innerHTML = '';
+            
+            if(rawLogs.length === 0) {
+                historyListEl.innerHTML = '<div style="text-align:center; padding:20px; opacity:0.6;">履歴がまだありません</div>';
+            }
+
             rawLogs.forEach(log => {
                 const item = document.createElement('div');
                 item.className = 'log-item';
                 item.innerHTML = `
                     <div class="log-date">${log.date}</div>
                     <div><span class="log-meta">${log.menu}</span> (${log.count} 本/分/回)</div>
-                    ${log.memo !== 'なし' ? `<div class="log-memo">メモ: ${log.memo}</div>` : ''}
+                    ${log.memo && log.memo !== 'なし' ? `<div class="log-memo">メモ: ${log.memo}</div>` : ''}
                 `;
                 historyListEl.appendChild(item);
             });
@@ -1030,12 +1113,14 @@
             const promptArea = document.getElementById('ai-prompt-text');
             const periodTitle = document.getElementById('analysis-period-title');
             const analysisResultEl = document.getElementById('app-analysis-result');
+            if(!promptArea || !analysisResultEl) return;
+
             let filteredLogs = [];
             let labelStr = "";
 
             if (currentPeriod === 'daily') {
-                labelStr = "日次分析プロンプト (2026-08-11分)";
-                filteredLogs = rawLogs.filter(log => log.date === "2026-08-11");
+                labelStr = `日次分析プロンプト (${CURRENT_DATE_STR}分)`;
+                filteredLogs = rawLogs.filter(log => log.date === CURRENT_DATE_STR);
             } else if (currentPeriod === 'weekly') {
                 labelStr = "週次分析プロンプト (直近7日間)";
                 filteredLogs = rawLogs.filter(log => {
@@ -1043,11 +1128,13 @@
                     return Math.ceil(diff / (1000 * 60 * 60 * 24)) <= 7;
                 });
             } else if (currentPeriod === 'monthly') {
-                labelStr = "月次分析プロンプト (2026年8月期)";
-                filteredLogs = rawLogs.filter(log => log.date.startsWith("2026-08"));
+                const currentMonthPrefix = CURRENT_DATE_STR.substring(0, 7);
+                labelStr = `月次分析プロンプト (${currentMonthPrefix}期)`;
+                filteredLogs = rawLogs.filter(log => log.date.startsWith(currentMonthPrefix));
             } else if (currentPeriod === 'yearly') {
-                labelStr = "年次分析プロンプト (2026年度)";
-                filteredLogs = rawLogs.filter(log => log.date.startsWith("2026"));
+                const currentYearPrefix = CURRENT_DATE_STR.substring(0, 4);
+                labelStr = `年次分析プロンプト (${currentYearPrefix}年度)`;
+                filteredLogs = rawLogs.filter(log => log.date.startsWith(currentYearPrefix));
             }
 
             periodTitle.innerText = labelStr;
