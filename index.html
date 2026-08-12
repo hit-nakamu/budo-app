@@ -497,6 +497,7 @@
                     <div class="period-tab" data-target-period="yearly" onclick="switchTargetPeriod('yearly', this)">今年</div>
                 </div>
 
+                <!-- 既存の「稽古日数」の進捗バー -->
                 <div class="progress-container">
                     <div class="stat-row"><span id="target-days-label">目標稽古日数（今日）</span><span id="target-days-goal">1 日</span></div>
                     <div style="text-align: right; font-size: 0.8rem; font-weight: bold; color: var(--primary-color);">
@@ -507,21 +508,17 @@
                     </div>
                 </div>
 
-                <div class="progress-container" style="margin-top: 10px;">
-                    <div class="stat-row"><span id="target-counts-label">目標素振り・補強本数（今日）</span><span id="target-counts-goal">33 本</span></div>
-                    <div style="text-align: right; font-size: 0.8rem; font-weight: bold; color: var(--primary-color);">
-                        現在: <span id="target-counts">0 本</span> (<span id="progress-counts-percent">0</span>%)
-                    </div>
-                    <div class="progress-bar-wrapper">
-                        <div id="progress-counts-bar" class="progress-bar-fill"></div>
-                    </div>
+                <!-- 今回追加：各種目の進捗バーを表示するコンテナ -->
+                <div id="target-bars-container">
+                    <!-- JavaScriptで動的に生成されます -->
                 </div>
 
-                <div style="font-size: 0.75rem; opacity: 0.6; margin-top: 10px;">
-                    ※「今月」の目標（稽古日数20日・素振り/補強1000本）を基準に、今日・今週・今年の目標を日割り・週割り・年換算で自動算出しています。
+                <div style="font-size: 0.75rem; opacity: 0.6; margin-top: 15px;">
+                    ※設定された日次・週次・月次目標を基準に、選択した期間に合わせて目標値を自動換算しています。（禅の目標は設定されていません）
                 </div>
             </div>
         </div>
+
 
         <!-- 2. 記録入力画面 -->
         <div id="input-page" class="page-section">
@@ -1232,14 +1229,62 @@
         const MONTHLY_DAYS_GOAL = 20;
         const MONTHLY_COUNT_GOAL = 1000;
 
+        // 各種目の目標設定（base: 基準期間、value: 基準期間あたりの目標値）
+        const TARGET_GOALS = [
+            { id: 'hokyo', name: '補強', base: 'daily', value: 150 },
+            { id: 'suburi', name: '素振り', base: 'daily', value: 100 },
+            { id: 'kata', name: '形', base: 'daily', value: 50 },
+            { id: 'yakusoku', name: '約束組太刀', base: 'weekly', value: 50 },
+            { id: 'jiyu', name: '自由組太刀', base: 'weekly', value: 50 },
+            { id: 'tameshigiri', name: '試し斬り', base: 'monthly', value: 20 },
+            { id: 'zen', name: '禅', base: 'none', value: 0 } // 目標未設定
+        ];
+
+        // 指定期間に合わせて目標値を自動換算する関数
+        function calculateGoal(base, value, targetPeriod) {
+            if (base === 'none') return 0;
+            
+            if (base === 'daily') {
+                if (targetPeriod === 'daily') return value;
+                if (targetPeriod === 'weekly') return value * 7;
+                if (targetPeriod === 'monthly') return value * 30; // 便宜上30日計算
+                if (targetPeriod === 'yearly') return value * 365;
+            }
+            if (base === 'weekly') {
+                if (targetPeriod === 'daily') return Math.max(1, Math.round(value / 7));
+                if (targetPeriod === 'weekly') return value;
+                if (targetPeriod === 'monthly') return value * 4; // 便宜上4週計算
+                if (targetPeriod === 'yearly') return value * 52;
+            }
+            if (base === 'monthly') {
+                if (targetPeriod === 'daily') return Math.max(1, Math.round(value / 30));
+                if (targetPeriod === 'weekly') return Math.max(1, Math.round(value / 4));
+                if (targetPeriod === 'monthly') return value;
+                if (targetPeriod === 'yearly') return value * 12;
+            }
+            return 0;
+        }
+
+        // 記録メニュー名から集計用のカテゴリを判定する関数
+        function getCategory(menuName) {
+            if (menuName.includes('補強')) return 'hokyo';
+            if (menuName.includes('素振り')) return 'suburi';
+            if (menuName.includes('形：') || menuName.includes('居合形')) return 'kata';
+            if (menuName.includes('約束組太刀')) return 'yakusoku';
+            if (menuName.includes('自由組太刀')) return 'jiyu';
+            if (menuName.includes('試し斬り')) return 'tameshigiri';
+            if (menuName.includes('座禅') || menuName.includes('禅')) return 'zen';
+            return 'other';
+        }
+
+        // 目標と実績のUIを更新する関数（置き換え）
         function renderTargetStats() {
             let filteredLogs = [];
-            let daysGoal, countGoal, periodLabel;
+            let daysGoal, periodLabel;
 
             if (targetPeriod === 'daily') {
                 filteredLogs = rawLogs.filter(log => log.date === CURRENT_DATE_STR);
-                daysGoal = Math.max(1, Math.round(MONTHLY_DAYS_GOAL / 30));
-                countGoal = Math.max(1, Math.round(MONTHLY_COUNT_GOAL / 30));
+                daysGoal = 1;
                 periodLabel = '今日';
             } else if (targetPeriod === 'weekly') {
                 filteredLogs = rawLogs.filter(log => {
@@ -1247,21 +1292,80 @@
                     return Math.ceil(diff / (1000 * 60 * 60 * 24)) <= 7;
                 });
                 daysGoal = Math.max(1, Math.round(MONTHLY_DAYS_GOAL / 4.345));
-                countGoal = Math.max(1, Math.round(MONTHLY_COUNT_GOAL / 4.345));
                 periodLabel = '今週';
             } else if (targetPeriod === 'monthly') {
                 const ym = CURRENT_DATE_STR.substring(0, 7);
                 filteredLogs = rawLogs.filter(log => log.date.startsWith(ym));
                 daysGoal = MONTHLY_DAYS_GOAL;
-                countGoal = MONTHLY_COUNT_GOAL;
                 periodLabel = '今月';
             } else if (targetPeriod === 'yearly') {
                 const y = CURRENT_DATE_STR.substring(0, 4);
                 filteredLogs = rawLogs.filter(log => log.date.startsWith(y));
                 daysGoal = MONTHLY_DAYS_GOAL * 12;
-                countGoal = MONTHLY_COUNT_GOAL * 12;
                 periodLabel = '今年';
             }
+
+            let uniqueDays = new Set();
+            // カテゴリごとの実績を初期化
+            let actualCounts = {
+                hokyo: 0, suburi: 0, kata: 0, yakusoku: 0, jiyu: 0, tameshigiri: 0, zen: 0, other: 0
+            };
+
+            filteredLogs.forEach(log => {
+                uniqueDays.add(log.date);
+                const cat = getCategory(log.menu);
+                if (actualCounts[cat] !== undefined) {
+                    actualCounts[cat] += log.count;
+                }
+            });
+
+            // 1. 稽古日数のプログレスバー更新
+            const daysPercent = Math.min(Math.round((uniqueDays.size / daysGoal) * 100), 100);
+            document.getElementById('target-days-label').innerText = `目標稽古日数（${periodLabel}）`;
+            document.getElementById('target-days-goal').innerText = daysGoal + ' 日';
+            document.getElementById('target-days').innerText = uniqueDays.size + ' 日';
+            document.getElementById('progress-days-percent').innerText = daysPercent;
+            document.getElementById('progress-days-bar').style.width = daysPercent + '%';
+
+            // 2. 種目ごとのプログレスバー生成と更新
+            const container = document.getElementById('target-bars-container');
+            container.innerHTML = ''; // 一度クリア
+
+            TARGET_GOALS.forEach(goalConfig => {
+                const currentGoal = calculateGoal(goalConfig.base, goalConfig.value, targetPeriod);
+                const currentActual = actualCounts[goalConfig.id] || 0;
+                
+                let percent = 0;
+                let goalText = '-';
+                if (currentGoal > 0) {
+                    percent = Math.min(Math.round((currentActual / currentGoal) * 100), 100);
+                    goalText = currentGoal + (goalConfig.id === 'zen' ? ' 分' : ' 回/本');
+                } else if (currentActual > 0) {
+                    percent = 100; // 目標がないが実績がある場合はバーをMAX表示
+                }
+
+                const actualText = currentActual + (goalConfig.id === 'zen' ? ' 分' : ' 回/本');
+
+                // バーのHTMLを動的に構築
+                const barHtml = `
+                    <div class="progress-container" style="margin-top: 15px;">
+                        <div class="stat-row">
+                            <span>目標：${goalConfig.name}（${periodLabel}）</span>
+                            <span>${goalText}</span>
+                        </div>
+                        <div style="text-align: right; font-size: 0.8rem; font-weight: bold; color: var(--primary-color);">
+                            現在: <span>${actualText}</span> 
+                            ${currentGoal > 0 ? `(<span>${percent}</span>%)` : ''}
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: ${percent}%;"></div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += barHtml;
+            });
+        }
+
 
             let uniqueDays = new Set();
             let totalCount = 0;
