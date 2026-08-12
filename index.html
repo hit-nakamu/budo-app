@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>武道稽古記録 & アドバイザー</title>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-color: #2b5797;
@@ -263,6 +265,11 @@
             font-weight: bold;
             cursor: pointer;
             margin-bottom: 12px;
+        }
+        
+        .btn-submit:disabled {
+            background-color: #999;
+            cursor: not-allowed;
         }
 
         .btn-copy {
@@ -619,7 +626,7 @@
                         <textarea id="training-memo" name="memo" placeholder="課題点や不足していた感覚などを記録してください"></textarea>
                     </div>
 
-                    <button type="submit" class="btn-submit">記録を保存する</button>
+                    <button type="submit" class="btn-submit" id="submitBtn">記録を保存する</button>
                 </form>
             </div>
         </div>
@@ -732,22 +739,27 @@
             📥 選択した期間でJSON出力
         </div>
 
-        <div class="menu-item" onclick="alert('アプリバージョン: v1.3.0'); toggleMenuModal(false);">ℹ️ アプリ情報</div>
+        <div class="menu-item" onclick="alert('アプリバージョン: v1.3.1 (Supabase対応版)'); toggleMenuModal(false);">ℹ️ アプリ情報</div>
         <div class="menu-item" style="color:red; text-align:center; font-weight:bold; margin-top:10px;" onclick="toggleMenuModal(false)">閉じる</div>
     </div>
 
     <script>
-        const CURRENT_DATE_STR = "2026-08-11";
+        // ==========================================
+        // Supabaseの接続設定
+        // ==========================================
+        const SUPABASE_URL = 'https://fonbifeltukfxpqzjqoj.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_bovqGmr1ilPdHixHOzbGxQ_B_9DmZOD';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 今日の日付を自動生成 (YYYY-MM-DD)
+        const today = new Date();
+        const CURRENT_DATE_STR = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        
         let currentPeriod = 'daily';
         let pageHistory = ['input-page'];
 
-        let rawLogs = [
-            { date: "2026-08-11", menu: "補強：腕立て伏せ", count: 30, memo: "なし" },
-            { date: "2026-08-11", menu: "形：五箇・水月", count: 10, memo: "初太刀の横一文字の軌道注意" },
-            { date: "2026-08-11", menu: "補強：スクワット", count: 30, memo: "なし" },
-            { date: "2026-08-10", menu: "基本：体さばき・運足", count: 20, memo: "軸がぶれないように意識" },
-            { date: "2026-08-10", menu: "基本：素振り（横一文字）", count: 50, memo: "水平に振り切る感覚が良くなってきた" }
-        ];
+        // メモリ上のデータ（Supabaseから取得して格納する用）
+        let rawLogs = [];
         
         const mukadeData = [
             "1 (いち） 稽古には清水（しみず）の末の細々と絶えず流るる心こそよき",
@@ -800,6 +812,41 @@
             kuu: `<div style="border-bottom: 2px solid #b6c4d6; padding-bottom: 5px; margin-bottom: 10px; font-weight: bold; color: #1e467a;">【空の巻】理合を超えた究極の境地</div><p><strong>■ 空（くう）とは何か</strong><br>物事の道理を極め尽くし、あらゆる技を完全に習得したその先にたどり着く、迷いや執着が一切ない「自然体」の境地である。何も知らない無知の「無」とは異なる。</p>`
         };
 
+        // ==========================================
+        // Supabaseからのデータ取得処理
+        // ==========================================
+        async function fetchLogs() {
+            const historyListEl = document.getElementById('history-list');
+            historyListEl.innerHTML = '<div style="text-align:center; padding: 20px;">データを読み込み中...</div>';
+
+            const { data, error } = await supabase
+                .from('keiko_logs')
+                .select('*')
+                .order('date', { ascending: false })
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching data:', error);
+                historyListEl.innerHTML = '<div style="color:red; text-align:center;">データの取得に失敗しました。</div>';
+                return;
+            }
+
+            rawLogs = data || [];
+            renderData();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('training-date').value = CURRENT_DATE_STR;
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeBtn').innerText = '☀️ ライトモード';
+            }
+            
+            // ページ読み込み時にSupabaseからデータを取得
+            fetchLogs();
+            initGorinPage();
+        });
+
         function initGorinPage() {
             const randomIndex = Math.floor(Math.random() * mukadeData.length);
             document.getElementById('daily-mukade-num').innerText = `📅 今日の百足伝（第${randomIndex + 1}首）`;
@@ -826,16 +873,6 @@
             }
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('training-date').value = CURRENT_DATE_STR;
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark-mode');
-                document.getElementById('themeBtn').innerText = '☀️ ライトモード';
-            }
-            renderData();
-            initGorinPage();
-        });
-
         function toggleTheme() {
             const body = document.body;
             const btn = document.getElementById('themeBtn');
@@ -849,7 +886,6 @@
             }
         }
 
-        // 期間選択フィルター付きのJSONエクスポート関数
         function exportData() {
             if (rawLogs.length === 0) {
                 alert('出力する稽古履歴データがありません。');
@@ -860,7 +896,6 @@
             let filteredData = [];
             const targetDate = new Date(CURRENT_DATE_STR);
 
-            // 選択された期間でフィルタリング
             if (period === 'all') {
                 filteredData = [...rawLogs];
             } else if (period === 'today') {
@@ -873,7 +908,7 @@
                     return diffDays <= 7;
                 });
             } else if (period === 'month') {
-                const currentYearMonth = CURRENT_DATE_STR.substring(0, 7); // "2026-08"
+                const currentYearMonth = CURRENT_DATE_STR.substring(0, 7); 
                 filteredData = rawLogs.filter(log => log.date.startsWith(currentYearMonth));
             }
 
@@ -967,8 +1002,17 @@
             document.getElementById('training-count').value = value;
         }
 
-        function saveRecord(event) {
+        // ==========================================
+        // Supabaseへのデータ保存処理
+        // ==========================================
+        async function saveRecord(event) {
             event.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "保存中...";
+            submitBtn.disabled = true;
+
             const date = document.getElementById('training-date').value;
             const selectEl = document.getElementById('menuSelect');
             let menu = selectEl.value;
@@ -978,34 +1022,68 @@
             const count = parseInt(document.getElementById('training-count').value, 10);
             const memo = document.getElementById('training-memo').value || "なし";
 
-            rawLogs.unshift({ date, menu, count, memo });
-            alert('稽古記録を保存しました。');
+            // Supabaseへインサート
+            const { error } = await supabase
+                .from('keiko_logs')
+                .insert([{ date: date, menu: menu, count: count, memo: memo }]);
+
+            if (error) {
+                console.error('Error inserting data:', error);
+                alert('保存に失敗しました: ' + error.message);
+            } else {
+                alert('稽古記録を保存しました。');
+                
+                // 入力欄をクリア（日付はそのまま残す）
+                document.getElementById('training-count').value = '';
+                document.getElementById('training-memo').value = '';
+                if(menu === 'custom') document.getElementById('customMenuInput').value = '';
+                
+                // 最新のデータを取得し直して画面を更新
+                await fetchLogs();
+            }
             
-            document.getElementById('training-count').value = '';
-            document.getElementById('training-memo').value = '';
-            renderData();
+            // ボタンを元に戻す
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
         }
 
+        // ==========================================
+        // 画面描画（履歴一覧・目標進捗・AI分析）
+        // ==========================================
         function renderData() {
+            // --- 1. 履歴一覧の描画 ---
             const historyListEl = document.getElementById('history-list');
             historyListEl.innerHTML = '';
-            rawLogs.forEach(log => {
-                const item = document.createElement('div');
-                item.className = 'log-item';
-                item.innerHTML = `
-                    <div class="log-date">${log.date}</div>
-                    <div><span class="log-meta">${log.menu}</span> (${log.count} 本/分/回)</div>
-                    ${log.memo !== 'なし' ? `<div class="log-memo">メモ: ${log.memo}</div>` : ''}
-                `;
-                historyListEl.appendChild(item);
-            });
+            
+            if (rawLogs.length === 0) {
+                historyListEl.innerHTML = '<div style="text-align:center; padding: 20px;">記録がありません</div>';
+            } else {
+                rawLogs.forEach(log => {
+                    const item = document.createElement('div');
+                    item.className = 'log-item';
+                    
+                    // タイムゾーン等の影響を取り除くため日付の文字列を調整
+                    const dateStr = log.date ? log.date.split('T')[0] : '';
+                    
+                    item.innerHTML = `
+                        <div class="log-date">${dateStr}</div>
+                        <div><span class="log-meta">${log.menu}</span> (${log.count} 本/分/回)</div>
+                        ${log.memo && log.memo !== 'なし' ? `<div class="log-memo">メモ: ${log.memo}</div>` : ''}
+                    `;
+                    historyListEl.appendChild(item);
+                });
+            }
 
+            // --- 2. 目標と実績の集計 ---
             let totalCount = 0;
             let uniqueDays = new Set();
             rawLogs.forEach(log => {
-                uniqueDays.add(log.date);
-                if (log.menu.includes('素振り') || log.menu.includes('補強')) {
-                    totalCount += log.count;
+                const dateStr = log.date ? log.date.split('T')[0] : '';
+                uniqueDays.add(dateStr);
+                
+                // 素振りと補強のみカウントする仕様を踏襲
+                if (log.menu && (log.menu.includes('素振り') || log.menu.includes('補強'))) {
+                    totalCount += log.count || 0;
                 }
             });
 
@@ -1023,6 +1101,7 @@
             document.getElementById('progress-counts-percent').innerText = countsPercent;
             document.getElementById('progress-counts-bar').style.width = countsPercent + '%';
 
+            // --- 3. AIプロンプトの更新 ---
             generatePromptText();
         }
 
@@ -1034,20 +1113,23 @@
             let labelStr = "";
 
             if (currentPeriod === 'daily') {
-                labelStr = "日次分析プロンプト (2026-08-11分)";
-                filteredLogs = rawLogs.filter(log => log.date === "2026-08-11");
+                labelStr = `日次分析プロンプト (${CURRENT_DATE_STR}分)`;
+                filteredLogs = rawLogs.filter(log => log.date && log.date.startsWith(CURRENT_DATE_STR));
             } else if (currentPeriod === 'weekly') {
                 labelStr = "週次分析プロンプト (直近7日間)";
                 filteredLogs = rawLogs.filter(log => {
-                    const diff = Math.abs(new Date(CURRENT_DATE_STR) - new Date(log.date));
+                    if(!log.date) return false;
+                    const diff = Math.abs(new Date(CURRENT_DATE_STR) - new Date(log.date.split('T')[0]));
                     return Math.ceil(diff / (1000 * 60 * 60 * 24)) <= 7;
                 });
             } else if (currentPeriod === 'monthly') {
-                labelStr = "月次分析プロンプト (2026年8月期)";
-                filteredLogs = rawLogs.filter(log => log.date.startsWith("2026-08"));
+                const currentMonth = CURRENT_DATE_STR.substring(0, 7);
+                labelStr = `月次分析プロンプト (${currentMonth.replace('-', '年')}月期)`;
+                filteredLogs = rawLogs.filter(log => log.date && log.date.startsWith(currentMonth));
             } else if (currentPeriod === 'yearly') {
-                labelStr = "年次分析プロンプト (2026年度)";
-                filteredLogs = rawLogs.filter(log => log.date.startsWith("2026"));
+                const currentYear = CURRENT_DATE_STR.substring(0, 4);
+                labelStr = `年次分析プロンプト (${currentYear}年)`;
+                filteredLogs = rawLogs.filter(log => log.date && log.date.startsWith(currentYear));
             }
 
             periodTitle.innerText = labelStr;
@@ -1090,12 +1172,18 @@
             }
             if (memoList.length > 0) {
                 reportHtml += `<br>🎯 <strong>現在の課題意識:</strong><br><span style="color:#c0392b;">「${memoList[0]}」</span> など、自身の動きを客観的に観察できています。`;
+            } else {
+                 reportHtml += `<br>💡 <strong>アドバイス:</strong><br>次回は稽古後のメモを残すことで、より深い振り返りが可能になります。`;
             }
             analysisResultEl.innerHTML = reportHtml;
         }
 
         function copyPrompt() {
             const promptArea = document.getElementById('ai-prompt-text');
+            if (promptArea.value === "該当期間の稽古データが存在しません。") {
+                alert('コピーするデータがありません。');
+                return;
+            }
             promptArea.select();
             navigator.clipboard.writeText(promptArea.value)
                 .then(() => alert('分析用プロンプトをクリップボードにコピーしました！'))
